@@ -1,0 +1,30 @@
+{
+  "types": "",
+  "keywords": [
+    "HarmonyOS",
+    "OpenHarmony",
+    "Sql",
+    "Dbflow"
+  ],
+  "author": "hihope",
+  "description": "dataORM is a relational mapping database with one line of code to manipulate a database or chain call, backup, upgrade, cache, and more",
+  "ohos": {
+    "org": "opensource"
+  },
+  "main": "index.ts",
+  "repository": "https://gitee.com/openharmony-sig/dataORM",
+  "type": "module",
+  "version": "1.1.5",
+  "dependencies": {
+    "reflect-metadata": "^0.1.13"
+  },
+  "tags": [
+    "HarmonyOS",
+    "OpenHarmony",
+    "Sql",
+    "Dbflow"
+  ],
+  "license": "Apache License 2.0",
+  "devDependencies": {},
+  "name": "@ohos/dataorm"
+}

@@ -1,0 +1,44 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "material": {
+          "certpath": "C:\\Users\\Z-P-J\\.ohos\\config\\openharmony\\auto_ohos_default_AnimeZ_org.ohosdev.anime.cer",
+          "storePassword": "0000001AB46493BF5963CD1D0030300446F5C7C07AABECACC702374DCA72F16DDA9E022CD2836DA43F6A",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001A4C81075550D465C0E95F53F7F5E648117503357D73F68002C960222DA5AE3F8F59BEF4BC8C36",
+          "profile": "C:\\Users\\Z-P-J\\.ohos\\config\\openharmony\\auto_ohos_default_AnimeZ_org.ohosdev.anime.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\Z-P-J\\.ohos\\config\\openharmony\\auto_ohos_default_AnimeZ_org.ohosdev.anime.p12"
+        }
+      }
+    ],
+    "compileSdkVersion": 9,
+    "compatibleSdkVersion": 9,
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dataORM",
+      "srcPath": "./dataORM"
+    }
+  ]
+}
