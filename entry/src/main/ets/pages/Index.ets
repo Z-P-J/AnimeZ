@@ -1,3 +1,7 @@
+import { VideoHistoryTable } from '../db/impl/VideoHistoryDao';
+import { SearchHistoryTable } from '../db/impl/SearchHistoryDao';
+import SQLite from '../db/SQLite';
+import { VideoHistoryInfo } from '../entity/VideoHistoryInfo';
 import DataSource from '../api/DataSource';
 import BimiDataSource from '../api/impl/BimiAcgDataSource';
 import HttpUtils from '../utils/HttpUtils';
@@ -26,6 +30,55 @@ struct Index {
   aboutToAppear() {
     this.isLoading = true
     this.loadNextPage()
+
+    let info = new VideoHistoryInfo()
+    info.link = '111111111'
+    let type = typeof info
+    Logger.e(this, 'type=' + JSON.stringify(type))
+    Logger.e(this, 'getPrototypeOf=' + JSON.stringify(Object.getPrototypeOf(info)))
+    Logger.e(this, 'keys=' + JSON.stringify(Object.keys(info)))
+    Logger.e(this, 'ownKeys=' + JSON.stringify(Reflect.ownKeys(Object.getPrototypeOf(info))))
+    Logger.e(this, 'getOwnPropertyNames=' + JSON.stringify(Object.getOwnPropertyNames(info)))
+    Logger.e(this, 'getOwnPropertyNames=' + JSON.stringify(Object.getOwnPropertyNames(info)))
+
+
+
+    SQLite.with(VideoHistoryTable)
+      .insert(info)
+      .then((result) => {
+        Logger.e(this, 'insert result=' + result)
+
+        SQLite.with(VideoHistoryTable)
+          .queryAll()
+          .then((results) => {
+            Logger.e(this, 'queryAll size=' + results.length)
+            for (let item of results) {
+              Logger.e(this, 'queryAll item=' + JSON.stringify(item))
+            }
+          })
+          .catch((e) => {
+            Logger.e(this, 'queryAll e=' + JSON.stringify(e))
+          })
+      })
+      .catch((e) => {
+        Logger.e(this, 'insert e=' + JSON.stringify(e))
+      })
+
+    SQLite.with(SearchHistoryTable)
+      .insert({id: 0, keyword: 'Test', accessTime: new Date().getTime()})
+      .then((result) => {
+        Logger.e(this, 'SearchHistoryTable insert result=' + result)
+      })
+      .catch((e) => {
+        Logger.e(this, 'SearchHistoryTable insert e=' + (typeof e))
+      })
+
+
+    Logger.e(this, 'link=' + info['link'])
+
+    for (let key of Object.keys(info)) {
+      Logger.e(this, 'key=' + key)
+    }
   }
 
   build() {
@@ -111,4 +164,5 @@ struct Index {
     })
     return videoList
   }
+
 }

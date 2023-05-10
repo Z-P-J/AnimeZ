@@ -1,3 +1,4 @@
+import { VideoHistoryInfo } from '../entity/VideoHistoryInfo';
 import { PlayerManager } from '../player/PlayerManager';
 import { VideoPlayer } from '../player/VideoPlayer';
 import { VideoList } from '../components/VideoList';
@@ -24,11 +25,16 @@ struct VideoDetailPage {
 
   private playerManager: PlayerManager = new PlayerManager()
 
+  private historyInfo: VideoHistoryInfo
+
   aboutToAppear() {
     this.isLoading = true
     let url = router.getParams()['url']
 //    let url = 'http://www.bimiacg4.net/bangumi/bi/8552/'
     promptAction.showToast({ message: 'url=' + url })
+
+//    this.historyInfo =
+
     this.getDetailInfo(url)
   }
 
