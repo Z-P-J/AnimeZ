@@ -1,3 +1,4 @@
+import router from '@ohos.router';
 import { VideoHistoryTable } from '../db/impl/VideoHistoryDao';
 import { SearchHistoryTable } from '../db/impl/SearchHistoryDao';
 import SQLite from '../db/SQLite';
@@ -64,14 +65,16 @@ struct Index {
         Logger.e(this, 'insert e=' + JSON.stringify(e))
       })
 
-    SQLite.with(SearchHistoryTable)
-      .insert({id: 0, keyword: 'Test', accessTime: new Date().getTime()})
-      .then((result) => {
-        Logger.e(this, 'SearchHistoryTable insert result=' + result)
-      })
-      .catch((e) => {
-        Logger.e(this, 'SearchHistoryTable insert e=' + (typeof e))
-      })
+    setTimeout(() => {
+      SQLite.with(SearchHistoryTable)
+        .insert({id: 0, keyword: 'Test', accessTime: new Date().getTime()})
+        .then((result) => {
+          Logger.e(this, 'SearchHistoryTable insert result=' + result)
+        })
+        .catch((e) => {
+          Logger.e(this, 'SearchHistoryTable insert e=' + (typeof e))
+        })
+    }, 1000)
 
 
     Logger.e(this, 'link=' + info['link'])
@@ -83,6 +86,45 @@ struct Index {
 
   build() {
     Column() {
+      Row() {
+        Image($r("app.media.ic_anime"))
+          .width(24)
+          .height(24)
+          .margin({ left: 16 })
+          .objectFit(ImageFit.Contain)
+
+        Row() {
+          Image($r("app.media.ic_search"))
+            .width(16)
+            .height(16)
+            .margin({ left: 12, right: 8 })
+            .fillColor('#817977')
+            .objectFit(ImageFit.Contain)
+
+          Text("搜索番剧")
+            .fontWeight(400)
+            .fontColor('#817977')
+            .fontSize(14)
+        }
+        .margin({left: 12, right: 12})
+        .height(32)
+        .layoutWeight(1)
+        .backgroundColor('#f5f5f5')
+        .borderRadius(32)
+        .onClick(() => {
+          promptAction.showToast({message: 'Search'})
+          router.pushUrl({url: 'pages/SearchPage'})
+        })
+
+        Image($r("app.media.ic_history"))
+          .width(24)
+          .height(24)
+          .fillColor('#817977')
+          .margin({right: 16})
+          .objectFit(ImageFit.Contain)
+      }
+      .height(56)
+      .width('100%')
       if (this.isLoading) {
         // 加载中
         LoadingProgress().width(64).height(64).layoutWeight(1)

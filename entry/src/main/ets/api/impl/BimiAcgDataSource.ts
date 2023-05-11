@@ -13,9 +13,40 @@ import { Element, Document, AnyNode } from "domhandler"
 const PREFIX_DATA = "var player_aaaa="
 
 export default class BimiAcgDataSource implements DataSource {
+
+    async search(keyword: string, page: number): Promise<VideoInfo[]> {
+        let url = "http://www.bimiacg4.net/vod/search/wd/" + encodeURIComponent(keyword) + "/page/" + page
+
+        return this.parseVideoList(await HttpUtils.getHtml(url))
+    }
+
+
     async getVideoList(page: number): Promise<VideoInfo[]> {
         let url = "http://www.bimiacg4.net/type/riman-" + page
         let doc = await HttpUtils.getHtml(url)
+//        let drama = CssSelector.findFirst(doc, 'ul.drama-module')
+//        Logger.e(this, 'parseHtml drama=' + drama)
+//        let elements = CssSelector.find(drama, 'li')
+//        Logger.e(this, 'parseHtml elements=' + elements)
+//        let videoList: VideoInfo[] = []
+//
+//        // TODO 代码优化
+//        elements.forEach((el) => {
+//            Logger.e(this, "parseHtml el=" + el)
+//            let img = CssSelector.findFirst(el, 'img')
+//            let a = CssSelector.findFirst(el, "div.info > a")
+//            videoList.push({
+//                url: "http://www.bimiacg4.net" + DomUtils.getAttributeValue(a as Element, 'href'),
+//                imgUrl: DomUtils.getAttributeValue(img as Element, 'src'),
+//                title: DomUtils.textContent(a),
+//                episode: DomUtils.textContent(CssSelector.findFirst(el, "div.info > p > span.fl"))
+//            })
+//        })
+//        return videoList
+        return this.parseVideoList(doc)
+    }
+
+    private parseVideoList(doc) {
         let drama = CssSelector.findFirst(doc, 'ul.drama-module')
         Logger.e(this, 'parseHtml drama=' + drama)
         let elements = CssSelector.find(drama, 'li')

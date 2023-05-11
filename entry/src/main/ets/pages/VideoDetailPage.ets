@@ -9,7 +9,7 @@ import Logger from '../utils/Logger';
 import HttpUtils from '../utils/HttpUtils';
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
-import BimiDataSource from '../api/impl/BimiAcgDataSource';
+import BimiAcgDataSource from '../api/impl/BimiAcgDataSource';
 import DataSource from '../api/DataSource';
 
 @Entry
@@ -18,7 +18,7 @@ struct VideoDetailPage {
   @State message: string = 'Hello World'
   @State isLoading: boolean = false
   @State videoDetailInfo: VideoDetailInfo = null
-  @StorageLink('data_source_bimiacg') dataSource: DataSource = new BimiDataSource()
+  @StorageLink('data_source_bimiacg') dataSource: DataSource = new BimiAcgDataSource()
 
   @State episodeListIndex: number = 0;
   @State episodeIndex: number = 0;

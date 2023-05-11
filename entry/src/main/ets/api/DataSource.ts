@@ -5,6 +5,8 @@ import { Document } from "domhandler"
 
 export default interface DataSource {
 
+    search(keyword: string, page: number): Promise<VideoInfo[]>
+
     getVideoList(page: number): Promise<VideoInfo[]>;
 
     getVideoDetailInfo(url: string): Promise<VideoDetailInfo>;
