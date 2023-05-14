@@ -1,21 +1,26 @@
-import EpisodeList from '../entity/EpisodeList';
-import VideoInfo from '../entity/VideoInfo';
-import VideoDetailInfo from '../entity/VideoDetailInfo';
+import HomepageData from '../entity/HomepageData';
+import EpisodeList from '../entity/EpisodeList'
+import VideoInfo from '../entity/VideoInfo'
+import VideoDetailInfo from '../entity/VideoDetailInfo'
 import { Document } from "domhandler"
 
 export default interface DataSource {
 
     search(keyword: string, page: number): Promise<VideoInfo[]>
 
-    getVideoList(page: number): Promise<VideoInfo[]>;
+    getHomepageData(): Promise<HomepageData>
 
-    getVideoDetailInfo(url: string): Promise<VideoDetailInfo>;
+    getVideoList(page: number): Promise<VideoInfo[]>
+    
+//    getBannerList(): Promise<VideoInfo[]>
 
-    getEpisodes(doc: Document): Promise<EpisodeList[]>;
+    getVideoDetailInfo(url: string): Promise<VideoDetailInfo>
 
-    getRecommends(doc: Document): Promise<VideoInfo[]>;
+    getEpisodes(doc: Document): Promise<EpisodeList[]>
 
-    parseVideoUrl(link: string): Promise<string>;
+    getRecommends(doc: Document): Promise<VideoInfo[]>
+
+    parseVideoUrl(link: string): Promise<string>
 
 
 }

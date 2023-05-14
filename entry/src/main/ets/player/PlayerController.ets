@@ -1,3 +1,4 @@
+import VideoTimeUtils from './VideoTimeUtils';
 import { PlayerStatus } from './PlayerStatus';
 import Logger from '../utils/Logger';
 import { PlayerManager } from './PlayerManager';
@@ -59,7 +60,7 @@ export struct PlayerController {
 
   build() {
     Stack({ alignContent: Alignment.Center }) {
-      if (this.playerStatus == PlayerStatus.INIT || this.playerStatus == PlayerStatus.LOADING) {
+      if (this.playerStatus == PlayerStatus.INIT || this.playerStatus == PlayerStatus.LOADING || this.playerStatus == PlayerStatus.BUFFERING) {
         Stack({ alignContent: Alignment.Center }){
           LoadingProgress().width(48).height(48).color(Color.White)
         }
@@ -75,6 +76,21 @@ export struct PlayerController {
             .fillColor(Color.White)
             .objectFit(ImageFit.Contain)
           Text('出错了...')
+            .fontColor(Color.White)
+            .fontSize(14)
+        }
+        .onClick(() => {
+          this.playerManager.start()
+        })
+      } else if (this.playerStatus == PlayerStatus.DONE) {
+        Column() {
+          Image($r('app.media.ic_refresh'))
+            .width(32)
+            .height(32)
+            .margin(8)
+            .fillColor(Color.White)
+            .objectFit(ImageFit.Contain)
+          Text('重新播放')
             .fontColor(Color.White)
             .fontSize(14)
         }
@@ -126,14 +142,15 @@ export struct PlayerController {
               Text(this.currentTime).fontSize(12).margin({ left: 16, right: 8 }).fontColor(Color.White)
               Slider({ value: this.progress, min: 0, max: 100, step: 1, style: SliderStyle.OutSet })
                 .layoutWeight(1)
-                .blockColor(Color.Blue)
+                .blockColor($r('app.color.primary_color_accent'))
                 .trackColor(Color.White)
-                .selectedColor(Color.Blue)
+                .selectedColor($r('app.color.primary_color'))
                 .showSteps(true)
                 .showTips(true)
                 .enabled(this.slideEnable)
                 .onChange((value: number, mode: SliderChangeMode) => {
                   if (mode == SliderChangeMode.End || mode == SliderChangeMode.Click) {
+                    this.playerStatus
                     this.stopProgress()
                     this.progress = value / 100
                     let seekValue = this.progress * this.playerManager.getDuration();
@@ -215,35 +232,11 @@ export struct PlayerController {
       this.progress = pos;
     }
     Logger.e(this, "setProgress position:" + position + ",duration:" + duration + ",progressValue:" + pos);
-    this.totalTime = this.stringForTime(duration);
+    this.totalTime = VideoTimeUtils.stringForTime(duration);
     if (position > duration) {
       position = duration;
     }
-    this.currentTime = this.stringForTime(position);
-  }
-
-  private stringForTime(timeMs: number): string {
-    let totalSeconds = (timeMs / 1000);
-    let seconds = totalSeconds % 60;
-    let minutes = (totalSeconds / 60) % 60;
-    let hours = totalSeconds / 3600;
-    Logger.e(this, "stringForTime hours:" + hours + ",minutes:" + minutes + ",seconds:" + seconds);
-    hours = this.completionNum(Math.floor(Math.floor(hours * 100) / 100));
-    minutes = this.completionNum(Math.floor(Math.floor(minutes * 100) / 100));
-    seconds = this.completionNum(Math.floor(Math.floor(seconds * 100) / 100));
-    if (hours > 0) {
-      return hours + ":" + minutes + ":" + seconds;
-    } else {
-      return minutes + ":" + seconds;
-    }
-  }
-
-  private completionNum(num: any): any {
-    if (num < 10) {
-      return '0' + num;
-    } else {
-      return num;
-    }
+    this.currentTime = VideoTimeUtils.stringForTime(position);
   }
 
 

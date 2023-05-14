@@ -1,8 +1,8 @@
 
 export interface SearchHistoryInfo {
 
-    id: number;
+    id?: number;
     keyword: string;
-    accessTime: number;
+    accessTime?: number;
 
 }

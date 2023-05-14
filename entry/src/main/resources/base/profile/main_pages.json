@@ -4,6 +4,10 @@
     "pages/VideoDetailPage",
     "pages/TestPage",
     "pages/Page2",
-    "pages/SearchPage"
+    "pages/SearchPage",
+    "pages/SettingsPage",
+    "pages/AboutMePage",
+    "pages/AppInfoPage",
+    "pages/VideoHistoryPage"
   ]
 }

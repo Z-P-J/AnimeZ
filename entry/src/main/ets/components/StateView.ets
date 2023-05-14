@@ -1,4 +1,3 @@
-
 export enum ViewState {
 
   LOADING = 0,
@@ -11,46 +10,72 @@ export enum ViewState {
 
 @Component
 export default struct StateView {
-
   @Link state: number
+  @Link errorMessage: string
   @BuilderParam content: () => any;
-//  @BuilderParam loading?: () => any;
-//  @BuilderParam empty?: () => any;
+  //  @BuilderParam loading?: () => any;
+  //  @BuilderParam empty?: () => any;
   @BuilderParam custom: (key) => any;
   onRetry?: () => boolean;
 
   build() {
-    Stack({alignContent: Alignment.Center}) {
+    Stack({ alignContent: Alignment.Center }) {
       if (this.state == ViewState.LOADING) {
-        // 加载中
-        LoadingProgress().width(64).height(64).layoutWeight(1)
+        Column() {
+          // 加载中
+          LoadingProgress().width(80).aspectRatio(1).color('#817977')
+          Text('加载中...')
+            .fontSize(16)
+            .fontColor('#817977')
+            .textAlign(TextAlign.Center)
+            .constraintSize({ maxWidth: '80%' })
+            .margin({ bottom: 60, top: 12 })
+        }
       } else if (this.state == ViewState.CONTENT) {
         if (this.content) {
           this.content()
         }
       } else if (this.state == ViewState.EMPTY) {
-        Text("空空如也").fontSize(18).padding(20).fontWeight(FontWeight.Bold).layoutWeight(1)
-          .onClick(() => {
-            if (this.onRetry) {
-              this.onRetry()
-            }
-          })
+        this.ImageWithText($r('app.media.ic_empty'), "暂无数据", this.errorMessage)
       } else if (this.state == ViewState.ERROR) {
-        Text("出错了，点击重试").fontSize(18).padding(20).fontWeight(FontWeight.Bold).layoutWeight(1)
-          .onClick(() => {
-            if (this.onRetry) {
-              this.onRetry()
-            }
-          })
+        this.ImageWithText($r('app.media.ic_error'), "出错了，点击重试", this.errorMessage)
       } else if (this.state == ViewState.CUSTOM) {
         if (this.custom) {
           this.custom('key')
         }
       }
-
     }
     .width('100%')
     .height('100%')
   }
 
+  @Builder ImageWithText(src: string | PixelMap | Resource, tips: string, message?: string) {
+    Column() {
+      Image(src)
+        .width(120)
+        .aspectRatio(1)
+        .objectFit(ImageFit.Contain)
+      if (message) {
+        Text(message)
+          .fontSize(12)
+          .constraintSize({ maxWidth: '80%' })
+          .fontColor($r('app.color.color_text_minor'))
+          .margin({ top: 12 })
+          .fontWeight(FontWeight.Normal)
+      }
+
+      Text(tips)
+        .fontSize(16)
+        .fontColor('#817977')
+        .textAlign(TextAlign.Center)
+        .constraintSize({ maxWidth: '80%' })
+        .margin({ bottom: 100, top: 12 })
+
+    }
+    .onClick(() => {
+      if (this.onRetry) {
+        this.onRetry()
+      }
+    })
+  }
 }

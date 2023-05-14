@@ -1,37 +1,41 @@
+import Logger from '../../utils/Logger';
 import { Table } from '../decorator/Decorators';
 import { VideoHistoryInfo } from '../../entity/VideoHistoryInfo';
 import AbsTable from '../AbsTable';
-import {ValuesBucket, ValueType} from '../AbsTable';
+import { ValuesBucket, ValueType } from '../AbsTable';
 import rdb from '@ohos.data.relationalStore';
 
-@Table({db: 'video_manager', name: 'video_history'})
+/**
+ * 视频播放历史记录
+ */
+@Table({ db: 'video_manager', name: 'video_history' })
 export class VideoHistoryTable extends AbsTable<VideoHistoryInfo> {
-
   getColumnId(): string {
     return "link"
   }
 
   getTableColumns(): string[] {
-    return ['link', 'title', 'lastTime', 'coverUrl', 'episodeListIndex', 'episodeIndex', 'episodeName', 'videoUrl', 'videoProgress']
+    return ['link', 'title', 'totalTime', 'currentTime', 'coverUrl', 'episodeListIndex',
+      'episodeIndex', 'episodeName', 'videoUrl', 'videoProgress', 'accessTime']
   }
 
   getCreateTableSql(): string {
-    return "CREATE TABLE IF NOT EXISTS video_history(link TEXT, title TEXT, lastTime INTEGER, " +
+    return "CREATE TABLE IF NOT EXISTS video_history(link TEXT, title TEXT, totalTime INTEGER, currentTime INTEGER, " +
     "coverUrl TEXT, episodeListIndex INTEGER, episodeIndex INTEGER, episodeName TEXT, videoUrl TEXT, " +
-    "videoProgress INTEGER, PRIMARY KEY(link))"
+    "videoProgress INTEGER, accessTime INTEGER, PRIMARY KEY(link))"
   }
 
-  bindToInsertValues(bucket: ValuesBucket, item: VideoHistoryInfo) {
+  bindToValuesBucket(bucket: ValuesBucket, item: VideoHistoryInfo) {
     this.getTableColumns().forEach((col) => {
       bucket[col] = item[col]
     })
   }
 
-  bindToContentValues(bucket: ValuesBucket, item: VideoHistoryInfo) {
-    this.getTableColumns().forEach((col) => {
-      bucket[col] = item[col]
-    })
-  }
+//  bindToContentValues(bucket: ValuesBucket, item: VideoHistoryInfo) {
+//    this.getTableColumns().forEach((col) => {
+//      bucket[col] = item[col]
+//    })
+//  }
 
   getEntityId(item: VideoHistoryInfo): ValueType {
     return item.link
@@ -41,14 +45,34 @@ export class VideoHistoryTable extends AbsTable<VideoHistoryInfo> {
     let info = new VideoHistoryInfo()
     info['link'] = cursor.getString(cursor.getColumnIndex('link'))
     info['title'] = cursor.getString(cursor.getColumnIndex('title'))
-    info['lastTime'] = cursor.getLong(cursor.getColumnIndex('lastTime'))
+    info['totalTime'] = cursor.getLong(cursor.getColumnIndex('totalTime'))
+    info['currentTime'] = cursor.getLong(cursor.getColumnIndex('currentTime'))
     info['coverUrl'] = cursor.getString(cursor.getColumnIndex('coverUrl'))
     info['episodeListIndex'] = cursor.getLong(cursor.getColumnIndex('episodeListIndex'))
     info['episodeIndex'] = cursor.getLong(cursor.getColumnIndex('episodeIndex'))
     info['episodeName'] = cursor.getString(cursor.getColumnIndex('episodeName'))
     info['videoUrl'] = cursor.getString(cursor.getColumnIndex('videoUrl'))
     info['videoProgress'] = cursor.getLong(cursor.getColumnIndex('videoProgress'))
+    info['accessTime'] = cursor.getLong(cursor.getColumnIndex('accessTime'))
     return info
+  }
+
+  async queryByLink(link: string): Promise<VideoHistoryInfo> {
+    return this.query(this.getPredicates().equalTo('link', link))[0]
+  }
+
+  async save(item: VideoHistoryInfo): Promise<number> {
+    Logger.e(this, 'save item=' + JSON.stringify(item))
+    let info = await this.queryByLink(item.link)
+    Logger.e(this, 'save info=' + JSON.stringify(info))
+    let result;
+    if (info) {
+      result = await this.update(item)
+    } else {
+      result = await this.insert(item)
+    }
+    Logger.e(this, 'saveOrUpdate result=' + result)
+    return result
   }
 
 }

@@ -1,8 +1,8 @@
+import { IjkMediaPlayer } from './IjkPlayer';
 import EpisodeInfo from '../entity/EpisodeInfo';
 import { IJKMediaInfo } from './IjkMediaInfo';
 import { PlayerStatus } from './PlayerStatus';
 import Logger from '../utils/Logger';
-import { IjkMediaPlayer } from "@ohos/ijkplayer";
 import promptAction from '@ohos.promptAction';
 
 export default interface PlayerListener {
@@ -26,7 +26,7 @@ export interface EpisodeChangeListener {
 }
 
 export class PlayerManager {
-  private readonly mIjkMediaPlayer = IjkMediaPlayer.getInstance();
+  private readonly mIjkMediaPlayer = new IjkMediaPlayer();
   private url: string;
   private episode: EpisodeInfo;
   private readonly listeners: PlayerListener[] = []
@@ -210,6 +210,9 @@ export class PlayerManager {
   }
 
   seekTo(value: string) {
+    if (this.mIjkMediaPlayer.isPlaying()) {
+      this.mIjkMediaPlayer.pause()
+    }
     this.setStatus(PlayerStatus.BUFFERING)
     this.mIjkMediaPlayer.seekTo(value);
   }

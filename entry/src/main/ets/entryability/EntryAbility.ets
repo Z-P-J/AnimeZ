@@ -22,6 +22,19 @@ export default class EntryAbility extends UIAbility {
             }
             hilog.info(0x0000, 'testTag', 'Succeeded in loading the content. Data: %{public}s', JSON.stringify(data) ?? '');
         });
+
+        windowStage.getMainWindow((_, window) => {
+            if (window) {
+                window.setWindowLayoutFullScreen(true, null);
+                // 透明状态栏和导航栏
+                window.setWindowSystemBarProperties({
+                    statusBarColor: '#00000000',
+                    statusBarContentColor: '#000000',
+                    navigationBarColor: '#00000000',
+                    navigationBarContentColor: '#000000'
+                }, null);
+            }
+        })
     }
 
     onWindowStageDestroy() {

@@ -1,3 +1,5 @@
+import { DramaList } from '../../entity/HomepageData';
+import HomepageData from '../../entity/HomepageData';
 import Logger from '../../utils/Logger';
 import EpisodeInfo from '../../entity/EpisodeInfo';
 import { CssSelector } from '../../utils/CssSelector';
@@ -11,14 +13,59 @@ import * as DomUtils from 'domutils'
 import { Element, Document, AnyNode } from "domhandler"
 
 const PREFIX_DATA = "var player_aaaa="
+const BASE_URL = 'http://www.bimiacg4.net'
 
 export default class BimiAcgDataSource implements DataSource {
 
     async search(keyword: string, page: number): Promise<VideoInfo[]> {
         let url = "http://www.bimiacg4.net/vod/search/wd/" + encodeURIComponent(keyword) + "/page/" + page
 
-        return this.parseVideoList(await HttpUtils.getHtml(url))
+        let doc = await HttpUtils.getHtml(url)
+        let drama = CssSelector.findFirst(doc, 'ul.drama-module')
+        return this.parseVideoList(drama)
     }
+
+    async getHomepageData(): Promise<HomepageData> {
+        let url = BASE_URL
+        let doc = await HttpUtils.getHtml(url)
+
+        let bannerList = null
+        let categoryList: DramaList[] = []
+        let categorys = CssSelector.find(doc, 'body > section > div.area-drama')
+        for (let drama of categorys) {
+            let header = CssSelector.findFirst(drama, "div.area-header")
+
+            if (bannerList == null) {
+                bannerList = await this.parseVideoList(CssSelector.findFirst(drama, 'ul.drama-module'))
+            } else {
+                categoryList.push({
+                    title: DomUtils.textContent(CssSelector.findFirst(header, "h2.title > b")),
+                    moreUrl: BASE_URL + DomUtils.getAttributeValue(CssSelector.findFirst(header, 'a') as Element, 'href'),
+                    videoList: await this.parseVideoList(CssSelector.findFirst(drama, 'ul.drama-module'))
+                })
+            }
+        }
+
+
+
+//        // 轮播图
+//        // body > section > div:nth-child(3) > div > div > ul
+//        let drama = CssSelector.findFirst(doc, 'body > section > div:nth-child(3) > div > div > ul')
+//
+//
+//        let data: HomepageData = {
+//            bannerList: await this.parseVideoList(drama),
+//        }
+
+        return {
+            bannerList: bannerList,
+            categoryList: categoryList
+        }
+    }
+
+//    getBannerList(): Promise<VideoInfo[]> {
+//
+//    }
 
 
     async getVideoList(page: number): Promise<VideoInfo[]> {
@@ -43,11 +90,12 @@ export default class BimiAcgDataSource implements DataSource {
 //            })
 //        })
 //        return videoList
-        return this.parseVideoList(doc)
+        let drama = CssSelector.findFirst(doc, 'ul.drama-module')
+        return this.parseVideoList(drama)
     }
 
-    private parseVideoList(doc) {
-        let drama = CssSelector.findFirst(doc, 'ul.drama-module')
+    private async parseVideoList(drama): Promise<VideoInfo[]> {
+//        let drama = CssSelector.findFirst(doc, 'ul.drama-module')
         Logger.e(this, 'parseHtml drama=' + drama)
         let elements = CssSelector.find(drama, 'li')
         Logger.e(this, 'parseHtml elements=' + elements)
@@ -69,40 +117,34 @@ export default class BimiAcgDataSource implements DataSource {
     }
 
     async getVideoDetailInfo(url: string): Promise<VideoDetailInfo> {
-        try {
+        let doc = await HttpUtils.getHtml(url);
 
-            let doc = await HttpUtils.getHtml(url);
+        Logger.e(this, 'getVideoDetailInfo 1')
+        let category = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(3) > a")
+        Logger.e(this, 'getVideoDetailInfo 2 category=' + category)
 
-            Logger.e(this, 'getVideoDetailInfo 1')
-            let test = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(3) > a")
-            Logger.e(this, 'getVideoDetailInfo 2 test=' + test)
+        let test = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(4)")
+        Logger.e(this, 'getVideoDetailInfo 3 test=' + test)
 
-            test = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(4)")
-            Logger.e(this, 'getVideoDetailInfo 3 test=' + test)
+        test = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(5)")
+        Logger.e(this, 'getVideoDetailInfo 4 test=' + test)
 
-            test = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(5)")
-            Logger.e(this, 'getVideoDetailInfo 4 test=' + test)
+        test = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(2)")
+        Logger.e(this, 'getVideoDetailInfo 5 test=' + test)
 
-            test = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(2)")
-            Logger.e(this, 'getVideoDetailInfo 5 test=' + test)
-
-            let info: VideoDetailInfo = {
-                title: DomUtils.textContent(CssSelector.findFirst(doc, "div.txt_intro_con > div > h1")),
-                url: '',
-                desc: DomUtils.textContent(CssSelector.findFirst(doc, "li.li_intro")),
-                coverUrl: DomUtils.getAttributeValue(CssSelector.findFirst(doc, "div.poster_placeholder > div > img") as Element, 'src'),
-                category: DomUtils.textContent(CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(3) > a")),
-                director: DomUtils.textContent(CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(4)")),
-                updateTime: DomUtils.textContent(CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(5)")),
-                protagonist: DomUtils.textContent(CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(2)")),
-                episodes: await this.getEpisodes(doc),
-                recommends: await this.getRecommends(doc)
-            }
-            return info
-        } catch (e) {
-            Logger.e(this, 'getVideoDetailInfo error: ' + JSON.stringify(e))
-            throw e;
+        let info: VideoDetailInfo = {
+            title: DomUtils.textContent(CssSelector.findFirst(doc, "div.txt_intro_con > div > h1")),
+            url: '',
+            desc: DomUtils.textContent(CssSelector.findFirst(doc, "li.li_intro")),
+            coverUrl: DomUtils.getAttributeValue(CssSelector.findFirst(doc, "div.poster_placeholder > div > img") as Element, 'src'),
+            category: category == null ? null : DomUtils.textContent(category),
+            director: DomUtils.textContent(CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(4)")),
+            updateTime: DomUtils.textContent(CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(5)")),
+            protagonist: DomUtils.textContent(CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(2)")),
+            episodes: await this.getEpisodes(doc),
+            recommends: await this.getRecommends(doc)
         }
+        return info
     }
 
     async getEpisodes(doc: Document): Promise<EpisodeList[]> {
