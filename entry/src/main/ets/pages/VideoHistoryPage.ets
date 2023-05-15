@@ -1,3 +1,4 @@
+import router from '@ohos.router';
 import VideoTimeUtils from '../player/VideoTimeUtils';
 import { VideoHistoryInfo } from '../entity/VideoHistoryInfo';
 import { VideoHistoryTable } from '../db/impl/VideoHistoryDao';
@@ -15,12 +16,12 @@ struct VideoHistoryPage {
   @State state: number = ViewState.LOADING
   @State errorMessage: string = ''
   @State items: VideoHistoryInfo[] = [
-    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
-    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
-    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0}
+//    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
+//      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
+//    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
+//      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
+//    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
+//      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0}
   ]
 
   aboutToAppear() {
@@ -88,30 +89,28 @@ struct VideoHistoryPage {
 
   @Builder HistoryItem(item: VideoHistoryInfo) {
     Row() {
-      Image($r('app.media.pic_load_failed'))
-//        .alt($r('app.media.pic_load_failed'))
+      Image(item.coverUrl)
+        .alt($r('app.media.pic_load_failed'))
         .height('100%')
         .aspectRatio(1.4)
         .borderRadius(4)
         .borderColor('#cccccc')
 
       Column() {
-        Text('Title')
+        Text(item.title)
           .alignSelf(ItemAlign.Start)
           .fontColor($r('app.color.color_text_major'))
           .fontSize(16)
-
-        Column() {
-          Text(item.episodeName)
-            .alignSelf(ItemAlign.Start)
-            .margin({bottom: 4})
-            .fontSize(12)
-            .fontColor($r('app.color.color_text_minor'))
-          Text(VideoTimeUtils.stringForTime(item.currentTime) + ' / ' + VideoTimeUtils.stringForTime(item.totalTime))
-            .alignSelf(ItemAlign.Start)
-            .fontSize(12)
-            .fontColor($r('app.color.color_text_minor'))
-        }
+        Blank()
+        Text(item.episodeName)
+          .alignSelf(ItemAlign.Start)
+          .margin({bottom: 4})
+          .fontSize(12)
+          .fontColor($r('app.color.color_text_minor'))
+        Text(VideoTimeUtils.stringForTime(item.currentTime) + ' / ' + VideoTimeUtils.stringForTime(item.totalTime))
+          .alignSelf(ItemAlign.Start)
+          .fontSize(12)
+          .fontColor($r('app.color.color_text_minor'))
       }
       .height('100%')
       .margin(8)
@@ -120,6 +119,13 @@ struct VideoHistoryPage {
     .width('100%')
     .height(90)
     .margin({top: 8, bottom: 8})
+    .onClick(() => {
+      router.pushUrl({url: 'pages/VideoDetailPage', params: {
+        url: item.link,
+        title: item.title,
+        cover: item.coverUrl
+      }})
+    })
   }
 
   private loadHistoryList() {

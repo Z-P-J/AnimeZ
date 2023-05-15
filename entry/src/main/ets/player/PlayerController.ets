@@ -17,7 +17,7 @@ export struct PlayerController {
   @State title: string = ''
 
   private playerManager: PlayerManager = null;
-  private updateProgressTimer: number = -1;
+//  private updateProgressTimer: number = -1;
   private showControllerTimer: number = -1;
 
   aboutToAppear() {
@@ -28,11 +28,14 @@ export struct PlayerController {
       this.playerManager.addListener((status) => {
         this.playerStatus = status;
         Logger.e(this, 'PlayerController status=' + status + " that.status=" + this.playerStatus)
-        if (status == PlayerStatus.PLAY) {
-          this.startProgress()
-        } else {
-          this.stopProgress()
-        }
+//        if (status == PlayerStatus.PLAY) {
+//          this.startProgress()
+//        } else {
+//          this.stopProgress()
+//        }
+      })
+      this.playerManager.addProgressListener((totalTime, currentTime) => {
+        this.setProgress(totalTime, currentTime)
       })
       this.playerManager.setEpisodeChangeListener((episode) => {
         this.title = episode.desc
@@ -43,7 +46,7 @@ export struct PlayerController {
   }
 
   aboutToDisappear() {
-    this.stopProgress()
+    this.playerManager.destroy()
     if (this.showControllerTimer >= 0) {
       clearTimeout(this.showControllerTimer)
       this.showControllerTimer = -1;
@@ -150,8 +153,6 @@ export struct PlayerController {
                 .enabled(this.slideEnable)
                 .onChange((value: number, mode: SliderChangeMode) => {
                   if (mode == SliderChangeMode.End || mode == SliderChangeMode.Click) {
-                    this.playerStatus
-                    this.stopProgress()
                     this.progress = value / 100
                     let seekValue = this.progress * this.playerManager.getDuration();
                     Logger.e(this, 'Slider onChange seekValue=' + seekValue + " duration=" + this.playerManager.getDuration())
@@ -200,30 +201,28 @@ export struct PlayerController {
 
 
 
-  private startProgress() {
-    this.stopProgress()
-    this.updateProgressTimer = setInterval(() => {
-      if (this.updateProgressTimer < 0) {
-        return
-      }
-      this.setProgress();
-    }, 1000);
-    Logger.e(this, 'startProgress updateProgressTimer=' + this.updateProgressTimer)
-  }
+//  private startProgress() {
+//    this.stopProgress()
+//    this.updateProgressTimer = setInterval(() => {
+//      if (this.updateProgressTimer < 0) {
+//        return
+//      }
+//      this.setProgress();
+//    }, 1000);
+//    Logger.e(this, 'startProgress updateProgressTimer=' + this.updateProgressTimer)
+//  }
+//
+//  private stopProgress() {
+//    if (this.updateProgressTimer < 0) {
+//      return
+//    }
+//    let timer = this.updateProgressTimer;
+//    this.updateProgressTimer = -1
+//    clearInterval(timer)
+//  }
 
-  private stopProgress() {
-    if (this.updateProgressTimer < 0) {
-      return
-    }
-    let timer = this.updateProgressTimer;
-    this.updateProgressTimer = -1
-    clearInterval(timer)
-  }
 
-
-  private setProgress() {
-    let position = this.playerManager.getCurrentPosition();
-    let duration = this.playerManager.getDuration();
+  private setProgress(duration: number, position: number) {
     let pos = 0;
     if (duration > 0) {
       this.slideEnable = true;

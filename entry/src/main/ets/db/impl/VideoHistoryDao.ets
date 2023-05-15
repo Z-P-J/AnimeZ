@@ -58,7 +58,8 @@ export class VideoHistoryTable extends AbsTable<VideoHistoryInfo> {
   }
 
   async queryByLink(link: string): Promise<VideoHistoryInfo> {
-    return this.query(this.getPredicates().equalTo('link', link))[0]
+    let items = await this.query(this.getPredicates().equalTo('link', link))
+    return items[0]
   }
 
   async save(item: VideoHistoryInfo): Promise<number> {

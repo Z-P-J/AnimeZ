@@ -89,7 +89,7 @@ export default abstract class AbsTable<T> implements ITable {
    * @param item
    */
   async delete(item: T): Promise<number> {
-    let predicates = new rdb.RdbPredicates(this.tableName)
+    let predicates = this.getPredicates()
       .equalTo(this.getColumnId(), this.getEntityId(item))
 
     let db = await this.futureDb
@@ -103,10 +103,11 @@ export default abstract class AbsTable<T> implements ITable {
   async update(item: T, predicates?: rdb.RdbPredicates): Promise<number> {
     let bucket = {}
     this.bindToValuesBucket(bucket, item)
+    Logger.e(this, 'update bucket=' + JSON.stringify(bucket))
+    bucket[this.getColumnId()] = undefined
     let db = await this.futureDb
     if (!predicates) {
-      predicates = new rdb.RdbPredicates(this.tableName)
-        .equalTo(this.getColumnId(), this.getEntityId(item))
+      predicates = this.getPredicates().equalTo(this.getColumnId(), this.getEntityId(item))
     }
     return db.update(bucket, predicates)
   }

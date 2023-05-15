@@ -67,12 +67,14 @@ export struct VideoList {
     .aspectRatio(0.618)
     .onClick(() => {
       promptAction.showToast({ message: item.url })
-      router.pushUrl({ url: 'pages/VideoDetailPage', params: {
-        url: item.url,
-        title: item.title,
-        cover: item.imgUrl
-      } })
+      router.pushUrl({
+        url: 'pages/VideoDetailPage',
+        params: {
+          url: item.url,
+          title: item.title,
+          cover: item.imgUrl
+        }
+      })
     })
   }
-
 }

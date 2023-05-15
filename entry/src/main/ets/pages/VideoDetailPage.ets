@@ -250,12 +250,20 @@ struct VideoDetailPage {
           }
         })
 
+        this.playerManager.addProgressListener((totalTime, currentTime) => {
+          Logger.e(this, 'totalTime=' + totalTime + ' currentTime=' + currentTime)
+          if (this.historyInfo) {
+            this.historyInfo.totalTime = totalTime
+            this.historyInfo.currentTime = currentTime
+            this.saveHistoryInfo()
+          }
+        })
+
         this.videoDetailInfo = info
         this.state = ViewState.CONTENT
 
         this.historyInfo.title = this.videoDetailInfo.title
         this.historyInfo.coverUrl = this.videoDetailInfo.coverUrl
-
 
 
         this.playVideo(this.episodeListIndex, this.episodeIndex)

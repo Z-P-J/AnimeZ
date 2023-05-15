@@ -5,6 +5,7 @@ import { VideoHistoryInfo } from '../entity/VideoHistoryInfo';
 import ImmersionBarSpace from './ImmersionBarSpace';
 import { Recommend } from './home/Recommend';
 import router from '@ohos.router';
+import promptAction from '@ohos.promptAction';
 
 /**
  * 我的页面
@@ -12,12 +13,12 @@ import router from '@ohos.router';
 @Component
 export struct MyPage {
   @State items: VideoHistoryInfo[] = [
-  //    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-  //      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
-  //    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-  //      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
-  //    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-  //      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0}
+//      {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
+//        episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
+//      {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
+//        episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
+//      {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
+//        episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0}
   ]
   //  @State yOffset: number = 0
   //  @State bgScale: number = 1
@@ -77,9 +78,16 @@ export struct MyPage {
 
           Column() {
             Row() {
+              Row()
+                .height(14)
+                .width(6)
+                .margin({ right: 2 })
+                .borderRadius(4)
+                .backgroundColor($r('app.color.primary_color'))
               Text('观看历史')
                 .fontColor($r('app.color.color_text_major'))
-                .fontSize(14)
+                .fontSize(16)
+                .fontWeight(500)
 
               Blank()
 
@@ -101,14 +109,26 @@ export struct MyPage {
                   ListItem() {
                     this.HistoryItem(item)
                   }
+                  .height('100%')
+                  .aspectRatio(1)
                 })
               }
               .listDirection(Axis.Horizontal)
               .padding({ left: 16, right: 16 })
-              .height(100)
               .width('100%')
+              .aspectRatio(2.8)
             } else {
-              Text('暂无记录').fontSize(16).fontColor($r('app.color.color_text_major')).height(100)
+              Column() {
+                Image($r('app.media.ic_empty'))
+                  .objectFit(ImageFit.Contain)
+                  .height(56)
+                  .width(56)
+                Text('暂无记录').fontSize(14)
+                  .margin({top: 8})
+                  .fontColor($r('app.color.color_text_normal'))
+              }
+              .padding({top: 16, bottom: 32})
+              .width('100%')
             }
           }
           .backgroundColor($r('app.color.background_color'))
@@ -137,6 +157,9 @@ export struct MyPage {
     }
     .width('100%')
     .height('100%')
+    .onAppear(() => {
+      promptAction.showToast({message: 'onAppear'})
+    })
   }
 
   @Builder Header() {
@@ -201,18 +224,28 @@ export struct MyPage {
     Column() {
       Image(item.coverUrl)
         .alt($r('app.media.pic_load_failed'))
-        .width('30%')
-        .aspectRatio(1.4)
         .borderRadius(4)
+        .width('100%')
+        .layoutWeight(1)
         .borderColor('#cccccc')
 
       Text(item.title)
         .alignSelf(ItemAlign.Start)
-        .margin({ top: 8 })
+        .margin({ top: 8, bottom: 8 })
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .fontColor($r('app.color.color_text_minor'))
+        .fontSize(14)
     }
+    .width('100%')
+    .height('100%')
+    .onClick(() => {
+      router.pushUrl({url: 'pages/VideoDetailPage', params: {
+        url: item.link,
+        title: item.title,
+        cover: item.coverUrl
+      }})
+    })
   }
 
 }

@@ -13,6 +13,12 @@ export default interface PlayerListener {
 
 }
 
+export interface ProgressListener {
+
+  (totalTime: number, currentTime: number): void
+
+}
+
 export interface VideoSizeChangeListener {
 
   (width: number, height: number, sar_num: number, sar_den: number): void
@@ -26,13 +32,17 @@ export interface EpisodeChangeListener {
 }
 
 export class PlayerManager {
-  private readonly mIjkMediaPlayer = new IjkMediaPlayer();
-  private url: string;
-  private episode: EpisodeInfo;
+  private readonly mIjkMediaPlayer = new IjkMediaPlayer()
+  private url: string
+  private episode: EpisodeInfo
   private readonly listeners: PlayerListener[] = []
   private status: number = PlayerStatus.INIT
-  private videoSizeChangeListener: VideoSizeChangeListener;
+  private videoSizeChangeListener: VideoSizeChangeListener
   private episodeChangeListener: EpisodeChangeListener
+
+  private updateProgressTimer: number = -1
+
+  private readonly progressListeners: ProgressListener[] = []
 
   init(context: object) {
 
@@ -230,8 +240,15 @@ export class PlayerManager {
       return
     }
     this.status = status;
+
+    if (status == PlayerStatus.PLAY) {
+      this.startProgress()
+    } else {
+      this.stopProgress()
+    }
+
     for (let listener of this.listeners) {
-      listener.call(this, status)
+      listener(status)
     }
   }
 
@@ -256,12 +273,24 @@ export class PlayerManager {
     // TODO
   }
 
+  addProgressListener(listener: ProgressListener) {
+    this.progressListeners.push(listener)
+  }
+
+  removeProgressListener(listener: ProgressListener) {
+    // TODO
+  }
+
   setVideoSizeChangedListener(videoSizeChangeListener: VideoSizeChangeListener) {
     this.videoSizeChangeListener = videoSizeChangeListener
   }
 
   setEpisodeChangeListener(episodeChangeListener: EpisodeChangeListener) {
     this.episodeChangeListener = episodeChangeListener
+  }
+
+  destroy() {
+    this.stopProgress()
   }
 
   protected onPrepared() {
@@ -290,6 +319,30 @@ export class PlayerManager {
     if (this.videoSizeChangeListener) {
       this.videoSizeChangeListener.call(this, width, height, sar_num, sar_den)
     }
+  }
+
+  private startProgress() {
+    this.stopProgress()
+    this.updateProgressTimer = setInterval(() => {
+      if (this.updateProgressTimer < 0) {
+        return
+      }
+      let totalTime = this.mIjkMediaPlayer.getDuration()
+      let currentTime = this.mIjkMediaPlayer.getCurrentPosition()
+      this.progressListeners.forEach((listener) => {
+        listener(totalTime, currentTime)
+      })
+    }, 1000);
+    Logger.e(this, 'startProgress updateProgressTimer=' + this.updateProgressTimer)
+  }
+
+  private stopProgress() {
+    if (this.updateProgressTimer < 0) {
+      return
+    }
+    let timer = this.updateProgressTimer;
+    this.updateProgressTimer = -1
+    clearInterval(timer)
   }
 
 }
