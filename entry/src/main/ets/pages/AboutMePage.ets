@@ -1,3 +1,4 @@
+import { getTheme } from '../utils/Themes';
 import promptAction from '@ohos.promptAction'
 import { SettingGroup, SettingsContainer } from '../components/Settings'
 import TitleBar from '../components/TitleBar'
@@ -7,6 +8,8 @@ import TransitionHelper from '../utils/TransitionHelper'
 @Entry
 @Component
 struct AboutMePage {
+
+  @StorageLink('theme') theme: number = 0
 
   private settings: SettingGroup[] = [
     {
@@ -57,12 +60,12 @@ struct AboutMePage {
             .borderColor('#cccccc')
           Text('Z-P-J')
             .fontSize(18)
-            .fontColor($r('app.color.color_text_major'))
+            .fontColor(getTheme(this.theme).color_text_major)
             .fontWeight(500)
             .padding({ top: 12 })
           Text('开源鸿蒙应用开发爱好者，为开源鸿蒙应用生态作出微薄的贡献')
             .fontSize(14)
-            .fontColor($r('app.color.color_text_minor'))
+            .fontColor(getTheme(this.theme).color_text_minor)
             .margin({ top: 8, bottom: 56 })
             .textAlign(TextAlign.Center)
             .constraintSize({
@@ -88,7 +91,7 @@ struct AboutMePage {
 
       ImmersionBarSpace()
     }
-    .backgroundColor($r('app.color.background_color_accent'))
+    .backgroundColor(getTheme(this.theme).background_color_accent)
     .width('100%')
     .height('100%')
   }

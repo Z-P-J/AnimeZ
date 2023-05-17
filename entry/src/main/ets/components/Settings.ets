@@ -1,3 +1,4 @@
+import { getTheme } from '../utils/Themes';
 import { RadioDialog } from './dialog/RadioDialog';
 import DataStore from '../utils/DataStore';
 import Logger from '../utils/Logger';
@@ -34,6 +35,7 @@ export interface SettingGroup {
 @Preview
 @Component
 struct SettingRow {
+  @StorageLink('theme') theme: number = 0
   @State info: string = ''
   private setting: SettingItem = null
   private infoRes: ResourceStr
@@ -52,7 +54,7 @@ struct SettingRow {
           .width(24)
           .height(24)
           .margin({ right: 16 })
-          .colorBlend(this.setting.iconBlendColor)
+          .fillColor(this.setting.iconBlendColor)
           .objectFit(ImageFit.Contain)
       }
 
@@ -60,7 +62,7 @@ struct SettingRow {
         Text(this.setting.title)
           .fontSize(15)
           .fontWeight(450)
-          .fontColor($r('app.color.color_text_major'))
+          .fontColor(getTheme(this.theme).color_text_major)
           .align(Alignment.Start)
           .width('100%')
         if (this.info) {
@@ -68,57 +70,25 @@ struct SettingRow {
             .fontSize(12)
             .fontWeight(350)
             .margin({ top: 4 })
-            .fontColor($r('app.color.color_text_minor'))
+            .fontColor(getTheme(this.theme).color_text_minor)
             .align(Alignment.Start)
             .width('100%')
-        } else {
+        } else if (this.infoRes) {
           Text(this.infoRes)
             .fontSize(12)
             .fontWeight(350)
             .margin({ top: 4 })
-            .fontColor($r('app.color.color_text_minor'))
+            .fontColor(getTheme(this.theme).color_text_minor)
             .align(Alignment.Start)
             .width('100%')
         }
       }
       .layoutWeight(1)
-
-
-      //      if (this.setting.preference) {
-      //        if (this.setting.preference.type === 'switch') {
-      //          Toggle({type: ToggleType.Switch, isOn: this.setting.preference.defaultValue})
-      //            .selectedColor($r('app.color.primary_color'))
-      //            .hitTestBehavior(HitTestMode.Transparent)
-      ////            .onChange((isOn) => {
-      ////              this.isOn = this.setting.isChecked = isOn
-      ////              if (this.setting.onCheckChanged) {
-      ////                this.setting.onCheckChanged(this.setting.isChecked)
-      ////              }
-      ////            })
-      //        } else if (this.setting.preference.type === 'radio') {
-      //          Image($r('app.media.ic_enter'))
-      //            .width(18)
-      //            .height(24)
-      //            .objectFit(ImageFit.Contain)
-      //            .colorBlend($r('app.color.color_text_normal'))
-      //        }
-      //
-      //      } else {
-      //        if (this.setting.onClick) {
-      //          Image($r('app.media.ic_enter'))
-      //            .width(18)
-      //            .height(24)
-      //            .objectFit(ImageFit.Contain)
-      //            .colorBlend($r('app.color.color_text_normal'))
-      //        }
-      //      }
-
       if (this.setting.onClick) {
         Image($r('app.media.ic_enter'))
           .width(18)
           .height(24)
           .objectFit(ImageFit.Contain)
-          .colorBlend($r('app.color.color_text_normal'))
       }
 
       Blank()
@@ -139,6 +109,7 @@ struct SettingRow {
 @Preview
 @Component
 struct ToggleSettingRow {
+  @StorageLink('theme') theme: number = 0
   @State setting: SettingItem = null
   @State isOn: boolean = false
   @State rowWidth: number = 0
@@ -157,7 +128,7 @@ struct ToggleSettingRow {
           .width(24)
           .height(24)
           .margin({ right: 16 })
-          .colorBlend(this.setting.iconBlendColor)
+          .fillColor(this.setting.iconBlendColor)
           .objectFit(ImageFit.Contain)
       }
 
@@ -165,21 +136,21 @@ struct ToggleSettingRow {
         Text(this.setting.title)
           .fontSize(15)
           .fontWeight(450)
-          .fontColor($r('app.color.color_text_major'))
+          .fontColor(getTheme(this.theme).color_text_major)
           .align(Alignment.Start)
           .width('100%')
         Text(this.setting.info)
           .fontSize(12)
           .fontWeight(350)
           .margin({ top: 4 })
-          .fontColor($r('app.color.color_text_minor'))
+          .fontColor(getTheme(this.theme).color_text_minor)
           .align(Alignment.Start)
           .width('100%')
       }
       .layoutWeight(1)
 
       Toggle({ type: ToggleType.Switch, isOn: this.isOn })
-        .selectedColor($r('app.color.primary_color'))
+        .selectedColor(getTheme(this.theme).primary_color)
         .hitTestBehavior(HitTestMode.Transparent)
         .responseRegion({
           x: -this.toggleX,
@@ -212,6 +183,7 @@ struct ToggleSettingRow {
 @Preview
 @Component
 struct RadioSettingRow {
+  @StorageLink('theme') theme: number = 0
   @State setting: SettingItem = null
   @State index: number = 0
   @State info: string = ''
@@ -255,7 +227,7 @@ struct RadioSettingRow {
           .width(24)
           .height(24)
           .margin({ right: 16 })
-          .colorBlend(this.setting.iconBlendColor)
+          .fillColor(this.setting.iconBlendColor)
           .objectFit(ImageFit.Contain)
       }
 
@@ -263,14 +235,14 @@ struct RadioSettingRow {
         Text(this.setting.title)
           .fontSize(15)
           .fontWeight(450)
-          .fontColor($r('app.color.color_text_major'))
+          .fontColor(getTheme(this.theme).color_text_major)
           .align(Alignment.Start)
           .width('100%')
         Text(this.info)
           .fontSize(12)
           .fontWeight(350)
           .margin({ top: 4 })
-          .fontColor($r('app.color.color_text_minor'))
+          .fontColor(getTheme(this.theme).color_text_minor)
           .align(Alignment.Start)
           .width('100%')
       }
@@ -280,7 +252,6 @@ struct RadioSettingRow {
         .width(18)
         .height(24)
         .objectFit(ImageFit.Contain)
-        .colorBlend($r('app.color.color_text_normal'))
 
       Blank()
     }
@@ -297,6 +268,7 @@ struct RadioSettingRow {
 
 @Component
 export struct SettingsContainer {
+  @StorageLink('theme') theme: number = 0
   private group: SettingGroup
 
   build() {
@@ -304,13 +276,13 @@ export struct SettingsContainer {
       if (this.group.title) {
         Row() {
           Row()
-            .backgroundColor($r('app.color.primary_color'))
+            .backgroundColor(getTheme(this.theme).primary_color)
             .height(14)
             .width(6)
             .margin({ right: 2 })
             .borderRadius(4)
           Text(this.group.title)
-            .fontColor($r('app.color.color_text_major'))
+            .fontColor(getTheme(this.theme).color_text_major)
             .fontSize(16)
             .fontWeight(FontWeight.Bold)
 
@@ -334,7 +306,7 @@ export struct SettingsContainer {
         }
       })
     }
-    .backgroundColor($r('app.color.background_color'))
+    .backgroundColor(getTheme(this.theme).background_color)
     .borderRadius(16)
   }
 }

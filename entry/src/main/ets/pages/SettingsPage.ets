@@ -1,3 +1,4 @@
+import { getTheme } from '../utils/Themes';
 import { RadioDialog } from '../components/dialog/RadioDialog';
 import DataStore from '../utils/DataStore';
 import { SliderDialog } from '../components/dialog/SliderDialog';
@@ -12,6 +13,8 @@ import TransitionHelper from '../utils/TransitionHelper'
 @Entry
 @Component
 struct SettingsPage {
+
+  @StorageLink('theme') theme: number = 0
 
   private settings: SettingGroup[] = [
     {
@@ -169,7 +172,7 @@ struct SettingsPage {
 
       ImmersionBarSpace()
     }
-    .backgroundColor($r('app.color.background_color_accent'))
+    .backgroundColor(getTheme(this.theme).background_color_accent)
     .width('100%')
     .height('100%')
   }

@@ -34,11 +34,37 @@
     },
     {
       "name": "background_color_dark",
-      "value": "#FAFAFA"
+      "value": "#FFF3F3F3"
     },
     {
       "name": "background_color_accent",
       "value": "#F9FAFC"
+    },
+
+
+    {
+      "name": "color_text_major_night",
+      "value": "#EAEEF1"
+    },
+    {
+      "name": "color_text_normal_night",
+      "value": "#f8f8f8"
+    },
+    {
+      "name": "color_text_minor_night",
+      "value": "#AFB2B7"
+    },
+    {
+      "name": "background_color_night",
+      "value": "#1C1C1C"
+    },
+    {
+      "name": "background_color_dark_night",
+      "value": "#303030"
+    },
+    {
+      "name": "background_color_accent_night",
+      "value": "#0F0F0F"
     }
   ]
 }

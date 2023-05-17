@@ -1,9 +1,11 @@
+import { getTheme } from '../utils/Themes';
 import promptAction from '@ohos.promptAction';
 import router from '@ohos.router';
 import VideoInfo from '../entity/VideoInfo';
 
 @Component
 export struct VideoList {
+  @StorageLink('theme') theme: number = 0
   videoList: VideoInfo[] = []
   private scrollable: boolean = true
 
@@ -42,6 +44,7 @@ export struct VideoList {
       if (item.imgUrl) {
         Image(item.imgUrl)
           .alt($r('app.media.pic_load_failed'))
+          .objectFit(ImageFit.Cover)
           .borderRadius({ topLeft: 8, topRight: 8 })
           .width('100%')
           .layoutWeight(1)
@@ -55,6 +58,7 @@ export struct VideoList {
         .height(40)
         .fontSize(12)
         .maxLines(2)
+        .fontColor(getTheme(this.theme).color_text_major)
         .padding({ left: 2, right: 2 })
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .textAlign(TextAlign.Center)
@@ -62,8 +66,8 @@ export struct VideoList {
     }
     .borderRadius(8)
     .borderWidth(2)
-    .borderColor($r('app.color.background_color_dark'))
-    .backgroundColor($r('app.color.background_color'))
+    .borderColor(getTheme(this.theme).background_color_dark)
+    .backgroundColor(getTheme(this.theme).background_color)
     .aspectRatio(0.618)
     .onClick(() => {
       promptAction.showToast({ message: item.url })

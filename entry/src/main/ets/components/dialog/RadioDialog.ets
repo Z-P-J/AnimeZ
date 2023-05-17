@@ -1,7 +1,9 @@
+import { getTheme } from '../../utils/Themes';
 import DataStore from '../../utils/DataStore';
 
 @CustomDialog
 export struct RadioDialog {
+  @StorageLink('theme') theme: number = 0
   @State checkIndex: number = 1
   private controller: CustomDialogController
   private title: string
@@ -17,6 +19,7 @@ export struct RadioDialog {
     Column() {
       Text(this.title)
         .fontSize(18)
+        .fontColor(getTheme(this.theme).color_text_major)
         .fontWeight(FontWeight.Medium)
         .margin({ left: 16, top: 16 })
         .alignSelf(ItemAlign.Start)
@@ -36,7 +39,7 @@ export struct RadioDialog {
                 }
               })
             Text(item).fontSize(14)
-              .fontColor($r('app.color.color_text_major'))
+              .fontColor(getTheme(this.theme).color_text_major)
           }
           .width('100%')
           .onClick(() => {
@@ -80,7 +83,7 @@ export struct RadioDialog {
           .layoutWeight(1)
           .textAlign(TextAlign.Center)
           .fontSize(14)
-          .fontColor($r('app.color.color_text_normal'))
+          .fontColor(getTheme(this.theme).color_text_normal)
           .onClick(() => {
             this.controller.close(); // 关闭弹窗
           })
@@ -104,7 +107,7 @@ export struct RadioDialog {
       .height(46)
       .width('100%')
     }
-    .backgroundColor($r('app.color.background_color'))
+    .backgroundColor(getTheme(this.theme).background_color)
     .borderRadius(12)
     .width('80%')
   }

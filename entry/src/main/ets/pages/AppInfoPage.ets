@@ -1,3 +1,4 @@
+import { getTheme } from '../utils/Themes';
 import router from '@ohos.router'
 import promptAction from '@ohos.promptAction'
 import { SettingGroup, SettingsContainer } from '../components/Settings'
@@ -8,6 +9,8 @@ import TransitionHelper from '../utils/TransitionHelper'
 @Entry
 @Component
 struct AppInfoPage {
+
+  @StorageLink('theme') theme: number = 0
 
   private settings: SettingGroup[] = [
     {
@@ -62,12 +65,12 @@ struct AppInfoPage {
             .margin({top: 56})
           Text($r('app.string.EntryAbility_label'))
             .fontSize(18)
-            .fontColor($r('app.color.color_text_major'))
+            .fontColor(getTheme(this.theme).color_text_major)
             .fontWeight(500)
             .padding({ top: 12 })
           Text($r('app.string.module_desc'))
             .fontSize(14)
-            .fontColor($r('app.color.color_text_minor'))
+            .fontColor(getTheme(this.theme).color_text_minor)
             .margin({ top: 8, bottom: 56 })
           ForEach(this.settings, (group, index) => {
             SettingsContainer({ group: group })
@@ -89,7 +92,7 @@ struct AppInfoPage {
 
       ImmersionBarSpace()
     }
-    .backgroundColor($r('app.color.background_color_accent'))
+    .backgroundColor(getTheme(this.theme).background_color_accent)
     .width('100%')
     .height('100%')
   }

@@ -1,3 +1,4 @@
+import { getTheme } from '../../utils/Themes';
 import { DramaList } from '../../entity/HomepageData';
 import HomepageData from '../../entity/HomepageData';
 import router from '@ohos.router';
@@ -14,7 +15,7 @@ import { VideoList } from '../VideoList';
  */
 @Component
 export struct Recommend {
-
+  @StorageLink('theme') theme: number = 0
   @State bannerList: VideoInfo[] = []
   @State categoryList: DramaList[] = []
   @State state: number = ViewState.LOADING
@@ -88,8 +89,9 @@ export struct Recommend {
     Stack({alignContent: Alignment.BottomStart}) {
       Image(item.imgUrl)
         .alt($r('app.media.pic_load_failed'))
+        .objectFit(ImageFit.Cover)
         .borderWidth(2)
-        .borderColor($r('app.color.background_color_dark'))
+        .borderColor(getTheme(this.theme).background_color_dark)
         .brightness(0.7)
         .borderRadius(12)
 
@@ -120,9 +122,9 @@ export struct Recommend {
         .width(6)
         .margin({ right: 2 })
         .borderRadius(4)
-        .backgroundColor($r('app.color.primary_color'))
+        .backgroundColor(getTheme(this.theme).primary_color)
       Text(title)
-        .fontColor($r('app.color.color_text_major'))
+        .fontColor(getTheme(this.theme).color_text_major)
         .fontSize(16)
         .fontWeight(500)
 

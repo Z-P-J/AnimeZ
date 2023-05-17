@@ -105,7 +105,7 @@ export struct PlayerController {
           // Controller
           Column() {
             Row() {
-              Image($r("app.media.ic_back"))
+              Image($r("app.media.ic_arrow_left"))
                 .width(24)
                 .height(24)
                 .fillColor(Color.White)
@@ -123,7 +123,6 @@ export struct PlayerController {
                 .align(Alignment.Start)
               Blank()
             }
-            .height(56)
             .width('100%')
 
             Row() {

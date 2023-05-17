@@ -1,8 +1,7 @@
 import { getTheme } from '../utils/Themes';
-import router from '@ohos.router';
-import VideoTimeUtils from '../player/VideoTimeUtils';
-import { VideoHistoryInfo } from '../entity/VideoHistoryInfo';
-import { VideoHistoryTable } from '../db/impl/VideoHistoryDao';
+import { VideoCollectionTable } from '../db/impl/VideoCollectionDao';
+import VideoCollectionInfo from '../entity/VideoCollectionInfo';
+import router from '@ohos.router'
 import SQLite from '../db/SQLite';
 import { ViewState } from '../components/StateView';
 import StateView from '../components/StateView';
@@ -12,21 +11,18 @@ import TransitionHelper from '../utils/TransitionHelper';
 
 @Entry
 @Component
-struct VideoHistoryPage {
+struct VideoCollectionPage {
   @StorageLink('theme') theme: number = 0
-  @State state: number = ViewState.CONTENT
+  @State state: number = ViewState.LOADING
   @State errorMessage: string = ''
-  @State items: VideoHistoryInfo[] = [
-    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
-    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
-    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0}
+  @State items: VideoCollectionInfo[] = [
+//    { src: '11', title: 'Title', coverUrl: '11', accessTime: 0 },
+//    { src: '11', title: 'Title', coverUrl: '11', accessTime: 0 },
+//    { src: '11', title: 'Title', coverUrl: '11', accessTime: 0 }
   ]
 
   aboutToAppear() {
-    this.loadHistoryList()
+    this.loadCollectionList()
   }
 
   pageTransition() {
@@ -46,8 +42,7 @@ struct VideoHistoryPage {
   build() {
     Column() {
       ImmersionBarSpace()
-      TitleBar({ title: '观看历史' })
-
+      TitleBar({ title: '我的收藏' })
       StateView(
         {
           state: $state,
@@ -57,15 +52,13 @@ struct VideoHistoryPage {
           },
           custom: null,
           onRetry: () => {
-            this.loadHistoryList()
+            this.loadCollectionList()
             return true;
           }
         }
       )
         .width('100%')
         .layoutWeight(1)
-
-
       ImmersionBarSpace()
     }
     .backgroundColor(getTheme(this.theme).background_color_accent)
@@ -77,7 +70,7 @@ struct VideoHistoryPage {
     List() {
       ForEach(this.items, (item) => {
         ListItem() {
-          this.HistoryItem(item)
+          this.CollectionItem(item)
         }
       })
     }
@@ -88,7 +81,7 @@ struct VideoHistoryPage {
     .padding(16)
   }
 
-  @Builder HistoryItem(item: VideoHistoryInfo) {
+  @Builder CollectionItem(item: VideoCollectionInfo) {
     Row() {
       Image(item.coverUrl)
         .alt($r('app.media.pic_load_failed'))
@@ -97,41 +90,35 @@ struct VideoHistoryPage {
         .aspectRatio(1.5)
         .borderRadius(8)
         .borderColor('#cccccc')
-
       Column() {
         Text(item.title)
           .alignSelf(ItemAlign.Start)
           .fontColor(getTheme(this.theme).color_text_major)
           .fontSize(16)
-        Blank()
-        Text(item.episodeName)
+        Text(new Date(item.accessTime).toLocaleDateString())
           .alignSelf(ItemAlign.Start)
-          .margin({bottom: 4})
-          .fontSize(12)
-          .fontColor(getTheme(this.theme).color_text_minor)
-        Text(VideoTimeUtils.stringForTime(item.currentTime) + ' / ' + VideoTimeUtils.stringForTime(item.totalTime))
-          .alignSelf(ItemAlign.Start)
+          .margin({ top: 4 })
           .fontSize(12)
           .fontColor(getTheme(this.theme).color_text_minor)
       }
       .height('100%')
       .margin(8)
-      .justifyContent(FlexAlign.SpaceBetween)
+      .justifyContent(FlexAlign.Center)
     }
     .width('100%')
     .height(80)
-    .margin({top: 8, bottom: 8})
+    .margin({ top: 8, bottom: 8 })
     .onClick(() => {
-      router.pushUrl({url: 'pages/VideoDetailPage', params: {
-        url: item.link,
+      router.pushUrl({ url: 'pages/VideoDetailPage', params: {
+        url: item.src,
         title: item.title,
         cover: item.coverUrl
-      }})
+      } })
     })
   }
 
-  private loadHistoryList() {
-    SQLite.with(VideoHistoryTable)
+  private loadCollectionList() {
+    SQLite.with(VideoCollectionTable)
       .queryAll()
       .then((items) => {
         this.items = items

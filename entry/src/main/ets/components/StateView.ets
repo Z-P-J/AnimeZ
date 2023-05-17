@@ -1,3 +1,4 @@
+import { getTheme } from '../utils/Themes';
 export enum ViewState {
 
   LOADING = 0,
@@ -10,6 +11,7 @@ export enum ViewState {
 
 @Component
 export default struct StateView {
+  @StorageLink('theme') theme: number = 0
   @Link state: number
   @Link errorMessage: string
   @BuilderParam content: () => any;
@@ -45,6 +47,7 @@ export default struct StateView {
         }
       }
     }
+    .backgroundColor(getTheme(this.theme).background_color_accent)
     .width('100%')
     .height('100%')
   }
@@ -59,7 +62,7 @@ export default struct StateView {
         Text(message)
           .fontSize(12)
           .constraintSize({ maxWidth: '80%' })
-          .fontColor($r('app.color.color_text_minor'))
+          .fontColor(getTheme(this.theme).color_text_minor)
           .margin({ top: 12 })
           .fontWeight(FontWeight.Normal)
       }

@@ -1,3 +1,6 @@
+import { getTheme } from '../utils/Themes';
+import { VideoCollectionTable } from '../db/impl/VideoCollectionDao';
+import VideoCollectionInfo from '../entity/VideoCollectionInfo';
 import SystemBarUtils from '../utils/SystemBarUtils';
 import { PlayerStatus } from '../player/PlayerStatus';
 import { VideoHistoryTable } from '../db/impl/VideoHistoryDao';
@@ -24,6 +27,7 @@ import window from '@ohos.window';
 @Entry
 @Component
 struct VideoDetailPage {
+  @StorageLink('theme') theme: number = 0
   @State videoDetailInfo: VideoDetailInfo = null
   @StorageLink('data_source_bimiacg') dataSource: DataSource = new BimiAcgDataSource()
   @State episodeListIndex: number = 0;
@@ -33,12 +37,11 @@ struct VideoDetailPage {
   private playerManager: PlayerManager = new PlayerManager()
   private url: string
   private historyInfo: VideoHistoryInfo
+  @State collectionInfo: VideoCollectionInfo = null
 
   aboutToAppear() {
     this.url = router.getParams()['url']
-    //    this.url = 'http://www.bimiacg4.net/bangumi/bi/8552/'
-    promptAction.showToast({ message: 'url=' + this.url })
-
+//        this.url = 'http://www.bimiacg4.net/bangumi/bi/8552/'
     SQLite.with(VideoHistoryTable)
       .queryByLink(this.url)
       .then((info) => {
@@ -53,6 +56,15 @@ struct VideoDetailPage {
         Logger.e(this, 'query info by link error! e=' + JSON.stringify(e))
         this.historyInfo = VideoHistoryInfo.createByLink(this.url)
         this.getDetailInfo()
+      })
+
+    SQLite.with(VideoCollectionTable)
+      .queryBySrc(this.url)
+      .then((info) => {
+        this.collectionInfo = info
+      })
+      .catch((e) => {
+        Logger.e(this, 'query collection info by link error! e=' + JSON.stringify(e))
       })
   }
 
@@ -150,14 +162,53 @@ struct VideoDetailPage {
             .align(Alignment.Start)
             .maxLines(2)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
-          Text("收藏")
-            .fontSize(12)
-            .padding({ top: 8, bottom: 8, left: 16, right: 16 })
-            .borderRadius(4)
-            .margin({ left: 8 })
-            .backgroundColor($r('app.color.primary_color'))
-            .textAlign(TextAlign.Center)
-            .fontColor(Color.White)
+          if (this.collectionInfo) {
+            Text("已收藏")
+              .fontSize(12)
+              .padding({ top: 8, bottom: 8, left: 16, right: 16 })
+              .borderRadius(4)
+              .margin({ left: 8 })
+              .backgroundColor(getTheme(this.theme).primary_color)
+              .textAlign(TextAlign.Center)
+              .fontColor(Color.White)
+              .onClick(() => {
+                SQLite.with(VideoCollectionTable)
+                  .delete(this.collectionInfo)
+                  .then((result) => {
+                    Logger.e(this, 'delete collection info success! result=' + result)
+                    this.collectionInfo = null
+                  })
+                  .catch((e) => {
+                    Logger.e(this, 'delete collection info failed! e=' + JSON.stringify(e))
+                  })
+              })
+          } else {
+            Text("收藏")
+              .fontSize(12)
+              .padding({ top: 8, bottom: 8, left: 16, right: 16 })
+              .borderRadius(4)
+              .margin({ left: 8 })
+              .backgroundColor(getTheme(this.theme).primary_color)
+              .textAlign(TextAlign.Center)
+              .fontColor(Color.White)
+              .onClick(() => {
+                let collectionInfo = {
+                  src: this.url,
+                  title: this.videoDetailInfo.title,
+                  coverUrl: this.videoDetailInfo.coverUrl,
+                  accessTime: new Date().getTime()
+                }
+                SQLite.with(VideoCollectionTable)
+                  .insert(collectionInfo)
+                  .then((result) => {
+                    Logger.e(this, 'insert collection info success! result=' + result)
+                    this.collectionInfo = collectionInfo
+                  })
+                  .catch((e) => {
+                    Logger.e(this, 'insert collection info failed! e=' + JSON.stringify(e))
+                  })
+              })
+          }
         }
 
         if (this.videoDetailInfo.updateTime) {
@@ -190,16 +241,18 @@ struct VideoDetailPage {
     ForEach(this.videoDetailInfo.episodes, (episodeList: EpisodeList, episodeListIndex: number) => {
       Column() {
         Text(episodeList.title).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-        Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.SpaceBetween, wrap: FlexWrap.Wrap }) {
+        Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start, wrap: FlexWrap.Wrap }) {
           ForEach(episodeList.episodes, (item: EpisodeInfo, episodeIndex: number) => {
             Text(item.title)
               .textAlign(TextAlign.Center)
+              // TODO getTheme
               .backgroundColor(
                   (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
-                  ? $r('app.color.primary_color') : '#f5f5f5')
+                  ? getTheme(this.theme).primary_color : '#f5f5f5')
               .fontColor(
                   (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
-                  ? Color.White : $r('app.color.color_text_major'))
+                  // TODO getTheme
+                  ? Color.White : getTheme(this.theme).color_text_major)
               .fontSize(12)
               .padding({ top: 8, bottom: 8, left: 12, right: 12 })
               .borderRadius(4)

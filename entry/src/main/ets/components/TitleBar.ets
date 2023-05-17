@@ -1,7 +1,9 @@
+import { getTheme } from '../utils/Themes';
 import router from '@ohos.router'
 
 @Component
 export default struct TitleBar {
+  @StorageLink('theme') theme: number = 0
   private title: string
 
   build() {
@@ -12,11 +14,12 @@ export default struct TitleBar {
           .height(24)
           .margin({ left: 16 })
           .objectFit(ImageFit.Contain)
+          .fillColor(getTheme(this.theme).color_text_major)
           .onClick(() => {
             router.back()
           })
         Text(this.title)
-          .fontColor($r('app.color.color_text_major'))
+          .fontColor(getTheme(this.theme).color_text_major)
           .fontSize(20)
           .fontWeight(500)
           .layoutWeight(1)

@@ -1,3 +1,4 @@
+import { getTheme } from '../utils/Themes';
 import TransitionHelper from '../utils/TransitionHelper';
 import Logger from '../utils/Logger';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
@@ -16,12 +17,12 @@ import promptAction from '@ohos.promptAction';
 @Entry
 @Component
 struct SearchPage {
-  @State message: string = 'Hello World'
+  @StorageLink('theme') theme: number = 0
   @State videoList: VideoInfo[] = []
   @State searchHistoryList: SearchHistoryInfo[] = [
-    { id: 0, keyword: '1' }, { id: 0, keyword: '122222' }, { id: 0, keyword: '156' },
-    { id: 0, keyword: '14656' }, { id: 0, keyword: '12354' }, { id: 0, keyword: '1' },
-    { id: 0, keyword: '1' }, { id: 0, keyword: '1111111112' }, { id: 0, keyword: '222222' }
+//    { id: 0, keyword: '1' }, { id: 0, keyword: '122222' }, { id: 0, keyword: '156' },
+//    { id: 0, keyword: '14656' }, { id: 0, keyword: '12354' }, { id: 0, keyword: '1' },
+//    { id: 0, keyword: '1' }, { id: 0, keyword: '1111111112' }, { id: 0, keyword: '222222' }
   ]
   @State searchRecommends: string[] = ['进击的巨人', '电锯人', '鲁路修', '命运石之门', '回复术士', '天降之物']
   @State state: number = ViewState.CUSTOM
@@ -75,7 +76,7 @@ struct SearchPage {
         .layoutWeight(1)
       ImmersionBarSpace()
     }
-    .backgroundColor($r('app.color.background_color_accent'))
+    .backgroundColor(getTheme(this.theme).background_color_accent)
     .width('100%')
     .height('100%')
   }
@@ -90,6 +91,7 @@ struct SearchPage {
         .width(24)
         .height(24)
         .margin({ left: 12 })
+        .fillColor(getTheme(this.theme).color_text_major)
         .objectFit(ImageFit.Contain)
         .onClick(() => {
           router.back()
@@ -116,9 +118,10 @@ struct SearchPage {
         .height(32)
         .layoutWeight(1)
         .placeholderFont({ size: 14, weight: 300 })
+        .placeholderColor('#817977')
         .textFont({ size: 14, weight: 400 })
         .margin(12)
-        .backgroundColor('#f5f5f5')
+        .backgroundColor(getTheme(this.theme).background_color_dark)
           //        .onChange((value: string) => {
           //          this.keyword = value
           //        })
@@ -128,7 +131,7 @@ struct SearchPage {
 
       Text('搜索')
         .fontSize(16)
-        .fontColor($r('app.color.primary_color'))
+        .fontColor(getTheme(this.theme).primary_color)
           //        .fontWeight(300)
         .margin({ right: 16 })
         .onClick(() => {
@@ -146,9 +149,9 @@ struct SearchPage {
         .width(6)
         .margin({ right: 2 })
         .borderRadius(4)
-        .backgroundColor($r('app.color.primary_color'))
+        .backgroundColor(getTheme(this.theme).primary_color)
       Text(title)
-        .fontColor($r('app.color.color_text_major'))
+        .fontColor(getTheme(this.theme).color_text_major)
         .fontSize(16)
         .fontWeight(500)
 
@@ -179,7 +182,7 @@ struct SearchPage {
               Text(item.keyword)
                 .textAlign(TextAlign.Center)
                 .backgroundColor('#f5f5f5')
-                .fontColor($r('app.color.color_text_major'))
+                .fontColor(getTheme(this.theme).color_text_major)
                 .fontWeight(300)
                 .fontSize(14)
                 .maxLines(1)
@@ -206,7 +209,7 @@ struct SearchPage {
             Text(item)
               .width('45%')
               .textAlign(TextAlign.Start)
-              .fontColor($r('app.color.color_text_major'))
+              .fontColor(getTheme(this.theme).color_text_major)
               .fontWeight(300)
               .fontSize(14)
               .maxLines(1)

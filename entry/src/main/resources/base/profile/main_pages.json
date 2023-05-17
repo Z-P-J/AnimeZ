@@ -8,6 +8,9 @@
     "pages/SettingsPage",
     "pages/AboutMePage",
     "pages/AppInfoPage",
-    "pages/VideoHistoryPage"
+    "pages/VideoHistoryPage",
+    "pages/VideoCollectionPage",
+    "pages/DownloadManagerPage",
+    "pages/TestDetail"
   ]
 }

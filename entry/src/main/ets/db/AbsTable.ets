@@ -49,7 +49,11 @@ export default abstract class AbsTable<T> implements ITable {
 
   abstract getCreateTableSql(): string
 
-  abstract bindToValuesBucket(bucket: ValuesBucket, item: T);
+  bindToValuesBucket(bucket: ValuesBucket, item: T) {
+    this.getTableColumns().forEach((col) => {
+      bucket[col] = item[col]
+    })
+  }
 
 //  abstract bindToContentValues(bucket: ValuesBucket, item: T);
 
