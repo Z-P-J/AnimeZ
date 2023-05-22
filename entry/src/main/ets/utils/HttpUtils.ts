@@ -9,6 +9,30 @@ export default class HttpUtils {
 
 
     static async getHtml(url: string): Promise<Document> {
+//        let httpRequest = http.createHttp()
+//        let resp: http.HttpResponse = await httpRequest.request(url, {
+//            method: http.RequestMethod.GET,
+//            readTimeout: 20000,
+//            connectTimeout: 20000,
+//            expectDataType: http.HttpDataType.STRING,
+//            header: {
+//                'user-agent': USER_AGENT
+//            }
+//        })
+//        if (resp.result) {
+//            return parseDocument(resp.result as string)
+//        } else {
+//            throw new Error(JSON.stringify(resp))
+//        }
+        let str = await this.getString(url)
+        if (str) {
+            return parseDocument(str)
+        } else {
+            throw new Error("content is empty!")
+        }
+    }
+
+    static async getString(url: string): Promise<string> {
         let httpRequest = http.createHttp()
         let resp: http.HttpResponse = await httpRequest.request(url, {
             method: http.RequestMethod.GET,
@@ -20,7 +44,7 @@ export default class HttpUtils {
             }
         })
         if (resp.result) {
-            return parseDocument(resp.result as string)
+            return resp.result as string
         } else {
             throw new Error(JSON.stringify(resp))
         }

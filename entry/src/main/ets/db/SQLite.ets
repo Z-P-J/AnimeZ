@@ -1,3 +1,4 @@
+import Globals from '../utils/Globals';
 import DatabaseImpl from './DatabaseImpl';
 import ITable from './ITable';
 import AbsTable from './AbsTable';
@@ -26,23 +27,34 @@ export default class SQLite {
         }
         Logger.e(this, 'dbName=' + dbName)
 
-        let globalDatabaseMap = globalThis.globalDatabaseMap
-        Logger.e(this, 'globalDatabaseMap.class=' + globalDatabaseMap )
 
-        if (!globalDatabaseMap) {
-            globalDatabaseMap = {}
-            globalThis.globalDatabaseMap = globalDatabaseMap
-        }
-
-        Logger.e(this, 'globalDatabaseMap=' + JSON.stringify(globalDatabaseMap) )
-        let database = globalDatabaseMap[dbName]
-        Logger.e(this, 'database=' + database )
-        if (!(database instanceof DatabaseImpl)) {
-            database = new DatabaseImpl(dbName)
-            globalDatabaseMap[dbName] = database
-        }
-        Logger.e(this, 'getTable')
+        let database = Globals.getOrCreate(dbName, () => {
+            return new DatabaseImpl(dbName);
+        })
         return database.getTable(tableClass)
+
+
+//        let globalDatabaseMap = Globals.get<HashMap<any, any>>('global_database_map', () => {
+//            return new HashMap<any, any>()
+//        })
+
+//        let globalDatabaseMap = globalThis.globalDatabaseMap
+//        Logger.e(this, 'globalDatabaseMap.class=' + globalDatabaseMap )
+//
+//        if (!globalDatabaseMap) {
+//            globalDatabaseMap = {}
+//            globalThis.globalDatabaseMap = globalDatabaseMap
+//        }
+
+//        Logger.e(this, 'globalDatabaseMap=' + JSON.stringify(globalDatabaseMap) )
+//        let database = globalDatabaseMap.get(dbName)
+//        Logger.e(this, 'database=' + database )
+//        if (!(database instanceof DatabaseImpl)) {
+//            database = new DatabaseImpl(dbName)
+//            globalDatabaseMap.set(dbName, database)
+//        }
+//        Logger.e(this, 'getTable')
+//        return database.getTable(tableClass)
     }
 
 }

@@ -1,0 +1,298 @@
+import fs from '@ohos.file.fs'
+import TaskManager, { TaskStatus } from './core/TaskManager'
+import DownloadTaskInfo from './DownloadTaskInfo'
+import { AbsTask } from './core/Task'
+import Logger from '../utils/Logger'
+import http from '@ohos.net.http'
+import { DownloadUtils } from './DownloadUtils'
+import util from '@ohos.util'
+
+export class FileDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> extends AbsTask<T> {
+  protected redirectCount: number = 0
+
+  constructor(manager: TaskManager, taskInfo: T) {
+    super(manager, taskInfo)
+  }
+
+  getTaskName() {
+    if (this.taskInfo.taskName) {
+      return this.taskInfo.taskName
+    }
+    return null
+  }
+
+  getFilePath(): string {
+    return this.taskInfo.downloadDir + '/' + this.taskInfo.fileName
+  }
+
+  getFileName() {
+    if (this.taskInfo.fileName) {
+      return this.taskInfo.fileName
+    }
+    return 'Unknown File'
+  }
+
+  getDownloadDir() {
+    return this.taskInfo.downloadDir
+  }
+
+  getFormatTotalSize() {
+    return DownloadUtils.formatFileSize(this.getTotalSize())
+  }
+
+  getFormatReceivedSize() {
+    return DownloadUtils.formatFileSize(this.getReceivedSize())
+  }
+
+  getFormatProgress() {
+    return DownloadUtils.formatProgress(this.getProgress())
+  }
+
+  doInit() {
+    Logger.w(this, 'doInit redirectCount=' + this.redirectCount)
+    if (this.redirectCount > 10) {
+      this.statusManager.onError('to many redirect!')
+      return
+    }
+
+    let httpRequest = http.createHttp()
+    httpRequest.request(this.taskInfo.url, {
+      method: http.RequestMethod.HEAD,
+      readTimeout: 10000,
+      connectTimeout: 10000,
+      header: { 'range': 'bytes=0-' },
+      expectDataType: http.HttpDataType.ARRAY_BUFFER
+    }, (err, data) => {
+      this.doPrepare(err, data)
+    })
+  }
+
+  doPrepare(err, data) {
+    if (data) {
+      Logger.w(this, 'doInit data=' + JSON.stringify(data))
+      let code = data.responseCode
+      if (code < 300) {
+        this.taskInfo.blockDownload = code === http.ResponseCode.PARTIAL
+        this.observerDispatcher.progressManager.onInitSize(parseInt(data.header['content-length']))
+        if (!this.taskInfo.fileName) {
+          this.taskInfo.fileName = DownloadUtils.guessFileName(
+            this.taskInfo.url, data.header['content-disposition'], data.header['content-type'])
+        }
+        this.taskInfo.prepared = true
+        this.manager.process(this)
+      } else if (code < 400) {
+        // 重定向
+        this.redirectCount++
+        let location = data.header['location']
+        this.taskInfo.url = location
+        this.doInit()
+      } else {
+        // 请求出错了
+        this.statusManager.onError('request error! responseCode is ' + code)
+      }
+    } else {
+      Logger.w(this, 'doInit err=' + JSON.stringify(err))
+      this.statusManager.onError(err.message)
+    }
+  }
+
+  doWaiting() {
+    // do nothing
+    Logger.d(this, 'doWaiting')
+  }
+
+  doPause() {
+    // do noting
+    Logger.d(this, 'doPause')
+  }
+
+  doDelete() {
+    fs.unlink(this.getFilePath())
+      .then(() => {
+        Logger.e(this, 'doDelete success')
+      })
+      .catch((e) => {
+        // TODO error
+        Logger.e(this, 'doDelete failed! e=' + JSON.stringify(e))
+      })
+  }
+
+  //    abstract doStart()
+
+  doStart() {
+    Logger.d(this, 'doStart redirectCount=' + this.redirectCount)
+
+    let range = 'bytes=' + this.getReceivedSize() + '-'
+    this.taskInfo.header = { 'range': range }
+    this.download()
+      .then((result) => {
+        if (result) {
+          this.statusManager.setStatus(TaskStatus.COMPLETE)
+        }
+      })
+      .catch((e) => {
+        Logger.e(this, 'doStart download failed! e=' + JSON.stringify(e))
+        this.statusManager.onError(JSON.stringify(e))
+      })
+
+    //        if (this.redirectCount > 10) {
+    //            this.statusManager.onError('to many redirect!')
+    //            return
+    //        }
+    //
+    //        let httpRequest = http.createHttp()
+    //        httpRequest.request(this.taskInfo.url, {
+    //            method: http.RequestMethod.GET,
+    //            readTimeout: 100000,
+    //            connectTimeout: 100000,
+    //            header: this.taskInfo.header,
+    //            expectDataType: http.HttpDataType.ARRAY_BUFFER
+    //        }, (err, data) => {
+    //            Logger.w(this, 'doStart data=' + JSON.stringify(data))
+    //            if (data) {
+    //                let code = data.responseCode
+    //                if (code < 300) {
+    //                    if (data.result instanceof ArrayBuffer) {
+    //                        this.save(data.result)
+    //                    } else {
+    //                        this.statusManager.onError('not support data type: ' + data.resultType)
+    //                    }
+    //                    return
+    //                } else if (code < 400) {
+    //                    // 重定向
+    //                    httpRequest.destroy()
+    //                    this.redirectCount++
+    //                    let location = data.header['location']
+    //                    if (location && location != '') {
+    //                        this.taskInfo.url = location
+    //                        this.doStart()
+    //                        return
+    //                    }
+    //                }
+    //                // 请求出错了
+    //                httpRequest.destroy()
+    //                this.statusManager.onError('request error! response code is ' + code)
+    //            } else {
+    //                Logger.w(this, 'doStart err=' + JSON.stringify(err))
+    //                this.statusManager.onError(err.message)
+    //            }
+    //        })
+  }
+
+  async download(): Promise<boolean> {
+
+    if (this.redirectCount > 10) {
+      this.statusManager.onError('to many redirect!')
+      return false
+    }
+
+    let httpRequest = http.createHttp()
+    let resp = await httpRequest.request(this.taskInfo.url, {
+      method: http.RequestMethod.GET,
+      readTimeout: 100000,
+      connectTimeout: 100000,
+      header: this.taskInfo.header,
+      expectDataType: http.HttpDataType.ARRAY_BUFFER
+    })
+
+    let code = resp.responseCode
+    if (code < 300) {
+      if (resp.result instanceof ArrayBuffer) {
+        return this.save(resp.result)
+      } else {
+        this.statusManager.onError('not support data type: ' + resp.resultType)
+        return false
+      }
+    } else if (code < 400) {
+      // 重定向
+      this.redirectCount++
+      let location = resp.header['location']
+      if (location && location != '') {
+        this.taskInfo.url = location
+        return this.download()
+      }
+    }
+  }
+
+  async save(buffer: ArrayBuffer): Promise<boolean> {
+    if (this.getStatus() != TaskStatus.RUNNING) {
+      return false
+    }
+
+    let decoder = new util.TextDecoder('utf-8')
+    Logger.e(this, 'save str=' + decoder.decodeWithStream(new Uint8Array(buffer)))
+    let file = await fs.open(this.getFilePath(), fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY)
+    return this.saveSlice(file.fd, buffer)
+  }
+
+  async saveSlice(fd: number, buffer: ArrayBuffer): Promise<boolean> {
+    if (this.getStatus() != TaskStatus.RUNNING) {
+      return false
+    }
+    Logger.d(this, 'saveSlice  byteLength=' + buffer.byteLength)
+    let result = await fs.write(fd, buffer, { encoding: 'utf-8' })
+    //        try {
+    //
+    //                } catch (e) {
+    //
+    //        }
+    Logger.e(this, 'saveSlice result=' + result)
+    if (this.getStatus() != TaskStatus.RUNNING) {
+      return false
+    }
+    if (this.observerDispatcher.progressManager) {
+      this.observerDispatcher.progressManager.onReceived(result)
+    }
+    //        this.statusManager.setStatus(TaskStatus.COMPLETE)
+    return true
+  }
+}
+
+//class DownloadTaskManager extends TaskManager {
+//    constructor(parentTask: FileDownloadTask) {
+//        super(parentTask, new DownloadTaskRepository())
+//    }
+//}
+
+export abstract class GroupDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> extends FileDownloadTask<T> {
+  readonly childTaskManager: TaskManager
+
+  constructor(manager: TaskManager, childTaskManager: TaskManager, taskInfo: T) {
+    super(manager, taskInfo)
+    this.childTaskManager = childTaskManager
+    this.childTaskManager.parentTask = this
+    this.childTaskManager.loadTasks()
+  }
+
+  doStart() {
+    // this.initChildTasks()
+    this.childTaskManager.startAll()
+  }
+
+  doWaiting() {
+    this.childTaskManager.waitingAll()
+  }
+
+  doPause() {
+    this.childTaskManager.pauseAll()
+  }
+
+  // TODO
+  //    protected abstract initChildTasks(emitter)
+
+  //    protected abstract initChildTasks()
+
+}
+
+export abstract class ChildDownloadTask<T extends DownloadTaskInfo> extends FileDownloadTask<T> {
+  constructor(manager: TaskManager, taskInfo: T) {
+    super(manager, taskInfo)
+  }
+
+  getFilePath(): string {
+    if (this.manager.parentTask instanceof FileDownloadTask) {
+      return this.manager.parentTask.getFilePath()
+    }
+    return super.getFilePath()
+  }
+}

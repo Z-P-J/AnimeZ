@@ -173,7 +173,7 @@ export struct MyPage {
       Image(this.theme == 0 ? $r("app.media.ic_theme_day") : $r("app.media.ic_theme_night"))
         .width(48)
         .height(36)
-        .padding(6)
+        .padding({left: 12, top: 6, right: 12, bottom: 6})
         .backgroundColor('#eeffffff')
         .borderRadius(10)
         .objectFit(ImageFit.Contain)
@@ -195,6 +195,7 @@ export struct MyPage {
         .fontColor(getTheme(this.theme).color_text_major)
         .margin({ left: 8 })
     }
+    .padding(8)
     .onClick(onClick)
   }
 
