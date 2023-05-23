@@ -58,8 +58,8 @@ export class FileDownloadTable extends AbsTable<DownloadTaskInfo> {
     info['url'] = cursor.getString(cursor.getColumnIndex('url'))
     info['totalSize'] = cursor.getLong(cursor.getColumnIndex('totalSize'))
     info['receivedSize'] = cursor.getLong(cursor.getColumnIndex('receivedSize'))
-    info['prepared'] = cursor.getLong(cursor.getColumnIndex('prepared')) == 1
-    info['blockDownload'] = cursor.getLong(cursor.getColumnIndex('blockDownload')) == 1
+    info['prepared'] = cursor.getLong(cursor.getColumnIndex('prepared')) > 0
+    info['blockDownload'] = cursor.getLong(cursor.getColumnIndex('blockDownload')) > 0
     info['status'] = cursor.getLong(cursor.getColumnIndex('status'))
     info['offset'] = cursor.getLong(cursor.getColumnIndex('offset'))
     info['contentLength'] = cursor.getLong(cursor.getColumnIndex('contentLength'))

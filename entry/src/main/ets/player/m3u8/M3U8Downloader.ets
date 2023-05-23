@@ -4,6 +4,7 @@ import M3U8Utils from './M3U8Utils';
 import DownloadTaskInfo from '../../download/DownloadTaskInfo';
 import { FileDownloadTask, GroupDownloadTask } from '../../download/FileDownloadTask';
 import fs from '@ohos.file.fs';
+import fio from '@ohos/fileio-extra';
 import Logger from '../../utils/Logger';
 import TaskManager from '../../download/core/TaskManager';
 import { Downloader } from '../../download/Downloader';
@@ -25,7 +26,7 @@ class M3U8DownloadTask extends GroupDownloadTask {
   private m3u8: M3u8 = null
 
   constructor(manager: TaskManager, taskInfo: DownloadTaskInfo) {
-    super(manager, new M3U8SegmentTaskManager(), taskInfo);
+    super(manager, new M3U8SegmentTaskManager(), taskInfo)
     this.taskDir = this.getDownloadDir() + CryptoJS.MD5(taskInfo.originalUrl) + '/'
   }
 
@@ -48,9 +49,17 @@ class M3U8DownloadTask extends GroupDownloadTask {
   }
 
   private async initM3u8(): Promise<number> {
+    if (this.taskInfo.prepared) {
+      return 0
+    }
     if (!this.m3u8) {
       this.m3u8 = await M3U8Utils.parse(null, this.taskInfo.url)
-
+      Logger.e(this, 'initM3u8 m3u8=' + JSON.stringify(this.m3u8))
+      Logger.e(this, 'initM3u8 taskDir=' + this.taskDir + ' exists=' + fio.pathExistsSync(this.taskDir))
+      if (!fio.pathExistsSync(this.taskDir)) {
+        fio.mkdirsSync(this.taskDir)
+      }
+      Logger.e(this, 'initM3u8 taskDir exists=' + fio.pathExistsSync(this.taskDir))
       let file = await fs.open(this.taskDir + 'video.info', fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
       let result = await fs.write(file.fd, JSON.stringify(this.m3u8), { encoding: 'utf-8' })
 
@@ -69,6 +78,7 @@ class M3U8DownloadTask extends GroupDownloadTask {
   }
 
   doStart() {
+    Logger.e(this, 'doStart')
     this.prepare()
       .then(() => {
         this.childTaskManager.startAll()
@@ -79,9 +89,12 @@ class M3U8DownloadTask extends GroupDownloadTask {
   }
 
   private async prepare() {
+    Logger.e(this, 'prepare')
     if (!this.m3u8) {
       let infoPath = this.taskDir + 'video.info'
+      Logger.e(this, 'prepare infoPath=' + infoPath)
       let text = await fs.readText(infoPath, { encoding: 'utf-8' })
+      Logger.e(this, 'prepare text=' + text)
       this.m3u8 = JSON.parse(text)
     }
     if (this.childTaskManager.tasks.length == 0) {

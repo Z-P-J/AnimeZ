@@ -1,3 +1,4 @@
+import Logger from './Logger';
 import HashMap from '@ohos.util.HashMap';
 
 
@@ -19,10 +20,9 @@ export default class Globals {
   }
 
   static getOrCreate<T>(key: any, buildFunc: () => T): T {
-
     let globalMap = this.getGlobalMap()
-
     let value = globalMap.get(key)
+    Logger.e(this, 'getOrCreate key=' + key + ' value=' + value)
     if (!value) {
       value = buildFunc()
       globalMap.set(key, value)

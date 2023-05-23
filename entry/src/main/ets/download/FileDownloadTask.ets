@@ -58,8 +58,8 @@ export class FileDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> ext
     let httpRequest = http.createHttp()
     httpRequest.request(this.taskInfo.url, {
       method: http.RequestMethod.HEAD,
-      readTimeout: 10000,
-      connectTimeout: 10000,
+      readTimeout: 20000,
+      connectTimeout: 20000,
       header: { 'range': 'bytes=0-' },
       expectDataType: http.HttpDataType.ARRAY_BUFFER
     }, (err, data) => {
@@ -120,9 +120,9 @@ export class FileDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> ext
   //    abstract doStart()
 
   doStart() {
-    Logger.d(this, 'doStart redirectCount=' + this.redirectCount)
 
     let range = 'bytes=' + this.getReceivedSize() + '-'
+    Logger.d(this, 'doStart redirectCount=' + this.redirectCount + ' range=' + range)
     this.taskInfo.header = { 'range': range }
     this.download()
       .then((result) => {
@@ -180,20 +180,22 @@ export class FileDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> ext
   }
 
   async download(): Promise<boolean> {
-
+    Logger.e(this, 'download')
     if (this.redirectCount > 10) {
       this.statusManager.onError('to many redirect!')
       return false
     }
 
     let httpRequest = http.createHttp()
+    Logger.e(this, 'download httpRequest')
     let resp = await httpRequest.request(this.taskInfo.url, {
       method: http.RequestMethod.GET,
-      readTimeout: 100000,
-      connectTimeout: 100000,
-      header: this.taskInfo.header,
+      readTimeout: 20000,
+      connectTimeout: 20000,
+//      header: this.taskInfo.header,
       expectDataType: http.HttpDataType.ARRAY_BUFFER
     })
+    Logger.e(this, 'download resp=' + JSON.stringify(resp))
 
     let code = resp.responseCode
     if (code < 300) {
@@ -218,9 +220,6 @@ export class FileDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> ext
     if (this.getStatus() != TaskStatus.RUNNING) {
       return false
     }
-
-    let decoder = new util.TextDecoder('utf-8')
-    Logger.e(this, 'save str=' + decoder.decodeWithStream(new Uint8Array(buffer)))
     let file = await fs.open(this.getFilePath(), fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY)
     return this.saveSlice(file.fd, buffer)
   }

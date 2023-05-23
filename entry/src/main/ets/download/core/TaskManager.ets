@@ -59,7 +59,7 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
   abstract createTask(taskInfo: TaskInfo): T;
 
   loadTasks() {
-    Logger.e(this, 'loadTasks')
+    Logger.e(this, 'loadTasks isTaskLoaded=' + this.isTaskLoaded + ' isLoading=' + this.isLoading)
     if (this.isTaskLoaded || this.isLoading) {
       return
     }
@@ -69,7 +69,7 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
         .then((infoList) => {
           Logger.d(this, 'queryAll finished!')
           infoList.forEach((info) => {
-            this.tasks.push(this.createTask(info))
+            this.addTaskInner(this.createTask(info))
           })
           this.isLoading = false;
           this.isTaskLoaded = true
@@ -129,6 +129,16 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
   }
 
   addTask(task: T) {
+    this.addTaskInner(task)
+
+    if (this.observers) {
+      this.observers.forEach((o) => {
+        o.onMissionAdd(task)
+      })
+    }
+  }
+
+  private addTaskInner(task: T) {
     if (!this.childStatusObserver) {
       this.childStatusObserver = {
         onStatusChanged: (task: T, oldStatus: TaskStatus, status: TaskStatus) => {
@@ -151,7 +161,7 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
             }
           }
         }
-      };
+      }
     }
     task.addStatusObserver(this.childStatusObserver);
     this.tasks.push(task);
@@ -199,11 +209,11 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
       this.taskRepository.create(task.taskInfo)
         .then((result) => {
           Logger.d(this, 'start create result=' + result)
-          if (this.observers) {
-            this.observers.forEach((o) => {
-              o.onMissionAdd(task)
-            })
-          }
+//          if (this.observers) {
+//            this.observers.forEach((o) => {
+//              o.onMissionAdd(task)
+//            })
+//          }
           this.startInner(task)
         })
         .catch((e) => {
@@ -225,6 +235,8 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
       if (task.getStatus() != TaskStatus.PREPARING) {
         ++this.runningCount;
       }
+      Logger.e(this, 'startInner isPrepared=' + task.isPrepared())
+      task.taskInfo.message = null
       if (task.isPrepared()) {
         this.process(task);
       } else {
@@ -249,12 +261,13 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
   }
 
   process(task: T) {
-    Logger.d(this, 'download doStart, id=' + task.taskInfo.taskId);
+    Logger.d(this, 'process, id=' + task.getTaskId());
     task.statusManager.setStatus(TaskStatus.RUNNING);
     task.doStart();
   }
 
   delete(task: T) {
+    Logger.e(this, 'delete, id=' + task.getTaskId())
     this.pause(task)
     this.taskRepository.delete(task.taskInfo)
       .then((result) => {
@@ -298,7 +311,7 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
       }
       if (status == TaskStatus.ERROR) {
         if (!errorMessage) {
-          errorMessage = this.tasks[i].statusManager.getMessage();
+          errorMessage = this.tasks[i].taskInfo.message;
         }
       } else if (status == TaskStatus.WAITING) {
         Logger.d(this, 'start next id=' + this.tasks[i].getTaskId())
@@ -307,7 +320,7 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
       }
     }
 
-    Logger.d(this, "startNext isComplete=" + isComplete + " parent=" + this.parentTask);
+    Logger.d(this, "startNext isComplete=" + isComplete + ' runningCount=' + this.runningCount + ' errorMessage=' + errorMessage + " parent=" + this.parentTask);
     if (this.parentTask) {
       if (isComplete) {
         this.parentTask.statusManager.setStatus(TaskStatus.COMPLETE);

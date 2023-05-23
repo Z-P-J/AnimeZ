@@ -16,15 +16,9 @@ export default class TaskStatusManager {
     private readonly tag: string;
 
     constructor(task: Task) {
-        this.tag = task.constructor.name;
-//        this.tag = task.taskInfo.id + " "
-//        if (task instanceof Object) {
-//            this.tag = task.constructor.name;
-//        } else {
-//            this.tag = '' + task.taskInfo.
-//        }
-//        this.tag = task.constructor.name;
+        this.tag = task.constructor.name + '.TaskStatusManager';
         this.task = task;
+        this.status = task.taskInfo.status
     }
 
     getMessage() {
@@ -61,7 +55,6 @@ export default class TaskStatusManager {
             this.onStatusChanged(status)
             if (this.observers) {
                 this.observers.forEach((o) => {
-                    Logger.w(this.tag, 'setStatus onStatusChanged oldStatus=' + oldStatus + " status=" + status);
                     o.onStatusChanged(this.task, oldStatus, status)
                 });
             }

@@ -71,15 +71,12 @@ export default class TaskProgressManager {
 
     stop() {
         // TODO
+
     }
 
     protected canLoopForProgress() {
         if (this.task.observerDispatcher.observers) {
-            let parentTask = this.task.getParentTask()
-            if (parentTask) {
-                return parentTask.isRunning();
-            }
-            return true;
+            return this.task.isRunning();
         }
         return false;
     }

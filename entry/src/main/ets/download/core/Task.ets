@@ -204,15 +204,17 @@ export default interface Task<T extends TaskInfo = TaskInfo> {
 export abstract class AbsTask<I extends TaskInfo = TaskInfo> implements Task<I> {
     readonly manager: TaskManager;
 
-    readonly statusManager: TaskStatusManager = new TaskStatusManager(this);
+    readonly statusManager: TaskStatusManager;
 
-    readonly observerDispatcher: TaskObserverDispatcher = new TaskObserverDispatcher(this);
+    readonly observerDispatcher: TaskObserverDispatcher
 
     readonly taskInfo: I
 
     constructor(manager: TaskManager, taskInfo: I) {
         this.manager = manager
         this.taskInfo = taskInfo
+        this.statusManager = new TaskStatusManager(this)
+        this.observerDispatcher = new TaskObserverDispatcher(this)
     }
 
     getParentTask() {
@@ -275,7 +277,7 @@ export abstract class AbsTask<I extends TaskInfo = TaskInfo> implements Task<I> 
     }
 
     delete() {
-
+        this.manager.delete(this)
     }
 
     protected process() {

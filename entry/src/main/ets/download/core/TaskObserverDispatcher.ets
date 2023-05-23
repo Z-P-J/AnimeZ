@@ -1,3 +1,4 @@
+import Logger from '../../utils/Logger';
 import TaskInfo from './TaskInfo';
 import Task from './Task';
 import TaskProgressManager from './TaskProgressManager';
@@ -10,8 +11,10 @@ export default class TaskObserverDispatcher {
     observers: TaskObserver[] = null;
 
     readonly progressManager: TaskProgressManager = null;
+    private readonly tag: string;
 
     constructor(task: Task<TaskInfo>) {
+        this.tag = task.constructor.name + '.TaskObserverDispatcher';
         this.task = task;
         this.progressManager = new TaskProgressManager(task)
     }
@@ -30,9 +33,11 @@ export default class TaskObserverDispatcher {
 
     removeObserver(observer: TaskObserver): boolean {
         if (this.observers) {
-            let index = this.observers.indexOf(observer);
+            let index = this.observers.indexOf(observer)
+            Logger.e(this.tag, 'removeObserver index=' + index + ' len=' + this.observers.length)
             if (index >= 0) {
-                this.observers.splice(index, 1);
+                let result = this.observers.splice(index, 1)
+                Logger.e(this.tag, 'removeObserver this.observers.len=' + this.observers.length + ' result=' + result)
                 if (this.observers.length == 0) {
                     this.observers = null;
                     this.stopProgress()

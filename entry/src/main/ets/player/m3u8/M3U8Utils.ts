@@ -44,6 +44,7 @@ const REGEX_ATTR_BYTERANGE = new RegExp("BYTERANGE=\"(\\d+(?:@\\d+)?)\\b\"");
 export default class M3U8Utils {
     static async parse(parentUrl: string, videoUrl: string, content?: string): Promise<M3u8> {
         //        let content = await HttpUtils.getString(videoUrl)
+        Logger.e(this, 'parse parentUrl=' + parentUrl + ' videoUrl=' + videoUrl)
         if (!content) {
             content = await HttpUtils.getString(videoUrl)
         }

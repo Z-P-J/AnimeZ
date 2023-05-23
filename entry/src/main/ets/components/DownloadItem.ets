@@ -27,6 +27,7 @@ export struct DownloadItem {
       Logger.d(this, "download onPaused");
     },
     onProgress: (totalSize: number, receivedSize: number, progress: number) => {
+      this.progress = progress
       Logger.d(this, "download onProgress total: " + totalSize + " received: " + receivedSize + " progress: " + progress);
       this.info = this.getTaskInfo();
     },
@@ -43,6 +44,10 @@ export struct DownloadItem {
       this.info = this.getTaskInfo();
       this.canPause = task.canPause()
       this.status = status
+      if (task.canStart()) {
+        this.task.removeStatusObserver(this.statusObserver)
+        this.task.removeObserver(this.observer)
+      }
     }
   }
 
@@ -59,11 +64,14 @@ export struct DownloadItem {
     }
     this.progress = this.task.getProgress();
 
-    this.task.addObserver(this.observer)
-    this.task.addStatusObserver(this.statusObserver)
+    if (this.task.isRunning()) {
+      this.task.addObserver(this.observer)
+      this.task.addStatusObserver(this.statusObserver)
+    }
   }
 
   aboutToDisappear() {
+    Logger.e(this, 'aboutToDisappear')
     this.task.removeObserver(this.observer)
     this.task.removeStatusObserver(this.statusObserver)
   }
@@ -103,12 +111,10 @@ export struct DownloadItem {
           .objectFit(ImageFit.Contain)
           .onClick(() => {
             if (this.task.canPause()) {
-              this.task.statusManager.removeObserver(this.statusObserver)
-              this.task.removeObserver(this.observer)
               this.task.pause()
             } else if (this.task.canStart()) {
               this.task.addObserver(this.observer)
-              this.task.statusManager.addObserver(this.statusObserver)
+              this.task.addStatusObserver(this.statusObserver)
               this.task.start()
             }
           })
@@ -138,7 +144,8 @@ export struct DownloadItem {
   }
 
   getTaskInfo() {
-    let status = this.task.getStatus();
+    let status = this.task.getStatus()
+    Logger.e(this, 'getTaskInfo status=' + status)
     if (status == TaskStatus.CREATED) {
       return '已暂停';
     } else if (status == TaskStatus.PREPARING) {
@@ -150,10 +157,10 @@ export struct DownloadItem {
     } else if (status == TaskStatus.PAUSED) {
       return '已暂停';
     } else if (status == TaskStatus.COMPLETE) {
-      return '已暂停';
+      return '已完成';
     } else {
-      if (this.task.statusManager.getMessage()) {
-        return '出错了：' + this.task.statusManager.getMessage();
+      if (this.task.taskInfo.message) {
+        return '出错了：' + this.task.taskInfo.message;
       }
       return '出错了';
     }

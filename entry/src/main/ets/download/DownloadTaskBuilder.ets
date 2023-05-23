@@ -39,6 +39,7 @@ export default class DownloadTaskBuilder<T extends FileDownloadTask> implements 
     build(): T {
         let taskInfo = new DownloadTaskInfo(this.taskManager.generateTaskId(), this.taskManager.getParentTaskId())
         taskInfo.taskName = this.taskName
+        taskInfo.originalUrl = this.url
         taskInfo.url = this.url
         taskInfo.fileName = this.fileName
         taskInfo.downloadDir = this.downloadDir

@@ -15,7 +15,8 @@ export class ZDownloader {
 //    private static readonly MAP_DOWNLOADER = new HashMap<any, any>();
 
     static get<T extends Downloader>(clazz: { new(): T }): T {
-        return Globals.getOrCreate(clazz, () => {
+        Logger.e(this, 'get clazz type=' + (typeof clazz))
+        return Globals.getOrCreate('downloader_' + clazz.name, () => {
             return new clazz();
         })
 

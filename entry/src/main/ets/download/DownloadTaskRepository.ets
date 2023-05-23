@@ -21,6 +21,7 @@ export default class DownloadTaskRepository implements TaskRepository<DownloadTa
     }
 
     async update(taskInfo: DownloadTaskInfo): Promise<number> {
+        Logger.e(this, 'update taskInfo=' + JSON.stringify(taskInfo))
         return SQLite.with(FileDownloadTable)
             .update(taskInfo)
     }

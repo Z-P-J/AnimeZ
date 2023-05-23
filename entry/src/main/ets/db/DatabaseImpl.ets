@@ -20,7 +20,7 @@ export default class DatabaseImpl implements IDatabase {
     }
 
     getTable<T extends AbsTable<any>>(tableClass: { new (dbName, tableName): T }): T {
-        return Globals.getOrCreate(tableClass, () => {
+        return Globals.getOrCreate(this.dbName + '_' + tableClass.name, () => {
             let tableName = Reflect.getMetadata('TableName', tableClass)
             Logger.e(this, 'getTable tableName=' + tableName)
             if (!tableName) {
