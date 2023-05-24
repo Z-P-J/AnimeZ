@@ -40,8 +40,13 @@ struct VideoDetailPage {
   @State collectionInfo: VideoCollectionInfo = null
 
   aboutToAppear() {
+    //    // TODO 测试
+    //    this.url = 'http://www.bimiacg4.net/bangumi/bi/8552/'
+    //    this.historyInfo = VideoHistoryInfo.createByLink(this.url)
+    //    this.getDetailInfo()
+
+
     this.url = router.getParams()['url']
-//        this.url = 'http://www.bimiacg4.net/bangumi/bi/8552/'
     SQLite.with(VideoHistoryTable)
       .queryByLink(this.url)
       .then((info) => {
@@ -245,7 +250,7 @@ struct VideoDetailPage {
           ForEach(episodeList.episodes, (item: EpisodeInfo, episodeIndex: number) => {
             Text(item.title)
               .textAlign(TextAlign.Center)
-              // TODO getTheme
+                // TODO getTheme
               .backgroundColor(
                   (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
                   ? getTheme(this.theme).primary_color : '#f5f5f5')
@@ -314,15 +319,14 @@ struct VideoDetailPage {
 
         this.videoDetailInfo = info
         this.state = ViewState.CONTENT
-
         this.historyInfo.title = this.videoDetailInfo.title
         this.historyInfo.coverUrl = this.videoDetailInfo.coverUrl
-
 
         this.playVideo(this.episodeListIndex, this.episodeIndex)
       })
       .catch((e) => {
         this.errorMessage = JSON.stringify(e)
+        Logger.e(this, 'getDetailInfo error=' + this.errorMessage)
         this.state = ViewState.ERROR
       })
   }

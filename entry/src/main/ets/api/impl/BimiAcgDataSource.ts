@@ -134,7 +134,7 @@ export default class BimiAcgDataSource implements DataSource {
 
         let info: VideoDetailInfo = {
             title: DomUtils.textContent(CssSelector.findFirst(doc, "div.txt_intro_con > div > h1")),
-            url: '',
+            url: url,
             desc: DomUtils.textContent(CssSelector.findFirst(doc, "li.li_intro")),
             coverUrl: DomUtils.getAttributeValue(CssSelector.findFirst(doc, "div.poster_placeholder > div > img") as Element, 'src'),
             category: category == null ? null : DomUtils.textContent(category),

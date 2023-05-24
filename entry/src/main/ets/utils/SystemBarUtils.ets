@@ -10,11 +10,14 @@ export default class SystemBarUtils {
   static setWindowSystemBarProperties(systemBarProperties: window.SystemBarProperties) {
     window.getLastWindow(getContext(this), (err, win) => {
       Logger.e(this, 'setWindowSystemBarProperties win=' + JSON.stringify(win) + ' err=' + JSON.stringify(err))
-      if (win) {
-        // 透明状态栏和导航栏
-        win.setWindowSystemBarProperties(systemBarProperties, null);
+      try {
+        if (win) {
+          // 透明状态栏和导航栏
+          win.setWindowSystemBarProperties(systemBarProperties, null);
+        }
+      } catch (e) {
+        Logger.e(this, 'setWindowSystemBarProperties error! e=' + JSON.stringify(e))
       }
     })
   }
-
 }
