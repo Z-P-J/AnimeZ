@@ -6,112 +6,87 @@ import promptAction from '@ohos.promptAction';
 export default struct CustomPanel {
   @StorageLink('theme') theme: number = 0
   @Watch("onShowPanelChanged") @Link showPanel: boolean
-  @State showPanelInner: boolean = false
+  @Watch('onShowPanelInnerChanged') @State showPanelInner: boolean = false
   @State ty: number = 0
   @State panelOpacity: number = 0
   @State panelHeight: number = 0;
-  @BuilderParam content: () => any;
+//  @BuilderParam rootContent: () => any;
+  @BuilderParam panelContent: () => any;
 
   build() {
     Stack() {
+//      this.rootContent()
       if (this.showPanelInner) {
-//        Stack() {
-//          Column() {
-//            this.content()
-//          }
-//          .animation({
-//            duration: 500,
-//            curve: Curve.Friction,
-//            iterations: 1,
-//            playMode: PlayMode.Normal
-//          })
-//          .backgroundColor($r('app.color.background_color_accent'))
-//          .translate({ y: this.ty })
-//          .width('100%')
-//          .height('100%')
-//          .onAppear(() => {
-////            this.ty = 0
-//            promptAction.showToast({message: 'show'})
-//          })
-//        }
-//        .backgroundColor('#80000000')
-//        .opacity(this.panelOpacity)
-//        .animation({
-//          duration: 500,
-//          curve: Curve.Friction,
-//          iterations: 1,
-//          playMode: PlayMode.Normal,
-//          onFinish: () => {
-//            if (this.panelOpacity === 0) {
-//              this.showPanelInner = false
-//            }
-//          }
-//        })
-//        .width('100%')
-//        .height('100%')
-//        .onAppear(() => {
-//          this.panelOpacity = 1
-////          this.ty = 0
-//        })
-//        .onClick(() => {
-////          this.ty = -this.panelHeight
-////          this.panelOpacity = 0
-//          this.showPanel = false
-//        })
-
-
-
-        Column() {
-          this.content()
+        Column()
+          .backgroundColor('#80000000')
+          .width('100%')
+          .height('100%')
+          .opacity(this.panelOpacity)
+          .onClick(() => {
+            this.showPanel = false
+          })
+        Stack() {
+          this.panelContent()
         }
-        .animation({
-          duration: 500,
-          curve: Curve.Friction,
-          iterations: 1,
-          playMode: PlayMode.Normal,
-          onFinish: () => {
-            if (this.panelOpacity === 0) {
-              this.showPanelInner = false
-            }
-          }
-        })
-        .backgroundColor(getTheme(this.theme).background_color_accent)
         .translate({ y: this.ty })
         .width('100%')
         .height('100%')
-        .opacity(this.panelOpacity)
-        .onAppear(() => {
-          this.panelOpacity = 1
-          this.ty = 0
-          promptAction.showToast({message: 'show'})
-        })
         .onClick(() => {
-          //          this.ty = -this.panelHeight
-          //          this.panelOpacity = 0
           this.showPanel = false
         })
-
       }
     }
     .width('100%')
     .height('100%')
     .onAreaChange((_, newArea) => {
       this.panelHeight = parseInt(newArea.height.toString())
-      this.ty = -this.panelHeight
+      this.ty = this.panelHeight
     })
   }
 
+  onShowPanelInnerChanged() {
+    promptAction.showToast({ message: 'onShowPanelInnerChanged showPanelInner=' + this.showPanelInner })
+  }
+
   onShowPanelChanged() {
+    promptAction.showToast({
+      message: 'onShowPanelChanged ' + this.showPanel + ' showPanelInner=' + this.showPanelInner
+    })
     if (this.showPanel) {
       if (!this.showPanelInner) {
+        //        this.ty = this.panelHeight
         this.showPanelInner = true
+
+        setTimeout(() => {
+          animateTo({
+            duration: 360,
+            curve: Curve.Smooth,
+            iterations: 1,
+            playMode: PlayMode.Normal,
+            onFinish: () => {
+              //            this.showPanelInner = false
+            }
+          }, () => {
+            this.ty = 0
+            this.panelOpacity = 1
+          })
+        }, 10)
       }
     } else {
       if (this.showPanelInner) {
-        this.ty = -this.panelHeight
-        this.panelOpacity = 0
+        animateTo({
+          duration: 360,
+          curve: Curve.ExtremeDeceleration,
+          iterations: 1,
+          playMode: PlayMode.Normal,
+          onFinish: () => {
+            this.showPanelInner = false
+          }
+        }, () => {
+          this.ty = this.panelHeight
+          this.panelOpacity = 0
+        })
       }
     }
   }
-
 }

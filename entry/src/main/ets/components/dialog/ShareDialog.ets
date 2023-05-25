@@ -8,6 +8,7 @@ export struct ShareDialog {
   private controller: CustomDialogController
 
   private detailInfo: VideoDetailInfo
+  private onClose: () => void
 
   private readonly shareItems = [
     { name: 'QQ', icon: $r('app.media.ic_share_qq'),
@@ -40,22 +41,18 @@ export struct ShareDialog {
   build() {
 
     Column({space: 16}) {
-
-      Text('分享')
-        .fontSize(18)
-        .fontColor(getTheme(this.theme).color_text_major)
-        .fontWeight(FontWeight.Medium)
-        .alignSelf(ItemAlign.Start)
-//      Row() {
-//        Text('分享')
-//          .fontSize(18)
-//          .fontColor(getTheme(this.theme).color_text_major)
-//          .fontWeight(FontWeight.Medium)
-//          .alignSelf(ItemAlign.Start)
-//
-//        Image($r('app.media.ic_close'))
-//          .width(24).height(24)
-//      }
+      Row() {
+        Text('分享')
+          .fontSize(18)
+          .fontColor(getTheme(this.theme).color_text_major)
+          .fontWeight(FontWeight.Medium)
+          .alignSelf(ItemAlign.Start)
+        Blank()
+        Image($r('app.media.ic_close'))
+          .width(24).height(24)
+          .onClick(this.onClose)
+      }
+      .width('100%')
 
       if (this.detailInfo) {
         Column() {
