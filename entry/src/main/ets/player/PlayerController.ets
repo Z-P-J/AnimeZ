@@ -112,6 +112,10 @@ export struct PlayerController {
                 .margin({ left: 16 })
                 .objectFit(ImageFit.Contain)
                 .onClick(() => {
+                  if (this.playerManager.isFullScreen()) {
+                    this.playerManager.exitFullScreen()
+                    return
+                  }
                   router.back()
                 })
               Text(this.title)
@@ -124,6 +128,10 @@ export struct PlayerController {
               Blank()
             }
             .width('100%')
+            .linearGradient({
+              angle: 180,
+              colors: [['#000000', 0.0], ['#80000000', 0.5], ['#00000000', 1.0]]
+            })
 
             Row() {
               Image(this.playerStatus == PlayerStatus.PLAY ? $r("app.media.ic_pause") : $r("app.media.ic_play"))
@@ -167,10 +175,15 @@ export struct PlayerController {
                 .objectFit(ImageFit.Contain)
                 .onClick(() => {
                   promptAction.showToast({ message: 'TODO 全屏' })
+                  this.playerManager.enterFullScreen()
                 })
             }
             .padding({ top: 4, bottom: 4 })
             .width('100%')
+            .linearGradient({
+              angle: 180,
+              colors: [['#00000000', 0.0], ['#80000000', 0.5], ['#ff000000', 1.0]]
+            })
           }
           .justifyContent(FlexAlign.SpaceBetween)
           .width('100%')
@@ -181,7 +194,7 @@ export struct PlayerController {
                 // 5s后隐藏
                 this.showController = false
                 this.showControllerTimer = -1
-              }, 5000)
+              }, 8000)
             }
           })
         }

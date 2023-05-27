@@ -1,21 +1,59 @@
-import { getTheme } from '../utils/Themes';
-import router from '@ohos.router'
-import promptAction from '@ohos.promptAction';
+
+export class PanelController {
+
+  private listener: (show: boolean) => void
+  private toShow: boolean = false
+
+  setListener(listener: (show: boolean) => void) {
+    this.listener = listener
+  }
+
+  isShow() {
+    return this.toShow;
+  }
+
+  close() {
+    this.toShow = false
+    if (this.listener) {
+      this.listener(false)
+    }
+  }
+
+  show() {
+    this.toShow = true
+    if (this.listener) {
+      this.listener(true)
+    }
+  }
+
+
+}
 
 @Component
 export default struct CustomPanel {
   @StorageLink('theme') theme: number = 0
-  @Watch("onShowPanelChanged") @Link showPanel: boolean
-  @Watch('onShowPanelInnerChanged') @State showPanelInner: boolean = false
+//  @Watch("onShowPanelChanged") @State showPanel: boolean = false
+  // TODO 改为panel state
+  @State showPanelInner: boolean = false
   @State ty: number = 0
   @State panelOpacity: number = 0
-  @State panelHeight: number = 0;
-//  @BuilderParam rootContent: () => any;
-  @BuilderParam panelContent: () => any;
+  @State panelHeight: number = 0
+  @BuilderParam panelContent: () => any
+  private controller: PanelController
+  private onClose: () => void
+
+  aboutToAppear() {
+    if (this.controller) {
+      this.controller.setListener((show) => {
+        this.onShowPanelChanged(show)
+      })
+    } else {
+      throw new Error('You must set controller first!')
+    }
+  }
 
   build() {
     Stack() {
-//      this.rootContent()
       if (this.showPanelInner) {
         Column()
           .backgroundColor('#80000000')
@@ -23,7 +61,8 @@ export default struct CustomPanel {
           .height('100%')
           .opacity(this.panelOpacity)
           .onClick(() => {
-            this.showPanel = false
+//            this.showPanel = false
+            this.controller.close()
           })
         Stack() {
           this.panelContent()
@@ -31,28 +70,22 @@ export default struct CustomPanel {
         .translate({ y: this.ty })
         .width('100%')
         .height('100%')
-        .onClick(() => {
-          this.showPanel = false
-        })
+//        .onClick(() => {
+////          this.showPanel = false
+//        })
       }
     }
     .width('100%')
     .height('100%')
+    .hitTestBehavior(this.showPanelInner ? HitTestMode.Default : HitTestMode.None)
     .onAreaChange((_, newArea) => {
       this.panelHeight = parseInt(newArea.height.toString())
       this.ty = this.panelHeight
     })
   }
 
-  onShowPanelInnerChanged() {
-    promptAction.showToast({ message: 'onShowPanelInnerChanged showPanelInner=' + this.showPanelInner })
-  }
-
-  onShowPanelChanged() {
-    promptAction.showToast({
-      message: 'onShowPanelChanged ' + this.showPanel + ' showPanelInner=' + this.showPanelInner
-    })
-    if (this.showPanel) {
+  onShowPanelChanged(show: boolean) {
+    if (show) {
       if (!this.showPanelInner) {
         //        this.ty = this.panelHeight
         this.showPanelInner = true
@@ -62,10 +95,7 @@ export default struct CustomPanel {
             duration: 360,
             curve: Curve.Smooth,
             iterations: 1,
-            playMode: PlayMode.Normal,
-            onFinish: () => {
-              //            this.showPanelInner = false
-            }
+            playMode: PlayMode.Normal
           }, () => {
             this.ty = 0
             this.panelOpacity = 1

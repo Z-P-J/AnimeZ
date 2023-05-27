@@ -1,20 +1,26 @@
+import DisplayUtils from '../utils/DisplayUtils';
+import ImmersionBarSpace from '../components/ImmersionBarSpace';
 import { PlayerStatus } from './PlayerStatus';
 import {PlayerController} from './PlayerController';
 import { PlayerManager } from './PlayerManager';
 import Logger from '../utils/Logger';
-import promptAction from '@ohos.promptAction';
-import router from '@ohos.router';
-import VideoInfo from '../entity/VideoInfo';
 
+const DEFAULT_ASPECT = 1.9
 
 @Component
 export struct VideoPlayer {
-  @State aspRatio: number = 1.7;
+  @State videoAspRatio: number = DEFAULT_ASPECT
+  @State aspRatio: number = DEFAULT_ASPECT
   @State playStatus: number = PlayerStatus.INIT;
   @State videoUrl: string = ''
   @State playerStatus: PlayerStatus = PlayerStatus.INIT
+  @State isFullScreen: boolean = false
+
+  private readonly componentController: XComponentController = new XComponentController()
 
   private playerManager: PlayerManager = null;
+  private immersionStatusBar: boolean = false
+
 
 
   aboutToAppear() {
@@ -22,38 +28,76 @@ export struct VideoPlayer {
       this.playerManager.addListener((status) => {
         this.playerStatus = status;
       })
-      this.playerManager.setVideoSizeChangedListener((w, h) => {
-        this.aspRatio = w / h;
-        promptAction.showToast({message: 'aspRatio=' + this.aspRatio})
+      this.playerManager.setVideoSizeChangedListener((w: number, h: number) => {
+        animateTo({
+          duration: 360,
+          curve: Curve.Smooth,
+          iterations: 1,
+          playMode: PlayMode.Normal
+        }, () => {
+          this.videoAspRatio = w / h
+          this.aspRatio = Math.min(DEFAULT_ASPECT, this.videoAspRatio);
+          Logger.e(this, 'VideoSizeChange w=' + w + ' h=' + h + ' videoAspRatio=' + this.videoAspRatio + ' aspRatio=' + this.aspRatio)
+        })
       })
+
+
+      this.playerManager.setFullScreenChangeListener((isFullScreen) => {
+        this.isFullScreen = isFullScreen
+        animateTo({
+          duration: 360,
+          curve: Curve.Smooth,
+          iterations: 1,
+          playMode: PlayMode.Normal
+        }, () => {
+          if (isFullScreen) {
+            this.aspRatio = DisplayUtils.getRealScreenHWRatio()
+//            this.componentController.setXComponentSurfaceSize({
+//              surfaceWidth: DisplayUtils.getRealScreenWidth(),
+//              surfaceHeight: DisplayUtils.getRealScreenHeight()
+//            })
+          } else {
+            this.aspRatio = Math.min(DEFAULT_ASPECT, this.videoAspRatio);
+          }
+        })
+      })
+
     } else {
       throw new Error('You must set playerManager firstly!')
     }
   }
 
   build() {
-    Stack({ alignContent: Alignment.Center }) {
-      XComponent({
-        id: 'xcomponentId',
-        type: 'surface',
-        libraryname: 'ijkplayer_napi'
-      })
-        .onLoad((context) => {
-          this.playerManager.init(context)
+    Column() {
+      if (!this.isFullScreen && this.immersionStatusBar) {
+        ImmersionBarSpace().backgroundColor(Color.Black)
+      }
+      Stack({ alignContent: Alignment.Center }) {
+        XComponent({
+          id: '' + new Date().getTime(),
+          type: 'surface',
+          libraryname: 'ijkplayer_napi',
+          controller: this.componentController
         })
-        .onDestroy(() => {
-        })
-        .width('100%')
-        .height('100%')
-        .aspectRatio(this.aspRatio)
+          .onLoad((context) => {
+            Logger.e(this, 'XComponent onLoad')
 
-      PlayerController({playerManager: this.playerManager})
-        .width('100%')
-        .height('100%')
+            this.playerManager.init(context)
+          })
+          .onDestroy(() => {
+            Logger.e(this, 'XComponent onDestroy')
+          })
+          .width('100%')
+          .aspectRatio(this.videoAspRatio)
+
+        PlayerController({playerManager: this.playerManager})
+          .width('100%')
+          .height('100%')
+      }
+      .backgroundColor(Color.Black)
+      .width('100%')
+      .aspectRatio(this.aspRatio)
     }
-    .backgroundColor(Color.Black)
     .width('100%')
-    .height('100%')
-    .aspectRatio(this.aspRatio)
   }
 }
