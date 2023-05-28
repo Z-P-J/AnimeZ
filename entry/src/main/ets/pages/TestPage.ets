@@ -14,6 +14,8 @@ struct TestPage {
   @State progressValue: number = 0;
   @State playStatus: number = PlayerStatus.INIT
   private playerManager: PlayerManager = new PlayerManager()
+  @State isFullScreen: boolean = false
+  @State rightPanelScale: number = 0
 
   aboutToAppear() {
     Logger.e(this, 'TestPage aboutToAppear playStatus=' + this.playStatus)
@@ -34,141 +36,178 @@ struct TestPage {
     new BimiAcgDataSource().parseVideoUrl('http://www.bimiacg4.net/bangumi/8552/play/1/1/')
       .then((url) => {
         this.message = url
-        this.playerManager.play(url)
+        this.playerManager.setPlayerUrl(url)
+        this.playerManager.start()
       })
   }
 
   build() {
     Column() {
-      //      Stack({ alignContent: Alignment.Center }) {
-      //        Row().width('100%').height('100%').backgroundColor(Color.Black)
+
+
+      Stack({ alignContent: Alignment.Center }) {
+
+
+        Row() {
+          if (this.isFullScreen) {
+            Column() {
+//              Text('1111111')
+              Scroll() {
+                Column() {
+//                  ForEach(['0.5', '0.75', '1.0', '1.25', '1.5', '1.75', '2.0', '2.5', '3.0'], (speed) => {
+//                    Text(speed)
+//                      .padding(8)
+//                      .fontColor(Color.Black)
+//                  })
+
+                  Text('播放器')
+                    .alignSelf(ItemAlign.Start)
+                    .fontSize(this.isFullScreen ? 16 : 14)
+                    .fontColor(Color.White)
+
+                  Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.SpaceAround, wrap: FlexWrap.Wrap }) {
+                    ForEach(['IjkPlayer', '系统内置'], (item) => {
+                      Text(item)
+                        .textAlign(TextAlign.Center)
+                        .fontColor(Color.White)
+                        .fontSize(10)
+                        .padding({top: 12, bottom: 12})
+                        .borderRadius(6)
+                        .margin({ bottom: 8 })
+                        .constraintSize({
+                          minWidth: '40%'
+                        })
+                        .maxLines(1)
+                        .onClick(() => {
+                          promptAction.showToast({message: 'TODO 播放器'})
+                        })
+                    })
+                  }
+                  .margin({ top: 8 })
+
+                  Text('画面尺寸')
+                    .alignSelf(ItemAlign.Start)
+                    .fontSize(this.isFullScreen ? 16 : 14)
+                    .fontColor(Color.White)
+
+                  Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.SpaceAround, wrap: FlexWrap.Wrap }) {
+                    ForEach(['适应', '拉伸', '填充', '16:9', '4:3', '1:1'], (item) => {
+                      Text(item)
+                        .textAlign(TextAlign.Center)
+                        .fontColor(Color.White)
+                        .fontSize(10)
+                        .padding({top: 12, bottom: 12})
+                        .borderRadius(6)
+                        .margin({ bottom: 8 })
+                        .constraintSize({
+                          minWidth: '33%'
+                        })
+                        .maxLines(1)
+                        .onClick(() => {
+                          promptAction.showToast({message: 'TODO 更改画面尺寸'})
+                        })
+                    })
+                  }
+                  .margin({ top: 8 })
+
+                }
+              }
+              .width('100%')
+              .height('100%')
+            }
+            .alignSelf(ItemAlign.End)
+            .backgroundColor(Color.Gray)
+            .scale({ x: this.rightPanelScale, centerX: '100%' })
+            .width('30%')
+            .height('100%')
+          }
+        }
+        .justifyContent(FlexAlign.End)
+        .width('100%')
+        .height('100%')
+
+      }
+      .backgroundColor(Color.Black)
+      .width('100%')
+      .aspectRatio(1.9)
+
+            VideoPlayer({ playerManager: this.playerManager })
+              .width('100%')
+      //        .height('28%')
+
+
+      Button('test')
+        .onClick(() => {
+//          this.isFullScreen = !this.isFullScreen
+
+
+          if (this.isFullScreen) {
+            animateTo(
+              {
+                duration: 320, // 动画时长
+                curve: Curve.Ease, // 动画曲线
+                iterations: 1, // 播放次数
+                playMode: PlayMode.Normal, // 动画模式
+                onFinish: () => {
+                  this.isFullScreen = false
+                }
+              },
+              () => {
+                this.rightPanelScale = 0
+              }
+            )
+          } else {
+            this.rightPanelScale = 0
+            this.isFullScreen = true
+            animateTo(
+              {
+                duration: 320, // 动画时长
+                curve: Curve.Ease,
+                iterations: 1, // 播放次数
+                playMode: PlayMode.Normal, // 动画模式
+                onFinish: () => {
+
+                }
+              },
+              () => {
+                this.rightPanelScale = 1
+              }
+            )
+          }
+
+
+
+        })
+
+      //      Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start, wrap: FlexWrap.Wrap }) {
+      //        Button('重置').margin(8)
+      //          .onClick(() => {
+      //            this.playStatus = PlayerStatus.INIT
+      //          })
       //
-      //        if (this.playStatus == PlayerStatus.INIT || this.playStatus == PlayerStatus.LOADING) {
-      //          LoadingProgress().width(48).height(48).color(Color.White)
-      //        } else if (this.playStatus == PlayerStatus.ERROR) {
-      //          Column() {
-      //            Image($r('app.media.ic_refresh')).width(32).height(32).margin(8)
-      //              .fillColor(Color.White).objectFit(ImageFit.Contain)
-      //            Text('出错了...')
-      //              .fontColor(Color.White)
-      //              .fontSize(14)
-      //          }
+      //        Button('加载').margin(8)
       //          .onClick(() => {
       //            this.loading()
       //          })
-      //        } else {
-      //          // Controller
-      //          Column() {
-      //            Row() {
-      //              Image($r("app.media.ic_back"))
-      //                .width(24)
-      //                .height(24)
-      //                .fillColor(Color.White)
-      //                .margin({ left: 16 })
-      //                .objectFit(ImageFit.Contain)
-      //              Text('Title')
-      //                .fontColor(Color.White)
-      //                .fontSize(14)
-      //                .fontWeight(500)
-      //                .layoutWeight(1)
-      //                .margin({ left: 16 })
-      //                .align(Alignment.Start)
-      //              Blank()
-      //            }
-      //            .height(56)
-      //            .width('100%')
       //
+      //        Button('暂停').margin(8)
+      //          .onClick(() => {
+      //            this.playerManager.pause()
+      //            //            this.playStatus = PlayerStatus.PAUSE
+      //          })
       //
-      //            Row() {
-      //              Image(this.playStatus == PlayerStatus.PLAY ? $r("app.media.ic_pause") : $r("app.media.ic_play"))
-      //                .width(24)
-      //                .height(24)
-      //                .fillColor(Color.White)
-      //                .margin({ left: 16 })
-      //                .objectFit(ImageFit.Contain)
-      //                .onClick(() => {
-      //                  if (this.playStatus == PlayerStatus.PLAY) {
-      //                    this.playStatus = PlayerStatus.PAUSE
-      //                  } else if (this.playStatus == PlayerStatus.PAUSE) {
-      //                    this.playStatus = PlayerStatus.PLAY
-      //                  }
-      //                })
-      //
-      //              Text("00:10").fontSize(12).margin({ left: 16, right: 8 }).fontColor(Color.White)
-      //              Slider({
-      //                value: this.progressValue,
-      //                min: 0,
-      //                max: 100,
-      //                step: 1,
-      //                style: SliderStyle.OutSet
-      //              })
-      //                .layoutWeight(1)
-      //                .blockColor(Color.Blue)
-      //                .trackColor(Color.White)
-      //                .selectedColor(Color.Blue)
-      //                .showSteps(true)
-      //                .showTips(true)
-      //                .enabled(this.slideEnable)
-      //                .onChange((value: number, mode: SliderChangeMode) => {
-      //
-      //                })
-      //              Text('10:00').fontSize(12).margin({ left: 8, right: 16 }).fontColor(Color.White)
-      //              Image($r("app.media.ic_fullscreen_enter"))
-      //                .width(24)
-      //                .height(24)
-      //                .fillColor(Color.White)
-      //                .margin({ right: 16 })
-      //                .objectFit(ImageFit.Contain)
-      //                .onClick(() => {
-      //                  promptAction.showToast({message: 'TODO 全屏'})
-      //                })
-      //            }
-      //            .padding({ top: 8, bottom: 8 })
-      //            .width('100%')
-      //          }
-      //          .justifyContent(FlexAlign.SpaceBetween)
-      //          .width('100%')
-      //          .height('100%')
-      //        }
+      //        Button('播放').margin(8)
+      //          .onClick(() => {
+      //            this.playerManager.start()
+      //            //            this.playStatus = PlayerStatus.PLAY
+      //          })
+      //        Button('错误').margin(8)
+      //          .onClick(() => {
+      //            this.playStatus = PlayerStatus.ERROR
+      //          })
       //      }
-      //      .width('100%')
-      //      .height('28%')
-
-
-      VideoPlayer({ playerManager: this.playerManager })
-        .width('100%')
-//        .height('28%')
-
-
-      Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start, wrap: FlexWrap.Wrap }) {
-        Button('重置').margin(8)
-          .onClick(() => {
-            this.playStatus = PlayerStatus.INIT
-          })
-
-        Button('加载').margin(8)
-          .onClick(() => {
-            this.loading()
-          })
-
-        Button('暂停').margin(8)
-          .onClick(() => {
-            this.playerManager.pause()
-            //            this.playStatus = PlayerStatus.PAUSE
-          })
-
-        Button('播放').margin(8)
-          .onClick(() => {
-            this.playerManager.start()
-            //            this.playStatus = PlayerStatus.PLAY
-          })
-        Button('错误').margin(8)
-          .onClick(() => {
-            this.playStatus = PlayerStatus.ERROR
-          })
-      }
-
-      Text(this.message).fontSize(18).padding(20).fontWeight(FontWeight.Bold).layoutWeight(1)
+      //
+      //      Text(this.message).fontSize(18).padding(20).fontWeight(FontWeight.Bold).layoutWeight(1)
 
     }
     .width('100%')
@@ -176,7 +215,7 @@ struct TestPage {
   }
 
   private loading() {
-    this.playStatus = PlayerStatus.LOADING
+    this.playStatus = PlayerStatus.BUFFERING
     setTimeout(() => {
       this.playStatus = PlayerStatus.PLAY
     }, 1000)

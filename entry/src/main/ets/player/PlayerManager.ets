@@ -46,10 +46,10 @@ export class PlayerManager {
   private status: number = PlayerStatus.INIT
   private videoSizeChangeListener: VideoSizeChangeListener
   private episodeChangeListener: EpisodeChangeListener
-  private fullScreenChangeListener: FullScreenChangeListener
   private fullScreenMode: boolean = false
   private updateProgressTimer: number = -1
   private readonly progressListeners: ProgressListener[] = []
+  private readonly fullScreenChangeListeners: FullScreenChangeListener[] = []
 
   init(context: object) {
 
@@ -58,44 +58,25 @@ export class PlayerManager {
     //设置XComponent回调的context
     this.mIjkMediaPlayer.setContext(context);
     this.mIjkMediaPlayer.reset();
+
     //设置debug模式
     this.mIjkMediaPlayer.setDebug(true);
     //初始化配置
     this.mIjkMediaPlayer.native_setup();
-    //使用精确寻帧 例如，拖动播放后，会寻找最近的关键帧进行播放，很有可能关键帧的位置不是拖动后的位置，而是较前的位置.可以设置这个参数来解决问题
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "enable-accurate-seek", "0");
-    //预读数据的缓冲区大小
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "max-buffer-size", "102400");
-    //停止预读的最小帧数
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "min-frames", "100");
-    //启动预加载
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "start-on-prepared", "1");
-    // 设置无缓冲，这是播放器的缓冲区，有数据就播放
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", "0");
-    //跳帧处理,放CPU处理较慢时，进行跳帧处理，保证播放流程，画面和声音同步
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", "5");
-    // 最大缓冲cache是3s， 有时候网络波动，会突然在短时间内收到好几秒的数据
-    // 因此需要播放器丢包，才不会累积延时
-    // 这个和第三个参数packet-buffering无关。
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "max_cached_duration", "3000");
-    // 无限制收流
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "infbuf", "1");
     // 屏幕常亮
     this.mIjkMediaPlayer.setScreenOnWhilePlaying(true);
-    // 设置超时
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "timeout", "10000000");
-    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "connect_timeout", "10000000");
-    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "addrinfo_timeout", "10000000");
-    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_timeout", "10000000");
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_clear", "1");
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "reconnect", "1");
 
-    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", "48");
-//    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzeduration", "1")
-//    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzemaxduration", "100");
-//    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", '102400');
+    this.initPlayer()
+    this.initOptions()
 
+    Logger.e(this, 'init url=' + this.url)
+    this.setStatus(PlayerStatus.INIT)
+    if (this.url) {
+      this.prepare()
+    }
+  }
 
+  private initPlayer() {
     let that = this;
 
     this.mIjkMediaPlayer.setOnVideoSizeChangedListener({
@@ -113,11 +94,11 @@ export class PlayerManager {
     this.mIjkMediaPlayer.setOnBufferingUpdateListener({
       onBufferingUpdate(percent: number) {
         Logger.e(this, 'onBufferingUpdate p=' + percent)
-        if (percent == 100) {
-          that.setStatus(PlayerStatus.PLAY)
-        } else {
-          that.setStatus(PlayerStatus.BUFFERING)
-        }
+//        if (percent == 100) {
+//          that.setStatus(PlayerStatus.PLAY)
+//        } else {
+//          that.setStatus(PlayerStatus.BUFFERING)
+//        }
       }
     })
 
@@ -154,16 +135,57 @@ export class PlayerManager {
     })
 
     this.mIjkMediaPlayer.setMessageListener()
-
-
-    Logger.e(this, 'init url=' + this.url)
-    this.setStatus(PlayerStatus.LOADING)
-    if (this.url) {
-      this.prepare()
-    }
   }
 
-  playEpisode(episode: EpisodeInfo) {
+  private initOptions() {
+    //    //使用精确寻帧 例如，拖动播放后，会寻找最近的关键帧进行播放，很有可能关键帧的位置不是拖动后的位置，而是较前的位置.可以设置这个参数来解决问题
+    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "enable-accurate-seek", "0");
+    //    //预读数据的缓冲区大小
+    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "max-buffer-size", "102400");
+    //    //停止预读的最小帧数
+    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "min-frames", "100");
+    //    //启动预加载
+    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "start-on-prepared", "1");
+    //    // 设置无缓冲，这是播放器的缓冲区，有数据就播放
+    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", "0");
+    //    //跳帧处理,放CPU处理较慢时，进行跳帧处理，保证播放流程，画面和声音同步
+    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", "5");
+    //    // 最大缓冲cache是3s， 有时候网络波动，会突然在短时间内收到好几秒的数据
+    //    // 因此需要播放器丢包，才不会累积延时
+    //    // 这个和第三个参数packet-buffering无关。
+    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "max_cached_duration", "3000");
+    //    // 无限制收流
+    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "infbuf", "1");
+    //    // 设置超时
+    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "timeout", "10000000");
+    //    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "connect_timeout", "10000000");
+    //    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "addrinfo_timeout", "10000000");
+    //    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_timeout", "10000000");
+    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_clear", "1");
+    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "reconnect", "1");
+    //    //
+    //    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", "48");
+    //    ////    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzeduration", "1")
+    //    ////    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzemaxduration", "100");
+    //    //    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", '102400');
+
+
+    //不用MediaCodec编解码
+    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", '1');
+    //不用opensles编解码
+    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "opensles", '0');
+    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "overlay-format", '842225234');
+    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", '1');
+    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "start-on-prepared", '0');
+    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", '0');
+    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "timeout", '10000000');
+    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "reconnect", '1');
+    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", '48');
+    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "enable-accurate-seek", '0');
+    this.mIjkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_clear", '1');
+  }
+
+  setEpisode(episode: EpisodeInfo) {
     //    if (this.episode === episode) {
     //      if (this.status == PlayerStatus.PLAY || this.status == PlayerStatus.LOADING) {
     //        return
@@ -186,47 +208,64 @@ export class PlayerManager {
     if (this.episodeChangeListener) {
       this.episodeChangeListener(episode)
     }
-    this.play(episode.videoUrl)
+    this.setPlayerUrl(episode.videoUrl)
   }
 
-  play(url: string) {
-    if (this.url === url) {
-      if (this.status == PlayerStatus.PLAY || this.status == PlayerStatus.LOADING) {
-        return
-      }
-      this.status = PlayerStatus.PLAY
-      return
-    }
+  getEpisode(): EpisodeInfo {
+    return this.episode
+  }
+
+  setPlayerUrl(url: string) {
+//    if (this.url === url) {
+//      if (this.status == PlayerStatus.PLAY) {
+//        return
+//      }
+//      this.status = PlayerStatus.PLAY
+//      return
+//    }
     this.url = url;
-    if (this.status != PlayerStatus.INIT) {
-      this.mIjkMediaPlayer.reset()
-      this.prepare()
-    }
+    this.mIjkMediaPlayer.stop()
+    this.status - PlayerStatus.INIT
+    //    if (this.status != PlayerStatus.INIT) {
+    //      this.mIjkMediaPlayer.reset()
+    //      this.prepare()
+    //    }
   }
 
   private prepare() {
     Logger.e(this, 'prepare url=' + this.url)
-    this.setStatus(PlayerStatus.LOADING)
+    this.setStatus(PlayerStatus.BUFFERING)
     this.mIjkMediaPlayer.setDataSource(this.url)
     this.mIjkMediaPlayer.prepareAsync()
-    this.mIjkMediaPlayer.start()
+    //    this.mIjkMediaPlayer.start()
     Logger.e(this, 'prepare start')
   }
 
   start() {
+    Logger.e(this, 'start isPlaying=' + this.mIjkMediaPlayer.isPlaying() + ' status=' + this.status)
     if (this.mIjkMediaPlayer.isPlaying()) {
       return
     }
-    if (this.status == PlayerStatus.ERROR) {
-      this.setStatus(PlayerStatus.LOADING)
-      this.mIjkMediaPlayer.start()
+    if (this.status == PlayerStatus.INIT) {
+      this.mIjkMediaPlayer.reset()
+      this.prepare()
+    } else if (this.status == PlayerStatus.ERROR) {
+      //      this.setStatus(PlayerStatus.LOADING)
+      //      this.mIjkMediaPlayer.start()
+      this.mIjkMediaPlayer.reset()
+      this.prepare()
     } else {
+
+      //初始化配置
+      this.mIjkMediaPlayer.native_setup();
+
       this.setStatus(PlayerStatus.PLAY)
       this.mIjkMediaPlayer.start()
     }
   }
 
   pause() {
+    Logger.e(this, 'pause isPlaying=' + this.mIjkMediaPlayer.isPlaying() + ' status=' + this.status)
     if (this.mIjkMediaPlayer.isPlaying()) {
       this.setStatus(PlayerStatus.PAUSE)
       this.mIjkMediaPlayer.pause()
@@ -235,7 +274,7 @@ export class PlayerManager {
 
   stop() {
     this.mIjkMediaPlayer.stop();
-    this.mIjkMediaPlayer.release();
+    //    this.mIjkMediaPlayer.release();
     this.setStatus(PlayerStatus.INIT)
   }
 
@@ -245,6 +284,14 @@ export class PlayerManager {
     }
     this.setStatus(PlayerStatus.BUFFERING)
     this.mIjkMediaPlayer.seekTo(value);
+  }
+
+  setSpeed(speed: string) {
+    this.mIjkMediaPlayer.setSpeed(speed)
+  }
+
+  getSpeed(): string {
+    return '' + this.mIjkMediaPlayer.getSpeed()
   }
 
   setDataSource(url: string) {
@@ -270,7 +317,20 @@ export class PlayerManager {
     for (let listener of this.listeners) {
       listener(status)
     }
+
+//    setTimeout(() => {
+//      for (let listener of this.listeners) {
+//        listener(status)
+//      }
+//    }, 20)
+//    this.notifyStatus(status)
   }
+
+//  private async notifyStatus(status: PlayerStatus) {
+//    for (let listener of this.listeners) {
+//      listener(status)
+//    }
+//  }
 
   getStatus() {
     return this.status
@@ -309,12 +369,14 @@ export class PlayerManager {
     this.episodeChangeListener = episodeChangeListener
   }
 
-  setFullScreenChangeListener(fullScreenChangeListener: FullScreenChangeListener) {
-    this.fullScreenChangeListener = fullScreenChangeListener
+  addFullScreenChangeListener(fullScreenChangeListener: FullScreenChangeListener) {
+    this.fullScreenChangeListeners.push(fullScreenChangeListener)
   }
 
   destroy() {
     this.stopProgress()
+    this.stop()
+    this.mIjkMediaPlayer.release()
   }
 
   isFullScreen() {
@@ -327,9 +389,9 @@ export class PlayerManager {
       win.setWindowSystemBarEnable([])
       win.setPreferredOrientation(window.Orientation.LANDSCAPE)
       this.fullScreenMode = true
-      if (this.fullScreenChangeListener) {
-        this.fullScreenChangeListener(true)
-      }
+      this.fullScreenChangeListeners.forEach((listener) => {
+        listener(true)
+      })
     })
   }
 
@@ -339,9 +401,11 @@ export class PlayerManager {
       win.setWindowSystemBarEnable(['status', 'navigation'])
       win.setPreferredOrientation(window.Orientation.PORTRAIT)
       this.fullScreenMode = false
-      if (this.fullScreenChangeListener) {
-        this.fullScreenChangeListener(false)
-      }
+
+
+      this.fullScreenChangeListeners.forEach((listener) => {
+        listener(false)
+      })
     })
   }
 
@@ -358,12 +422,15 @@ export class PlayerManager {
   protected onInfo(what: number, extra: number) {
     Logger.e(this, "OnInfoListener-->go:" + what + "===" + extra);
     if (what == IJKMediaInfo.MEDIA_INFO_BUFFERING_START) {
-      this.setStatus(PlayerStatus.LOADING)
+      this.mIjkMediaPlayer.pause()
+      this.setStatus(PlayerStatus.BUFFERING)
     } else if (what == IJKMediaInfo.MEDIA_INFO_BUFFERING_END) {
       // TODO buffer status
       this.setStatus(PlayerStatus.PLAY)
+      this.mIjkMediaPlayer.start()
     } else if (what == IJKMediaInfo.MEDIA_INFO_VIDEO_RENDERING_START) {
       this.setStatus(PlayerStatus.PLAY)
+      this.mIjkMediaPlayer.start()
     }
   }
 

@@ -62,7 +62,7 @@ export default abstract class AbsTable<T> implements ITable {
   abstract getEntityId(item: T): ValueType;
 
   /**
-   * TODO 清空表
+   * 清空表
    */
   async clearTable(): Promise<void> {
     let db = await this.futureDb
@@ -129,19 +129,13 @@ export default abstract class AbsTable<T> implements ITable {
    */
   async queryAll(): Promise<T[]> {
     return this.query(this.getPredicates(), this.getTableColumns())
-    //    Logger.e(this, 'queryAll')
-    //    let db = await this.futureDb
-    //    let resultSet = await db.querySql("SELECT * from " + this.tableName)
-    //    let items = []
-    //    if (resultSet.goToFirstRow()) {
-    //      do {
-    //        Logger.e(this, 'queryAll rowIndex=' + resultSet.rowIndex)
-    //        items.push(this.createItem(resultSet))
-    //      } while (resultSet.goToNextRow())
-    //    }
-    //    return items;
   }
 
+  /**
+   * 根据条件查询数据
+   * @param predicates
+   * @param columns
+   */
   async query(predicates: rdb.RdbPredicates, columns?: Array<string>): Promise<T[]> {
     Logger.e(this, 'queryAll')
     let db = await this.futureDb

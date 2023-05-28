@@ -1,3 +1,4 @@
+import Logger from '../utils/Logger';
 /*
  * Copyright (C) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -163,6 +164,7 @@ export class IjkMediaPlayer {
     let messageCallBack = function (what, arg1, arg2, obj) {
       LogUtils.getInstance()
         .LOGI("setMessageListener callback what:" + what + ", arg1:" + arg1 + ",arg2:" + arg2 + ",obj:" + obj);
+      Logger.e(this, "setMessageListener callback what:" + what + ", arg1:" + arg1 + ",arg2:" + arg2 + ",obj:" + obj)
       if (what == MessageType.MEDIA_PREPARED) {
         onPreparedListener.onPrepared();
       }

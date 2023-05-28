@@ -1,3 +1,4 @@
+import Settings from '../utils/Settings';
 import { PanelController } from '../components/CustomPanel';
 import { ShareDialog } from '../components/dialog/ShareDialog';
 import CustomPanel from '../components/CustomPanel';
@@ -97,6 +98,7 @@ struct VideoDetailPage {
       navigationBarContentColor: '#000000'
     })
     this.saveHistoryInfo()
+    this.playerManager.destroy()
   }
 
   onPageShow() {
@@ -486,41 +488,6 @@ struct VideoDetailPage {
   }
 
   @Builder EpisodeList() {
-    //    ForEach(this.videoDetailInfo.episodes, (episodeList: EpisodeList, episodeListIndex: number) => {
-    //      Column() {
-    //        Text(episodeList.title).fontSize(16).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-    //        Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start, wrap: FlexWrap.Wrap }) {
-    //          ForEach(episodeList.episodes, (item: EpisodeInfo, episodeIndex: number) => {
-    //            Text(item.title)
-    //              .textAlign(TextAlign.Center)
-    //                // TODO getTheme
-    //              .backgroundColor(
-    //                  (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
-    //                  ? getTheme(this.theme).primary_color : '#f5f5f5')
-    //              .fontColor(
-    //                  (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
-    //                  // TODO getTheme
-    //                  ? Color.White : getTheme(this.theme).color_text_major)
-    //              .fontSize(12)
-    //              .padding({ top: 8, bottom: 8, left: 12, right: 12 })
-    //              .borderRadius(4)
-    //              .margin({ bottom: 8 })
-    //              .width('18%')
-    //              .maxLines(1)
-    //              .onClick(() => {
-    //                this.historyInfo.videoProgress = 0
-    //                this.historyInfo.currentTime = 0
-    //                this.historyInfo.totalTime = 0
-    //                this.playVideo(episodeListIndex, episodeIndex)
-    //              })
-    //          })
-    //        }
-    //      }
-    //      .padding({ left: 16, right: 16 })
-    //      .alignItems(HorizontalAlign.Start)
-    //    })
-
-
     ForEach(this.videoDetailInfo.episodes, (episodeList: EpisodeList, episodeListIndex: number) => {
       Column() {
         this.Header(episodeList.title)
@@ -668,9 +635,11 @@ struct VideoDetailPage {
 
         this.playerManager.addListener((status) => {
           if (status == PlayerStatus.DONE) {
-            let episodeList = this.videoDetailInfo.episodes[this.episodeListIndex]
-            if (this.episodeIndex < episodeList.episodes.length - 1) {
-              this.playVideo(this.episodeListIndex, this.episodeIndex + 1)
+            if (Settings.isAutoPlayNextEpisode()) {
+              let episodeList = this.videoDetailInfo.episodes[this.episodeListIndex]
+              if (this.episodeIndex < episodeList.episodes.length - 1) {
+                this.playVideo(this.episodeListIndex, this.episodeIndex + 1)
+              }
             }
           }
         })
@@ -728,7 +697,8 @@ struct VideoDetailPage {
 
   private play(episode) {
     this.saveHistoryInfo()
-    this.playerManager.playEpisode(episode)
+    this.playerManager.setEpisode(episode)
+    this.playerManager.start()
   }
 
   private saveHistoryInfo() {

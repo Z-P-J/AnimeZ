@@ -35,7 +35,7 @@ export default struct CustomPanel {
 //  @Watch("onShowPanelChanged") @State showPanel: boolean = false
   // TODO 改为panel state
   @State showPanelInner: boolean = false
-  @State ty: number = 0
+  @State translateY: number = 0
   @State panelOpacity: number = 0
   @State panelHeight: number = 0
   @BuilderParam panelContent: () => any
@@ -67,7 +67,7 @@ export default struct CustomPanel {
         Stack() {
           this.panelContent()
         }
-        .translate({ y: this.ty })
+        .translate({ y: this.translateY })
         .width('100%')
         .height('100%')
 //        .onClick(() => {
@@ -80,7 +80,11 @@ export default struct CustomPanel {
     .hitTestBehavior(this.showPanelInner ? HitTestMode.Default : HitTestMode.None)
     .onAreaChange((_, newArea) => {
       this.panelHeight = parseInt(newArea.height.toString())
-      this.ty = this.panelHeight
+      if (this.showPanelInner) {
+        this.translateY = 0
+      } else {
+        this.translateY = this.panelHeight
+      }
     })
   }
 
@@ -97,7 +101,7 @@ export default struct CustomPanel {
             iterations: 1,
             playMode: PlayMode.Normal
           }, () => {
-            this.ty = 0
+            this.translateY = 0
             this.panelOpacity = 1
           })
         }, 10)
@@ -113,7 +117,7 @@ export default struct CustomPanel {
             this.showPanelInner = false
           }
         }, () => {
-          this.ty = this.panelHeight
+          this.translateY = this.panelHeight
           this.panelOpacity = 0
         })
       }

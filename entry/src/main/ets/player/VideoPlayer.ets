@@ -36,13 +36,17 @@ export struct VideoPlayer {
           playMode: PlayMode.Normal
         }, () => {
           this.videoAspRatio = w / h
-          this.aspRatio = Math.min(DEFAULT_ASPECT, this.videoAspRatio);
+          if (this.isFullScreen) {
+            this.aspRatio = DisplayUtils.getRealScreenHWRatio()
+          } else {
+            this.aspRatio = Math.min(DEFAULT_ASPECT, this.videoAspRatio);
+          }
           Logger.e(this, 'VideoSizeChange w=' + w + ' h=' + h + ' videoAspRatio=' + this.videoAspRatio + ' aspRatio=' + this.aspRatio)
         })
       })
 
 
-      this.playerManager.setFullScreenChangeListener((isFullScreen) => {
+      this.playerManager.addFullScreenChangeListener((isFullScreen) => {
         this.isFullScreen = isFullScreen
         animateTo({
           duration: 360,

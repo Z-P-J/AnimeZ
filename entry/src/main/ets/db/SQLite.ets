@@ -8,7 +8,7 @@ import HashMap from '@ohos.util.HashMap';
 import 'reflect-metadata';
 
 /**
- * 数据库操作类
+ * 数据库封装
  */
 export default class SQLite {
 

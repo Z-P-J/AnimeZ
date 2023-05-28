@@ -1,3 +1,4 @@
+import Settings from '../utils/Settings';
 import { getTheme } from '../utils/Themes';
 import { RadioDialog } from '../components/dialog/RadioDialog';
 import DataStore from '../utils/DataStore';
@@ -22,7 +23,7 @@ struct SettingsPage {
       settings: [
         { title: '首页数据源',
           preference: {
-            key: 'key_homepage_source',
+            key: Settings.KEY_HOMEPAGE_SOURCE,
             type: 'radio',
             defaultValue: 0,
             values: ['数据源一', '数据源二', '数据源三'],
@@ -33,7 +34,7 @@ struct SettingsPage {
         },
         { title: '主题', info: '纯白',
           preference: {
-            key: 'key_theme_id',
+            key: Settings.KEY_THEME_ID,
             type: 'radio',
             defaultValue: 0,
             values: ['白天', '夜晚'],
@@ -51,7 +52,7 @@ struct SettingsPage {
           title: '自动播放下一集',
           info: '视频结束后自动播放下一集',
           preference: {
-            key: 'key_auto_play_next_episode',
+            key: Settings.KEY_AUTO_PLAY_NEXT_EPISODE,
             type: 'switch',
             defaultValue: true,
             onValueChange: (key, value) => {
@@ -63,7 +64,7 @@ struct SettingsPage {
           title: '非Wifi下自动播放',
           info: '非Wifi环境下不再提醒，自动播放视频',
           preference: {
-            key: 'key_auto_play_on_no_wifi',
+            key: Settings.KEY_AUTO_PLAY_ON_NO_WIFI,
             type: 'switch',
             defaultValue: true,
             onValueChange: (key, value) => {
@@ -80,15 +81,15 @@ struct SettingsPage {
           title: '自动恢复下载',
           info: 'Wifi环境下软件启动后自动恢复未完成的下载任务',
           preference: {
-            key: 'key_auto_resume_download_on_wifi',
+            key: Settings.KEY_AUTO_RESUME_DOWNLOAD_ON_WIFI,
             type: 'switch',
-            defaultValue: true,
+            defaultValue: false,
             onValueChange: (key, value) => {
               promptAction.showToast({ message: 'TODO key=' + key + ' value=' + value })
             }
           }
         },
-        { title: '最大同时下载任务数', info: '' + DataStore.get('key_max_downloading_count', 3),
+        { title: '最大同时下载任务数', info: '' + Settings.getMaxDownloadingCount(),
           onClick: (item, callback) => {
             let controller = new CustomDialogController({
               builder: SliderDialog({
