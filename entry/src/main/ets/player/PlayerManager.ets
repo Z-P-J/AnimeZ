@@ -255,10 +255,6 @@ export class PlayerManager {
       this.mIjkMediaPlayer.reset()
       this.prepare()
     } else {
-
-      //初始化配置
-      this.mIjkMediaPlayer.native_setup();
-
       this.setStatus(PlayerStatus.PLAY)
       this.mIjkMediaPlayer.start()
     }
@@ -279,9 +275,9 @@ export class PlayerManager {
   }
 
   seekTo(value: string) {
-    if (this.mIjkMediaPlayer.isPlaying()) {
-      this.mIjkMediaPlayer.pause()
-    }
+//    if (this.mIjkMediaPlayer.isPlaying()) {
+//      this.mIjkMediaPlayer.pause()
+//    }
     this.setStatus(PlayerStatus.BUFFERING)
     this.mIjkMediaPlayer.seekTo(value);
   }

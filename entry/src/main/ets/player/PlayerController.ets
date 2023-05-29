@@ -68,11 +68,9 @@ export struct PlayerController {
   build() {
     Stack({ alignContent: Alignment.Center }) {
 
-      if (this.playerStatus === PlayerStatus.INIT) {
-        this.Loading()
-      } else if (this.playerStatus === PlayerStatus.BUFFERING) {
-        this.Loading()
-      } else if (this.playerStatus === PlayerStatus.ERROR) {
+      this.Loading()
+
+      if (this.playerStatus === PlayerStatus.ERROR) {
         Column() {
           Image($r('app.media.ic_refresh'))
             .width(32)
@@ -127,10 +125,15 @@ export struct PlayerController {
   @Builder Loading() {
     Stack({ alignContent: Alignment.Center }) {
       LoadingProgress().width(48).height(48).color(Color.White)
+        .visibility(
+            this.playerStatus === PlayerStatus.INIT || this.playerStatus === PlayerStatus.BUFFERING ? Visibility.Visible : Visibility.None
+        )
     }
+    .visibility(this.playerStatus === PlayerStatus.INIT || this.playerStatus === PlayerStatus.BUFFERING ? Visibility.Visible : Visibility.None)
     .backgroundColor('#80000000')
     .borderRadius(16)
-    .padding({ left: 32, top: 16, right: 32, bottom: 16 })
+    .width('100%')
+    .height('100%')
   }
 
   @Builder VideoController() {
@@ -249,9 +252,12 @@ export struct PlayerController {
               + ' result=' + (mode == SliderChangeMode.End || mode == SliderChangeMode.Click)
               + ' result2=' + (mode == SliderChangeMode.Click) + ' click=' + SliderChangeMode.Click + ' result3=' + (mode === SliderChangeMode.Click))
               if (mode == SliderChangeMode.End || mode == 3) {
-                this.progress = value / 100
-                let seekValue = this.progress * this.playerManager.getDuration();
+                this.progress = value
+                let seekValue = value / 100 * this.playerManager.getDuration();
                 Logger.e(this, 'Slider onChange seekValue=' + seekValue + " duration=" + this.playerManager.getDuration())
+
+                this.setProgress(this.playerManager.getDuration(), seekValue)
+
                 this.playerManager.seekTo(seekValue + "");
               }
             })
