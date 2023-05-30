@@ -1,3 +1,4 @@
+import BimiAcgDataSource from '../../api/impl/BimiAcgDataSource';
 import DownloadTaskRepository from '../../download/DownloadTaskRepository';
 import M3u8 from './M3U8';
 import M3U8Utils from './M3U8Utils';
@@ -36,7 +37,7 @@ class M3U8DownloadTask extends GroupDownloadTask {
 
   doInit() {
     Logger.e(this, 'doInit taskInfo=' + JSON.stringify(this.taskInfo))
-    this.initM3u8()
+    this.initTask()
       .then((result) => {
         Logger.e(this, 'doInit initM3u8 result=' + result)
         this.taskInfo.prepared = true;
@@ -46,6 +47,15 @@ class M3U8DownloadTask extends GroupDownloadTask {
         Logger.e(this, 'M3U8Utils e=' + JSON.stringify(e))
         this.statusManager.onError(JSON.stringify(e))
       })
+  }
+
+  private async initTask(): Promise<number> {
+    let source = new BimiAcgDataSource()
+    let url = await source.parseVideoUrl(this.taskInfo.originalUrl)
+    if (url) {
+      return await this.initM3u8()
+    }
+    throw new Error('init task failed! originalUrl: ' + this.taskInfo.originalUrl)
   }
 
   private async initM3u8(): Promise<number> {

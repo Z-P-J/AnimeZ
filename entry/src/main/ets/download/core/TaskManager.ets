@@ -164,6 +164,7 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
       }
     }
     task.addStatusObserver(this.childStatusObserver);
+    Logger.e(this, 'addTaskInner id=' + task.getTaskId())
     this.tasks.push(task);
   }
 
@@ -180,10 +181,15 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
   }
 
   start(task: T) {
-    if (this.tasks.indexOf(task) < 0) {
-      Logger.w(this, 'start task not in download queue!')
+
+    let result = this.tasks.find((t) => {
+      return t.getTaskId() === task.getTaskId()
+    })
+    if (!result) {
+      Logger.w(this, 'start task not in download queue! id=' + task.getTaskId())
       return
     }
+
     let status = task.getStatus();
     Logger.d(this, 'download start, id=' + task.getTaskId() + ', status=' + status);
     if (status == TaskStatus.COMPLETE || status == TaskStatus.RUNNING || (status == TaskStatus.PREPARING && !task.isPrepared())) {
@@ -191,29 +197,10 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
       return;
     }
 
-    //    if (this.runningCount < this.maxDownloadingCount) {
-    //      if (status != TaskStatus.PREPARING) {
-    //        ++this.runningCount;
-    //      }
-    //      if (task.isPrepared()) {
-    //        this.process(task);
-    //      } else {
-    //        this.init(task);
-    //      }
-    //    } else if (status != TaskStatus.WAITING) {
-    //      this.wait(task);
-    //    }
-
-
     if (status == TaskStatus.CREATED) {
       this.taskRepository.create(task.taskInfo)
         .then((result) => {
           Logger.d(this, 'start create result=' + result)
-//          if (this.observers) {
-//            this.observers.forEach((o) => {
-//              o.onMissionAdd(task)
-//            })
-//          }
           this.startInner(task)
         })
         .catch((e) => {

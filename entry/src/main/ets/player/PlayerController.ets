@@ -70,38 +70,38 @@ export struct PlayerController {
 
       this.Loading()
 
-      if (this.playerStatus === PlayerStatus.ERROR) {
-        Column() {
-          Image($r('app.media.ic_refresh'))
-            .width(32)
-            .height(32)
-            .margin(8)
-            .fillColor(Color.White)
-            .objectFit(ImageFit.Contain)
-          Text('出错了...')
-            .fontColor(Color.White)
-            .fontSize(14)
-        }
-        .onClick(() => {
-          this.playerManager.start()
-        })
-      } else if (this.playerStatus === PlayerStatus.DONE) {
-        Column() {
-          Image($r('app.media.ic_refresh'))
-            .width(32)
-            .height(32)
-            .margin(8)
-            .fillColor(Color.White)
-            .objectFit(ImageFit.Contain)
-          Text('重新播放')
-            .fontColor(Color.White)
-            .fontSize(14)
-        }
-        .onClick(() => {
-          this.playerManager.stop()
-          this.playerManager.start()
-        })
+      Column() {
+        Image($r('app.media.ic_refresh'))
+          .width(32)
+          .height(32)
+          .margin(8)
+          .fillColor(Color.White)
+          .objectFit(ImageFit.Contain)
+        Text('出错了...')
+          .fontColor(Color.White)
+          .fontSize(14)
       }
+      .visibility(this.playerStatus === PlayerStatus.ERROR ? Visibility.Visible : Visibility.None)
+      .onClick(() => {
+        this.playerManager.start()
+      })
+
+      Column() {
+        Image($r('app.media.ic_refresh'))
+          .width(32)
+          .height(32)
+          .margin(8)
+          .fillColor(Color.White)
+          .objectFit(ImageFit.Contain)
+        Text('重新播放')
+          .fontColor(Color.White)
+          .fontSize(14)
+      }
+      .visibility(this.playerStatus === PlayerStatus.DONE ? Visibility.Visible : Visibility.None)
+      .onClick(() => {
+        this.playerManager.stop()
+        this.playerManager.start()
+      })
 
       if (this.showController) {
         // Controller
@@ -178,7 +178,7 @@ export struct PlayerController {
             .width(24)
             .height(24)
             .fillColor(Color.White)
-            .margin({ left: this.isFullScreen ? 24 : 16, right: this.isFullScreen ? 24 : 16 })
+            .margin({ left: this.isFullScreen ? 24 : 16 })
             .objectFit(ImageFit.Contain)
             .onClick(() => {
               promptAction.showToast({message: 'TODO 小窗播放'})

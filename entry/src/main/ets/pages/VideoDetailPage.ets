@@ -1,3 +1,4 @@
+import { VideoCacheList } from '../components/VideoCacheList';
 import Settings from '../utils/Settings';
 import { PanelController } from '../components/CustomPanel';
 import { ShareDialog } from '../components/dialog/ShareDialog';
@@ -319,7 +320,10 @@ struct VideoDetailPage {
         .width('100%')
         .height('100%')
       } else {
-        this.DownloadPage()
+//        this.DownloadPage()
+
+        VideoCacheList({videoDetailInfo: this.videoDetailInfo})
+
       }
     }
     .backgroundColor(getTheme(this.theme).background_color)
