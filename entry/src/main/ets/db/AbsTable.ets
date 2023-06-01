@@ -30,9 +30,13 @@ export default abstract class AbsTable<T> implements ITable {
       securityLevel: rdb.SecurityLevel.S1
     })
     Logger.e(this, 'initDb db=' + db)
-    await db.executeSql(this.getCreateTableSql())
+    await this.init(db)
     Logger.e(this, 'initDb executeSql=' + this.getCreateTableSql())
     return db
+  }
+
+  protected async init(db: rdb.RdbStore): Promise<void> {
+    return db.executeSql(this.getCreateTableSql())
   }
 
   getTableName(): string {

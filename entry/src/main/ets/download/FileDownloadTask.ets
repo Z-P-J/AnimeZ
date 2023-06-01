@@ -14,6 +14,14 @@ export class FileDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> ext
     super(manager, taskInfo)
   }
 
+  getOriginalUrl(): string {
+    return this.taskInfo.originalUrl
+  }
+
+  getUrl(): string {
+    return this.taskInfo.url
+  }
+
   getTaskName() {
     if (this.taskInfo.taskName) {
       return this.taskInfo.taskName

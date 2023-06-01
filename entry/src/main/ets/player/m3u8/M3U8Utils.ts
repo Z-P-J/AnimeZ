@@ -133,6 +133,10 @@ export default class M3U8Utils {
                 }
                 start = end + 1
                 end = content.indexOf('\n', start)
+                if (end < 0) {
+                    end = content.length
+                }
+                Logger.e(this, 'parse start=' + start + ' end=' + end + ' len=' + content.length)
                 continue
             }
 

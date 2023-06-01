@@ -1,3 +1,4 @@
+import promptAction from '@ohos.promptAction';
 import { TaskManagerObserver } from '../download/core/TaskManager'
 import M3U8Downloader from '../player/m3u8/M3U8Downloader'
 import { ZDownloader } from '../download/ZDownloader'
@@ -97,11 +98,13 @@ export struct VideoCacheItem {
       if (!this.downloadTask) {
         this.downloadTask = ZDownloader.get(M3U8Downloader)
           .with(this.episodeInfo.link)
-          .setTaskName(this.episodeInfo.title)
+          .setTaskName(this.episodeInfo.desc)
           .setFileName('index.m3u8')
           .setDownloadDir(getContext(this).filesDir + "/download/")
           .build()
         this.downloadTask.start()
+      } else {
+        promptAction.showToast({ message: '任务已存在' })
       }
     })
   }

@@ -12,17 +12,24 @@ import rdb from '@ohos.data.relationalStore';
  */
 @Table({ db: 'download_manager', name: 'download_tasks' })
 export class FileDownloadTable extends AbsTable<DownloadTaskInfo> {
+
+//  protected async init(db: rdb.RdbStore): Promise<void> {
+//    await db.executeSql('ALTER TABLE download_tasks ADD COLUMN taskName TEXT;')
+//    await db.executeSql('update download_tasks set taskName = fileName;')
+//    return db.executeSql(this.getCreateTableSql())
+//  }
+
   getColumnId(): string {
     return 'taskId'
   }
 
   getTableColumns(): string[] {
-    return ['taskId', 'parentTaskId', 'createTime', 'fileName', 'originalUrl', 'url', 'coverUrl', 'downloadDir',
+    return ['taskId', 'parentTaskId', 'taskName', 'createTime', 'fileName', 'originalUrl', 'url', 'coverUrl', 'downloadDir',
       'totalSize', 'receivedSize', 'prepared', 'blockDownload', 'status', 'offset', 'contentLength']
   }
 
   getCreateTableSql(): string {
-    return "CREATE TABLE IF NOT EXISTS download_tasks(taskId INTEGER PRIMARY KEY AUTOINCREMENT, parentTaskId INTEGER, createTime INTEGER" +
+    return "CREATE TABLE IF NOT EXISTS download_tasks(taskId INTEGER PRIMARY KEY AUTOINCREMENT, parentTaskId INTEGER, taskName TEXT, createTime INTEGER" +
     ", fileName TEXT, originalUrl TEXT, url TEXT, coverUrl TEXT, downloadDir TEXT, totalSize INTEGER, receivedSize INTEGER" +
     ", prepared INTEGER, blockDownload INTEGER, status INTEGER, offset INTEGER, contentLength INTEGER, finishedTime INTEGER)"
   }
@@ -41,17 +48,12 @@ export class FileDownloadTable extends AbsTable<DownloadTaskInfo> {
     return item.taskId
   }
 
-  fileName: string
-  downloadDir: string
-  originalUrl: string
-  url: string
-  blockDownload: boolean = false
-
   createItem(cursor: rdb.ResultSet): DownloadTaskInfo {
     let taskId = cursor.getLong(cursor.getColumnIndex('taskId'))
     let parentTaskId = cursor.getLong(cursor.getColumnIndex('parentTaskId'))
     let createTime = cursor.getLong(cursor.getColumnIndex('createTime'))
     let info = new DownloadTaskInfo(taskId, parentTaskId, createTime)
+    info['taskName'] = cursor.getString(cursor.getColumnIndex('taskName'))
     info['fileName'] = cursor.getString(cursor.getColumnIndex('fileName'))
     info['downloadDir'] = cursor.getString(cursor.getColumnIndex('downloadDir'))
     info['originalUrl'] = cursor.getString(cursor.getColumnIndex('originalUrl'))

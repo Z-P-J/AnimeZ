@@ -13,7 +13,10 @@ export struct DownloadItem {
   @State status: number = TaskStatus.CREATED
   @State canPause: boolean = false;
   @State progress: number = 0;
-  private observer: TaskObserver = {
+
+  @Link selectMode: boolean
+
+  private readonly observer: TaskObserver = {
     onPreparing: () => {
       Logger.d(this, "download onPreparing");
     },
@@ -101,13 +104,13 @@ export struct DownloadItem {
           .width('100%')
       }
       .layoutWeight(1)
-      .margin({ top: 10, bottom: 10 })
+      .margin({ top: 10, bottom: 10, right: 14 })
 
       if (this.status != TaskStatus.COMPLETE) {
         Image(this.canPause ? $r('app.media.ic_download_pause') : $r('app.media.ic_download_resume'))
           .width(28)
           .height(28)
-          .margin({ left: 14, right: 14 })
+          .margin({ right: 14 })
           .objectFit(ImageFit.Contain)
           .onClick(() => {
             if (this.task.canPause()) {
@@ -122,7 +125,7 @@ export struct DownloadItem {
       Blank()
     }
     .width('100%')
-    .backgroundColor(Color.White)
+    .backgroundColor(this.selectMode ? Color.Blue : Color.White)
     .borderRadius(16)
     .padding(8)
   }

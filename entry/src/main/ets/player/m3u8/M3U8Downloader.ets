@@ -51,8 +51,9 @@ class M3U8DownloadTask extends GroupDownloadTask {
 
   private async initTask(): Promise<number> {
     let source = new BimiAcgDataSource()
-    let url = await source.parseVideoUrl(this.taskInfo.originalUrl)
-    if (url) {
+    this.taskInfo.url = await source.parseVideoUrl(this.taskInfo.originalUrl)
+    Logger.e(this, 'initTask url=' + this.taskInfo.url)
+    if (this.taskInfo.url) {
       return await this.initM3u8()
     }
     throw new Error('init task failed! originalUrl: ' + this.taskInfo.originalUrl)
@@ -62,24 +63,24 @@ class M3U8DownloadTask extends GroupDownloadTask {
     if (this.taskInfo.prepared) {
       return 0
     }
-    if (!this.m3u8) {
-      this.m3u8 = await M3U8Utils.parse(null, this.taskInfo.url)
-      Logger.e(this, 'initM3u8 m3u8=' + JSON.stringify(this.m3u8))
-      Logger.e(this, 'initM3u8 taskDir=' + this.taskDir + ' exists=' + fio.pathExistsSync(this.taskDir))
-      if (!fio.pathExistsSync(this.taskDir)) {
-        fio.mkdirsSync(this.taskDir)
-      }
-      Logger.e(this, 'initM3u8 taskDir exists=' + fio.pathExistsSync(this.taskDir))
-      let file = await fs.open(this.taskDir + 'video.info', fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
-      let result = await fs.write(file.fd, JSON.stringify(this.m3u8), { encoding: 'utf-8' })
-
-      Logger.e(this, 'save m3u8 result=' + result)
-
-    }
-    //    let m3u8 = await M3U8Utils.parse(null, this.taskInfo.url)
+    this.m3u8 = await M3U8Utils.parse(null, this.taskInfo.url)
     Logger.e(this, 'initM3u8 m3u8=' + JSON.stringify(this.m3u8))
 
-    let result = await M3U8Utils.saveM3U8LocalInfo(this.m3u8, this.taskDir + 'index.m3u8')
+    if (!this.m3u8 || this.m3u8.segmentList.length == 0) {
+      throw new Error('m3u8 parse failed!')
+    }
+
+    Logger.e(this, 'initM3u8 taskDir=' + this.taskDir + ' exists=' + fio.pathExistsSync(this.taskDir))
+    if (!fio.pathExistsSync(this.taskDir)) {
+      fio.mkdirsSync(this.taskDir)
+    }
+    Logger.e(this, 'initM3u8 taskDir exists=' + fio.pathExistsSync(this.taskDir))
+    let file = await fs.open(this.taskDir + 'video.info', fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
+    let result = await fs.write(file.fd, JSON.stringify(this.m3u8), { encoding: 'utf-8' })
+
+    Logger.e(this, 'save m3u8 result=' + result)
+
+    result = await M3U8Utils.saveM3U8LocalInfo(this.m3u8, this.taskDir + 'index.m3u8')
     Logger.e(this, 'initM3u8 saveM3U8LocalInfo result=' + result)
     result = await M3U8Utils.saveM3U8OriginInfo(this.m3u8, this.taskDir + 'index_origin.m3u8')
     Logger.e(this, 'initM3u8 saveM3U8OriginInfo result=' + result)

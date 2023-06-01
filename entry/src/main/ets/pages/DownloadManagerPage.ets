@@ -15,6 +15,44 @@ import ImmersionBarSpace from '../components/ImmersionBarSpace';
 
 const DOWNLOADER: M3U8Downloader = ZDownloader.get(M3U8Downloader)
 
+
+@Component
+struct DownloadManagerList {
+  @StorageLink('theme') theme: number = 0
+  @State selectMode: boolean = false
+  @Link tasks: FileDownloadTask[]
+
+  build() {
+    Column() {
+      List({ space: 16 }) {
+        ForEach(this.tasks.map((task, i) => {
+          return i
+        }), (i) => {
+          ListItem() {
+            DownloadItem({ selectMode: $selectMode, task: this.tasks[i] })
+          }
+          //          .selectable(true)
+          .onSelect((isSelected) => {
+            Logger.e(this, 'isSelected=' + isSelected)
+          })
+          .gesture(LongPressGesture({ repeat: false })
+            .onActionEnd(() => {
+              Logger.e(this, 'onLongPress')
+              this.selectMode = !this.selectMode
+            }))
+        })
+      }
+      .edgeEffect(EdgeEffect.Spring)
+      .padding(16)
+      .width('100%')
+      .height('100%')
+    }
+    .width('100%')
+    .height('100%')
+  }
+}
+
+
 @Entry
 @Component
 struct DownloadManagerPage {
@@ -25,18 +63,17 @@ struct DownloadManagerPage {
   @State tasks: FileDownloadTask[] = [
   //    new DownloadTaskInfo(100, 1000)
 
-//    new FileDownloadTask(null, new DownloadTaskInfo(100, 1000))
+  //    new FileDownloadTask(null, new DownloadTaskInfo(100, 1000))
 
   ]
 
   // TODO 测试数据
   testData = [
-    {name: '最强主宰 动态漫画 第41集', url: 'https://ukzy.ukubf4.com/20230514/n77WsZgB/index.m3u8'},
-    {name: '最强主宰 动态漫画 第40集', url: 'https://ukzy.ukubf4.com/20230509/esQzkKyr/index.m3u8'},
-    {name: '最强主宰 动态漫画 第39集', url: 'https://ukzy.ukubf4.com/20230507/T3yYyWxB/index.m3u8'},
-    {name: '最强主宰 动态漫画 第29集', url: 'https://ukzy.ukubf4.com/20230402/ilm8IR50/index.m3u8'}
+    { name: '最强主宰 动态漫画 第41集', url: 'https://ukzy.ukubf4.com/20230514/n77WsZgB/index.m3u8' },
+    { name: '最强主宰 动态漫画 第40集', url: 'https://ukzy.ukubf4.com/20230509/esQzkKyr/index.m3u8' },
+    { name: '最强主宰 动态漫画 第39集', url: 'https://ukzy.ukubf4.com/20230507/T3yYyWxB/index.m3u8' },
+    { name: '最强主宰 动态漫画 第29集', url: 'https://ukzy.ukubf4.com/20230402/ilm8IR50/index.m3u8' }
   ]
-
   private readonly observer: TaskManagerObserver<FileDownloadTask> = {
     onMissionLoaded: (tasks: FileDownloadTask[]) => {
       this.tasks = this.tasks.concat(tasks)
@@ -58,12 +95,12 @@ struct DownloadManagerPage {
       })
       this.onTasksChanged()
 
-//      let index = this.tasks.indexOf(task)
-//      Logger.e(this, 'onMissionDelete id=' + task.getTaskId() + " index=" + index)
-//      if (index >= 0) {
-//        this.tasks.slice(index, 1)
-//        this.onTasksChanged()
-//      }
+      //      let index = this.tasks.indexOf(task)
+      //      Logger.e(this, 'onMissionDelete id=' + task.getTaskId() + " index=" + index)
+      //      if (index >= 0) {
+      //        this.tasks.slice(index, 1)
+      //        this.onTasksChanged()
+      //      }
     },
     onMissionFinished: (task: FileDownloadTask) => {
       Logger.e(this, 'onMissionFinished id=' + task.getTaskId())
@@ -140,22 +177,24 @@ struct DownloadManagerPage {
           })
       }
 
-      StateView(
-        {
-          state: $state,
-          errorMessage: $errorMessage,
-          content: () => {
-            this.Content()
-          },
-          custom: null,
-          onRetry: () => {
-            this.loadDownloadItems()
-            return true;
+      if (this.state == ViewState.CONTENT) {
+        DownloadManagerList({ tasks: $tasks })
+      } else {
+        StateView(
+          {
+            state: $state,
+            errorMessage: $errorMessage,
+            content: null,
+            custom: null,
+            onRetry: () => {
+              this.loadDownloadItems()
+              return true;
+            }
           }
-        }
-      )
-        .width('100%')
-        .layoutWeight(1)
+        )
+          .width('100%')
+          .layoutWeight(1)
+      }
       ImmersionBarSpace()
     }
     .backgroundColor(getTheme(this.theme).background_color_accent)
@@ -163,33 +202,34 @@ struct DownloadManagerPage {
     .height('100%')
   }
 
-  @Builder Content() {
-    Column() {
-      List() {
-        ForEach(this.tasks.map((task, i) => {
-          return i
-        }), (i) => {
-          ListItem() {
-            DownloadItem({ task: this.tasks[i] })
-              .margin(16)
-          }
-          .selectable(true)
-          .onSelect((isSelected) => {
-            Logger.e(this, 'isSelected=' + isSelected)
-          })
-          .gesture(LongPressGesture({ repeat: false })
-            .onActionEnd(() => {
-              Logger.e(this, 'onLongPress')
-              this.selectMode = !this.selectMode
-            }))
-        })
-      }
-      .width('100%')
-      .height('100%')
-    }
-    .width('100%')
-    .height('100%')
-  }
+//  @Builder Content() {
+//        Column() {
+//          List({space: 16}) {
+//            ForEach(this.tasks.map((task, i) => {
+//              return i
+//            }), (i) => {
+//              ListItem() {
+//                DownloadItem({ selectMode: $selectMode, task: this.tasks[i] })
+//              }
+//    //          .selectable(true)
+//              .onSelect((isSelected) => {
+//                Logger.e(this, 'isSelected=' + isSelected)
+//              })
+//              .gesture(LongPressGesture({ repeat: false })
+//                .onActionEnd(() => {
+//                  Logger.e(this, 'onLongPress')
+//                  this.selectMode = !this.selectMode
+//                }))
+//            })
+//          }
+//          .edgeEffect(EdgeEffect.Spring)
+//          .padding(16)
+//          .width('100%')
+//          .height('100%')
+//        }
+//        .width('100%')
+//        .height('100%')
+//  }
 
   private onTasksChanged() {
     Logger.e(this, 'onTasksChanged len=' + this.tasks.length)

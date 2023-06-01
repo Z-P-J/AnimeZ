@@ -70,6 +70,7 @@ export default struct CustomPanel {
         .translate({ y: this.translateY })
         .width('100%')
         .height('100%')
+        .onClick(() => {})
 //        .onClick(() => {
 ////          this.showPanel = false
 //        })
@@ -86,6 +87,9 @@ export default struct CustomPanel {
         this.translateY = this.panelHeight
       }
     })
+    .onClick(() => {
+      this.controller.close()
+    })
   }
 
   onShowPanelChanged(show: boolean) {
@@ -97,7 +101,7 @@ export default struct CustomPanel {
         setTimeout(() => {
           animateTo({
             duration: 360,
-            curve: Curve.Smooth,
+            curve: Curve.ExtremeDeceleration,
             iterations: 1,
             playMode: PlayMode.Normal
           }, () => {

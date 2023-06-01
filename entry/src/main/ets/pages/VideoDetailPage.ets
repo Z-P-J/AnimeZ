@@ -401,32 +401,49 @@ struct VideoDetailPage {
       .width('100%')
       .layoutWeight(1)
 
+//      Row() {
+//        Text("缓存全部")
+//          .height('100%')
+//          .layoutWeight(1)
+//          .textAlign(TextAlign.Center)
+//          .fontSize(14)
+//          .fontColor(getTheme(this.theme).color_text_normal)
+//          .onClick(() => {
+//          })
+//        Stack()
+//          .size({ width: 1.5, height: '30%' })
+//          .backgroundColor("#80cccccc")
+//        Text("下载列表")
+//          .textAlign(TextAlign.Center)
+//          .fontSize(14)
+//          .fontColor("#317ef5")
+//          .height('100%')
+//          .layoutWeight(1)
+//          .onClick(() => {
+//            router.pushUrl({ url: 'pages/DownloadManagerPage' })
+//          })
+//          .height(46)
+//          .width('100%')
+//      }
+//      .height(46)
+//      .width('100%')
+
+
       Row() {
-        Text("缓存全部")
-          .height('100%')
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-          .fontSize(14)
-          .fontColor(getTheme(this.theme).color_text_normal)
-          .onClick(() => {
-          })
-        Stack()
-          .size({ width: 1.5, height: '30%' })
-          .backgroundColor("#80cccccc")
         Text("下载列表")
           .textAlign(TextAlign.Center)
           .fontSize(14)
-          .fontColor("#317ef5")
-          .height('100%')
+          .backgroundColor(getTheme(this.theme).primary_color)
+          .fontColor(Color.White)
+          .borderRadius(21)
           .layoutWeight(1)
           .onClick(() => {
             router.pushUrl({ url: 'pages/DownloadManagerPage' })
           })
-          .height(46)
+          .height(42)
           .width('100%')
       }
-      .height(46)
-      .width('100%')
+      .padding(24)
 
       ImmersionBarSpace()
     }

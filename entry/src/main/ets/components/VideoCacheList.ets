@@ -1,3 +1,6 @@
+import M3U8Downloader from '../player/m3u8/M3U8Downloader';
+import { ZDownloader } from '../download/ZDownloader';
+import promptAction from '@ohos.promptAction';
 import { VideoCacheItem } from './VideoCacheItem';
 import ImmersionBarSpace from './ImmersionBarSpace';
 import router from '@ohos.router';
@@ -51,7 +54,7 @@ export struct VideoCacheList {
                     .padding(8)
                     .borderRadius(6)
                     .onClick(() => {
-                      // TODO
+                      this.downloadAll(episodeList)
                     })
                 }
                 .padding({ left: 16, top: 16, right: 16, bottom: 8 })
@@ -59,21 +62,9 @@ export struct VideoCacheList {
 
                 Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start, wrap: FlexWrap.Wrap }) {
                   ForEach(episodeList.episodes, (item: EpisodeInfo, episodeIndex: number) => {
-
-                    VideoCacheItem({episodeInfo: item})
+                    VideoCacheItem({ episodeInfo: item })
                       .width('22%')
                       .margin({ bottom: 8, right: (episodeIndex + 1) % 4 == 0 ? 0 : '4%' })
-
-//                    Text(item.title)
-//                      .textAlign(TextAlign.Center)
-//                      .backgroundColor(getTheme(this.theme).background_color_accent)
-//                      .fontColor(getTheme(this.theme).color_text_major)
-//                      .fontSize(12)
-//                      .padding({ top: 12, bottom: 12 })
-//                      .borderRadius(6)
-//                      .margin({ bottom: 8, right: (episodeIndex + 1) % 4 == 0 ? 0 : '4%' })
-//                      .width('22%')
-//                      .maxLines(1)
                   })
                 }
                 .margin({ top: 8 })
@@ -95,36 +86,63 @@ export struct VideoCacheList {
       .layoutWeight(1)
 
       Row() {
-        Text("缓存全部")
-          .height('100%')
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-          .fontSize(14)
-          .fontColor(getTheme(this.theme).color_text_normal)
-          .onClick(() => {
-          })
-        Stack()
-          .size({ width: 1.5, height: '30%' })
-          .backgroundColor("#80cccccc")
         Text("下载列表")
           .textAlign(TextAlign.Center)
           .fontSize(14)
-          .fontColor("#317ef5")
-          .height('100%')
+          .backgroundColor($r('app.color.primary_color_accent'))
+          .fontColor(Color.White)
+          .borderRadius(21)
           .layoutWeight(1)
           .onClick(() => {
             router.pushUrl({ url: 'pages/DownloadManagerPage' })
           })
-          .height(46)
+          .height(42)
           .width('100%')
       }
-      .height(46)
-      .width('100%')
+      .padding({ left: 24, right: 24, top: 12, bottom: 12 })
 
       ImmersionBarSpace()
     }
     .width('100%')
     .layoutWeight(1)
+  }
+
+  /**
+   * TODO test缓存全部
+   */
+  private downloadAll(episodeList: EpisodeList) {
+    let observer = {
+      onMissionLoaded: (tasks: FileDownloadTask[]) => {
+        ZDownloader.get(M3U8Downloader).removeObserver(observer)
+
+        for (let episode of episodeList.episodes) {
+          let task = tasks.find((task) => {
+            return task.getOriginalUrl() == episode.link
+          })
+          Logger.e(this, 'find task=' + task + ' link=' + episode.link)
+          if (task) {
+            continue
+          }
+          task = ZDownloader.get(M3U8Downloader)
+            .with(episode.link)
+            .setTaskName(episode.desc)
+            .setFileName('index.m3u8')
+            .setDownloadDir(getContext(this).filesDir + "/download/")
+            .build()
+          task.start()
+        }
+
+      },
+      onMissionCreateFailed: (task: FileDownloadTask, error: any) => {
+      },
+      onMissionAdd: (task: FileDownloadTask) => {
+      },
+      onMissionDelete: (task: FileDownloadTask) => {
+      },
+      onMissionFinished: (task: FileDownloadTask) => {
+      }
+    }
+    ZDownloader.get(M3U8Downloader).addObserver(observer)
   }
 
 }
