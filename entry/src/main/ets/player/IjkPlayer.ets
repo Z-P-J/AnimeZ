@@ -49,6 +49,10 @@ export class IjkMediaPlayer {
   private mOnTimedTextListener: OnTimedTextListener;
   private ijkplayer_napi = null;
 
+  isInit(): boolean {
+    return this.ijkplayer_napi ? true : false
+  }
+
   setContext(context: object) {
     this.ijkplayer_napi = context;
   }
@@ -61,7 +65,9 @@ export class IjkMediaPlayer {
   }
 
   setDataSource(url: string) {
-    this.ijkplayer_napi._setDataSource(url);
+    if (this.ijkplayer_napi) {
+      this.ijkplayer_napi._setDataSource(url);
+    }
   }
 
   setOption(category: string, key: string, value: string) {
@@ -73,31 +79,45 @@ export class IjkMediaPlayer {
   }
 
   prepareAsync() {
-    this.ijkplayer_napi._prepareAsync();
+    if (this.ijkplayer_napi) {
+      this.ijkplayer_napi._prepareAsync();
+    }
   }
 
   start() {
-    this.ijkplayer_napi._start();
+    if (this.ijkplayer_napi) {
+      this.ijkplayer_napi._start();
+    }
   }
 
   stop() {
-    this.ijkplayer_napi._stop();
+    if (this.ijkplayer_napi) {
+      this.ijkplayer_napi._stop();
+    }
   }
 
   pause() {
-    this.ijkplayer_napi._pause();
+    if (this.ijkplayer_napi) {
+      this.ijkplayer_napi._pause();
+    }
   }
 
   reset() {
-    this.ijkplayer_napi._reset();
+    if (this.ijkplayer_napi) {
+      this.ijkplayer_napi._reset();
+    }
   }
 
   release() {
-    this.ijkplayer_napi._release();
+    if (this.ijkplayer_napi) {
+      this.ijkplayer_napi._release();
+    }
   }
 
   seekTo(msec: string) {
-    this.ijkplayer_napi._seekTo(msec);
+    if (this.ijkplayer_napi) {
+      this.ijkplayer_napi._seekTo(msec);
+    }
   }
 
   setScreenOnWhilePlaying(on: boolean) {
@@ -115,7 +135,10 @@ export class IjkMediaPlayer {
   }
 
   isPlaying(): boolean {
-    return this.ijkplayer_napi._isPlaying();
+    if (this.ijkplayer_napi) {
+      return this.ijkplayer_napi._isPlaying();
+    }
+    return false;
   }
 
   setOnVideoSizeChangedListener(listener: OnVideoSizeChangedListener) {

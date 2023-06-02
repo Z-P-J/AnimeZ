@@ -380,6 +380,9 @@ export class PlayerManager {
   }
 
   enterFullScreen() {
+    if (this.fullScreenMode) {
+      return
+    }
     window.getLastWindow(getContext(this), (err, win) => {
       win.setWindowLayoutFullScreen(true)
       win.setWindowSystemBarEnable([])
@@ -392,6 +395,9 @@ export class PlayerManager {
   }
 
   exitFullScreen() {
+    if (!this.fullScreenMode) {
+      return
+    }
     window.getLastWindow(getContext(this), (err, win) => {
       win.setWindowLayoutFullScreen(true)
       win.setWindowSystemBarEnable(['status', 'navigation'])

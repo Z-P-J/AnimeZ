@@ -1,3 +1,5 @@
+import { M3U8DownloadTask } from '../player/m3u8/M3U8Downloader';
+import router from '@ohos.router';
 import DownloadTaskInfo from '../download/DownloadTaskInfo';
 import { TaskManagerObserver } from '../download/core/TaskManager';
 import Logger from '../utils/Logger';
@@ -20,7 +22,7 @@ const DOWNLOADER: M3U8Downloader = ZDownloader.get(M3U8Downloader)
 struct DownloadManagerList {
   @StorageLink('theme') theme: number = 0
   @State selectMode: boolean = false
-  @Link tasks: FileDownloadTask[]
+  @Link tasks: M3U8DownloadTask[]
 
   build() {
     Column() {
@@ -35,12 +37,38 @@ struct DownloadManagerList {
           .onSelect((isSelected) => {
             Logger.e(this, 'isSelected=' + isSelected)
           })
+          .onClick(() => {
+            let task = this.tasks[i]
+            if (task.isComplete()) {
+              router.pushUrl({url: 'pages/LocalVideoPlayerPage', params: {video_path: task.getLocalM3u8Path()}})
+            }
+          })
           .gesture(LongPressGesture({ repeat: false })
             .onActionEnd(() => {
               Logger.e(this, 'onLongPress')
               this.selectMode = !this.selectMode
             }))
         })
+
+//        ForEach(this.tasks, (task: M3U8DownloadTask) => {
+//          ListItem() {
+//            DownloadItem({ selectMode: $selectMode, task: task })
+//          }
+//          //          .selectable(true)
+//          .onSelect((isSelected) => {
+//            Logger.e(this, 'isSelected=' + isSelected)
+//          })
+//          .onClick(() => {
+//            if (task.isComplete()) {
+//              router.pushUrl({url: 'pages/LocalVideoPlayerPage', params: {video_path: task.getLocalM3u8Path()}})
+//            }
+//          })
+//          .gesture(LongPressGesture({ repeat: false })
+//            .onActionEnd(() => {
+//              Logger.e(this, 'onLongPress')
+//              this.selectMode = !this.selectMode
+//            }))
+//        })
       }
       .edgeEffect(EdgeEffect.Spring)
       .padding(16)
@@ -60,12 +88,7 @@ struct DownloadManagerPage {
   @State state: number = ViewState.LOADING
   @State errorMessage: string = ''
   @State selectMode: boolean = false
-  @State tasks: FileDownloadTask[] = [
-  //    new DownloadTaskInfo(100, 1000)
-
-  //    new FileDownloadTask(null, new DownloadTaskInfo(100, 1000))
-
-  ]
+  @State tasks: M3U8DownloadTask[] = []
 
   // TODO 测试数据
   testData = [
@@ -74,21 +97,21 @@ struct DownloadManagerPage {
     { name: '最强主宰 动态漫画 第39集', url: 'https://ukzy.ukubf4.com/20230507/T3yYyWxB/index.m3u8' },
     { name: '最强主宰 动态漫画 第29集', url: 'https://ukzy.ukubf4.com/20230402/ilm8IR50/index.m3u8' }
   ]
-  private readonly observer: TaskManagerObserver<FileDownloadTask> = {
-    onMissionLoaded: (tasks: FileDownloadTask[]) => {
+  private readonly observer: TaskManagerObserver<M3U8DownloadTask> = {
+    onMissionLoaded: (tasks: M3U8DownloadTask[]) => {
       this.tasks = this.tasks.concat(tasks)
       Logger.e(this, 'onMissionLoaded tasks len=' + tasks.length)
       this.onTasksChanged()
     },
-    onMissionCreateFailed: (task: FileDownloadTask, error: any) => {
+    onMissionCreateFailed: (task: M3U8DownloadTask, error: any) => {
       Logger.e(this, 'onMissionCreateFailed id=' + task.getTaskId() + " error=" + JSON.stringify(error))
     },
-    onMissionAdd: (task: FileDownloadTask) => {
+    onMissionAdd: (task: M3U8DownloadTask) => {
       Logger.e(this, 'onMissionAdd id=' + task.getTaskId())
       this.tasks.push(task)
       this.onTasksChanged()
     },
-    onMissionDelete: (task: FileDownloadTask) => {
+    onMissionDelete: (task: M3U8DownloadTask) => {
 
       this.tasks = this.tasks.filter((item) => {
         return item != task
@@ -102,7 +125,7 @@ struct DownloadManagerPage {
       //        this.onTasksChanged()
       //      }
     },
-    onMissionFinished: (task: FileDownloadTask) => {
+    onMissionFinished: (task: M3U8DownloadTask) => {
       Logger.e(this, 'onMissionFinished id=' + task.getTaskId())
     }
   }

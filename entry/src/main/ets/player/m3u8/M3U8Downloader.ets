@@ -22,7 +22,7 @@ class M3U8SegmentTaskManager extends TaskManager<FileDownloadTask, FileDownloadT
 
 }
 
-class M3U8DownloadTask extends GroupDownloadTask {
+export class M3U8DownloadTask extends GroupDownloadTask {
   private readonly taskDir
   private m3u8: M3u8 = null
 
@@ -33,6 +33,10 @@ class M3U8DownloadTask extends GroupDownloadTask {
 
   doDelete() {
     fs.rmdir(this.taskDir)
+  }
+
+  getLocalM3u8Path(): string {
+    return this.taskDir + 'index.m3u8'
   }
 
   doInit() {

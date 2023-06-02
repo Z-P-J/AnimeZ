@@ -11,6 +11,7 @@
     "pages/VideoHistoryPage",
     "pages/VideoCollectionPage",
     "pages/DownloadManagerPage",
-    "pages/TestDetail"
+    "pages/TestDetail",
+    "pages/LocalVideoPlayerPage"
   ]
 }
