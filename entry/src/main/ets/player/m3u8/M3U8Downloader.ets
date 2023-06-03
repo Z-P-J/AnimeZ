@@ -1,5 +1,5 @@
 import BimiAcgDataSource from '../../api/impl/BimiAcgDataSource';
-import DownloadTaskRepository from '../../download/DownloadTaskRepository';
+import DownloadTaskInfoRepository from '../../download/DownloadTaskInfoRepository';
 import M3u8 from './M3U8';
 import M3U8Utils from './M3U8Utils';
 import DownloadTaskInfo from '../../download/DownloadTaskInfo';
@@ -11,17 +11,22 @@ import TaskManager from '../../download/core/TaskManager';
 import { Downloader } from '../../download/Downloader';
 import { CryptoJS } from '@ohos/crypto-js'
 
-class M3U8SegmentTaskManager extends TaskManager<FileDownloadTask, FileDownloadTask> {
-  constructor(parentTask: FileDownloadTask = null) {
-    super(parentTask, new DownloadTaskRepository());
-  }
+/**
+ * m3u8下载器
+ */
+export default class M3U8Downloader extends Downloader<M3U8DownloadTask> {
 
-  createTask(taskInfo: DownloadTaskInfo): FileDownloadTask  {
-    return new FileDownloadTask(this, taskInfo);
+  /**
+   * 创建下载任务
+   */
+  createTask(taskInfo: DownloadTaskInfo): M3U8DownloadTask  {
+    return new M3U8DownloadTask(this, taskInfo);
   }
-
 }
 
+/**
+ * m3u8下载任务
+ */
 export class M3U8DownloadTask extends GroupDownloadTask {
   private readonly taskDir
   private m3u8: M3u8 = null
@@ -39,12 +44,17 @@ export class M3U8DownloadTask extends GroupDownloadTask {
     return this.taskDir + 'index.m3u8'
   }
 
+  /**
+   * 初始化
+   */
   doInit() {
     Logger.e(this, 'doInit taskInfo=' + JSON.stringify(this.taskInfo))
     this.initTask()
       .then((result) => {
         Logger.e(this, 'doInit initM3u8 result=' + result)
+        // 初始化完成
         this.taskInfo.prepared = true;
+        // 继续下载任务
         this.process()
       })
       .catch((e) => {
@@ -53,20 +63,29 @@ export class M3U8DownloadTask extends GroupDownloadTask {
       })
   }
 
+  /**
+   * 初始化任务
+   */
   private async initTask(): Promise<number> {
     let source = new BimiAcgDataSource()
+    // 解析真实的m3u8链接
     this.taskInfo.url = await source.parseVideoUrl(this.taskInfo.originalUrl)
     Logger.e(this, 'initTask url=' + this.taskInfo.url)
     if (this.taskInfo.url) {
+      // 初始化m3u8信息
       return await this.initM3u8()
     }
     throw new Error('init task failed! originalUrl: ' + this.taskInfo.originalUrl)
   }
 
+  /**
+   * 初始化并保存m3u8信息到本地
+   */
   private async initM3u8(): Promise<number> {
     if (this.taskInfo.prepared) {
       return 0
     }
+    // m3u8解析
     this.m3u8 = await M3U8Utils.parse(null, this.taskInfo.url)
     Logger.e(this, 'initM3u8 m3u8=' + JSON.stringify(this.m3u8))
 
@@ -80,18 +99,24 @@ export class M3U8DownloadTask extends GroupDownloadTask {
     }
     Logger.e(this, 'initM3u8 taskDir exists=' + fio.pathExistsSync(this.taskDir))
     let file = await fs.open(this.taskDir + 'video.info', fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
+    // 保存m3u8信息
     let result = await fs.write(file.fd, JSON.stringify(this.m3u8), { encoding: 'utf-8' })
 
     Logger.e(this, 'save m3u8 result=' + result)
 
+    // 将m3u8信息转换为本地m3u8，并保存至本地
     result = await M3U8Utils.saveM3U8LocalInfo(this.m3u8, this.taskDir + 'index.m3u8')
     Logger.e(this, 'initM3u8 saveM3U8LocalInfo result=' + result)
+    // 将m3u8原始信息保存至本地
     result = await M3U8Utils.saveM3U8OriginInfo(this.m3u8, this.taskDir + 'index_origin.m3u8')
     Logger.e(this, 'initM3u8 saveM3U8OriginInfo result=' + result)
 
     return result
   }
 
+  /**
+   * 开始下载
+   */
   doStart() {
     Logger.e(this, 'doStart')
     this.prepare()
@@ -103,6 +128,9 @@ export class M3U8DownloadTask extends GroupDownloadTask {
       })
   }
 
+  /**
+   * 准备分片下载任务
+   */
   private async prepare() {
     Logger.e(this, 'prepare')
     if (!this.m3u8) {
@@ -122,6 +150,7 @@ export class M3U8DownloadTask extends GroupDownloadTask {
         taskInfo.url = seg.url
         taskInfo.downloadDir = this.taskDir
         Logger.e(this, "init segment task : " + JSON.stringify(taskInfo))
+        // 添加分片下载子任务
         this.childTaskManager.addTask(new FileDownloadTask(this.childTaskManager, taskInfo))
 
         // 下载key密钥文件
@@ -136,6 +165,7 @@ export class M3U8DownloadTask extends GroupDownloadTask {
           taskInfo.fileName = seg.keyName
           taskInfo.taskName = seg.keyName
           taskInfo.downloadDir = this.taskDir
+          // 添加密钥下载子任务
           this.childTaskManager.addTask(new FileDownloadTask(this.childTaskManager, taskInfo))
         }
       }
@@ -143,29 +173,20 @@ export class M3U8DownloadTask extends GroupDownloadTask {
   }
 }
 
-export default class M3U8Downloader extends Downloader<M3U8DownloadTask> {
-
-//  with(url: string): DownloadTaskBuilder<M3U8DownloadTask> {
-//    return new DownloadTaskBuilder<M3U8DownloadTask>(this, url)
-//  }
-
-  createTask(taskInfo: DownloadTaskInfo): M3U8DownloadTask  {
-    return new M3U8DownloadTask(this, taskInfo);
+/**
+ * m3u8分片下载任务管理
+ */
+class M3U8SegmentTaskManager extends TaskManager<FileDownloadTask, FileDownloadTask> {
+  constructor(parentTask: FileDownloadTask = null) {
+    super(parentTask, new DownloadTaskInfoRepository());
   }
+
+  /**
+   * 创建m3u8分片下载任务
+   */
+  createTask(taskInfo: DownloadTaskInfo): FileDownloadTask  {
+    return new FileDownloadTask(this, taskInfo);
+  }
+
 }
 
-//export class M3U8DownloadTaskBuilder extends DownloadTaskBuilder<M3U8DownloadTask> {
-//  constructor(taskManager: TaskManager<Task, M3U8DownloadTask>, url: string) {
-//    super(taskManager, url)
-//  }
-//
-//  build(): M3U8DownloadTask {
-//    let taskInfo = new DownloadTaskInfo(this.taskManager.generateTaskId(), this.taskManager.getParentTaskId())
-//    taskInfo.url = this.url
-//    taskInfo.fileName = this.taskName
-//    taskInfo.downloadDir = this.downloadDir + CryptoJS.MD5(this.url)
-//    let downloadTask = this.taskManager.createTask(taskInfo);
-//    this.taskManager.addTask(downloadTask)
-//    return downloadTask;
-//  }
-//}

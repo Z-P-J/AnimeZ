@@ -1,5 +1,6 @@
 import HashMap from '@ohos.util.HashMap';
 
+// mime types map
 let MAP = {
     'application/andrew-inset': ['ez'],
     'application/applixware': ['aw'],
@@ -340,16 +341,26 @@ Object.keys(MAP).forEach((key) => {
 })
 MAP = null;
 
+/**
+ * MimeType工具类
+ */
 export class MimeTypeMap {
     private constructor() {
     }
 
-
+    /**
+     * 根据MimeType获取后缀名
+     * @param type
+     */
     static getExtensionFromMimeType(type: string): string {
         type = /^\s*([^;\s]*)/.test(type) && RegExp.$1;
         return type && MIME_TYPE_MAP.get(type.toLowerCase())[0] || null;
     }
 
+    /**
+     * 根据MimeType获取所有的后缀名
+     * @param type
+     */
     static getExtensions(type: string): string[] {
         if (type) {
             return MIME_TYPE_MAP.get(type.toLowerCase());
@@ -357,6 +368,10 @@ export class MimeTypeMap {
         return null;
     }
 
+    /**
+     * 根据后缀名获取MimeType
+     * @param path
+     */
     static getMimeTypeFromExtension(path: string): string {
         if (path) {
             path = path.toLowerCase();

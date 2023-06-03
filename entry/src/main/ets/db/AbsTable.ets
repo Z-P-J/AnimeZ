@@ -23,6 +23,9 @@ export default abstract class AbsTable<T> implements ITable {
     this.futureDb = this.initDb()
   }
 
+  /**
+   * 获取并初始化数据库
+   */
   private async initDb(): Promise<rdb.RdbStore> {
     Logger.e(this, 'initDb dbName=' + this.dbName + ' tableName=' + this.tableName)
     let db = await rdb.getRdbStore(getContext(this), {
@@ -35,10 +38,17 @@ export default abstract class AbsTable<T> implements ITable {
     return db
   }
 
+  /**
+   * 初始化数据库
+   * @param db
+   */
   protected async init(db: rdb.RdbStore): Promise<void> {
     return db.executeSql(this.getCreateTableSql())
   }
 
+  /**
+   * 获取表名
+   */
   getTableName(): string {
     return this.tableName
   }
@@ -58,8 +68,6 @@ export default abstract class AbsTable<T> implements ITable {
       bucket[col] = item[col]
     })
   }
-
-//  abstract bindToContentValues(bucket: ValuesBucket, item: T);
 
   abstract createItem(cursor: rdb.ResultSet): T;
 

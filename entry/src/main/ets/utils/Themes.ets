@@ -1,5 +1,7 @@
 
-
+/**
+ * 主题接口
+ */
 export interface Theme {
   primary_color: Resource
   background_color: Resource
@@ -11,6 +13,9 @@ export interface Theme {
   color_text_minor: Resource
 }
 
+/**
+ * 默认主题
+ */
 const default_theme = {
   primary_color: $r('app.color.primary_color'),
   background_color: $r('app.color.background_color'),
@@ -22,6 +27,9 @@ const default_theme = {
   color_text_minor: $r('app.color.color_text_minor')
 }
 
+/**
+ * 暗色主题
+ */
 const night_theme = {
   primary_color: $r('app.color.primary_color'),
   background_color: $r('app.color.background_color_night'),
@@ -33,6 +41,10 @@ const night_theme = {
   color_text_minor: $r('app.color.color_text_minor_night')
 }
 
+/**
+ * 获取主题
+ * @param theme 当前主题
+ */
 export function getTheme(theme: number): Theme {
   if (theme == 0) {
     return default_theme

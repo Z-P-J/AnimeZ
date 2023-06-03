@@ -1,5 +1,6 @@
+import { TaskStatus } from './core/Task';
 import fs from '@ohos.file.fs'
-import TaskManager, { TaskStatus } from './core/TaskManager'
+import TaskManager from './core/TaskManager'
 import DownloadTaskInfo from './DownloadTaskInfo'
 import { AbsTask } from './core/Task'
 import Logger from '../utils/Logger'
@@ -45,15 +46,15 @@ export class FileDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> ext
   }
 
   getFormatTotalSize() {
-    return DownloadUtils.formatFileSize(this.getTotalSize())
+    return DownloadUtils.formatFileSize(this.getTotalWorkload())
   }
 
   getFormatReceivedSize() {
-    return DownloadUtils.formatFileSize(this.getReceivedSize())
+    return DownloadUtils.formatFileSize(this.getCompleteWorkload())
   }
 
   getFormatProgress() {
-    return DownloadUtils.formatProgress(this.getProgress())
+    return DownloadUtils.formatProgress(this.getTaskProgress())
   }
 
   doInit() {
@@ -128,8 +129,7 @@ export class FileDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> ext
   //    abstract doStart()
 
   doStart() {
-
-    let range = 'bytes=' + this.getReceivedSize() + '-'
+    let range = 'bytes=' + this.getCompleteWorkload() + '-'
     Logger.d(this, 'doStart redirectCount=' + this.redirectCount + ' range=' + range)
     this.taskInfo.header = { 'range': range }
     this.download()
@@ -142,49 +142,6 @@ export class FileDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> ext
         Logger.e(this, 'doStart download failed! e=' + JSON.stringify(e))
         this.statusManager.onError(JSON.stringify(e))
       })
-
-    //        if (this.redirectCount > 10) {
-    //            this.statusManager.onError('to many redirect!')
-    //            return
-    //        }
-    //
-    //        let httpRequest = http.createHttp()
-    //        httpRequest.request(this.taskInfo.url, {
-    //            method: http.RequestMethod.GET,
-    //            readTimeout: 100000,
-    //            connectTimeout: 100000,
-    //            header: this.taskInfo.header,
-    //            expectDataType: http.HttpDataType.ARRAY_BUFFER
-    //        }, (err, data) => {
-    //            Logger.w(this, 'doStart data=' + JSON.stringify(data))
-    //            if (data) {
-    //                let code = data.responseCode
-    //                if (code < 300) {
-    //                    if (data.result instanceof ArrayBuffer) {
-    //                        this.save(data.result)
-    //                    } else {
-    //                        this.statusManager.onError('not support data type: ' + data.resultType)
-    //                    }
-    //                    return
-    //                } else if (code < 400) {
-    //                    // 重定向
-    //                    httpRequest.destroy()
-    //                    this.redirectCount++
-    //                    let location = data.header['location']
-    //                    if (location && location != '') {
-    //                        this.taskInfo.url = location
-    //                        this.doStart()
-    //                        return
-    //                    }
-    //                }
-    //                // 请求出错了
-    //                httpRequest.destroy()
-    //                this.statusManager.onError('request error! response code is ' + code)
-    //            } else {
-    //                Logger.w(this, 'doStart err=' + JSON.stringify(err))
-    //                this.statusManager.onError(err.message)
-    //            }
-    //        })
   }
 
   async download(): Promise<boolean> {
@@ -225,7 +182,7 @@ export class FileDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> ext
   }
 
   async save(buffer: ArrayBuffer): Promise<boolean> {
-    if (this.getStatus() != TaskStatus.RUNNING) {
+    if (this.getStatus() != TaskStatus.PROCESSING) {
       return false
     }
     let file = await fs.open(this.getFilePath(), fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY)
@@ -233,33 +190,21 @@ export class FileDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> ext
   }
 
   async saveSlice(fd: number, buffer: ArrayBuffer): Promise<boolean> {
-    if (this.getStatus() != TaskStatus.RUNNING) {
+    if (this.getStatus() != TaskStatus.PROCESSING) {
       return false
     }
     Logger.d(this, 'saveSlice  byteLength=' + buffer.byteLength)
     let result = await fs.write(fd, buffer, { encoding: 'utf-8' })
-    //        try {
-    //
-    //                } catch (e) {
-    //
-    //        }
     Logger.e(this, 'saveSlice result=' + result)
-    if (this.getStatus() != TaskStatus.RUNNING) {
+    if (this.getStatus() != TaskStatus.PROCESSING) {
       return false
     }
     if (this.observerDispatcher.progressManager) {
       this.observerDispatcher.progressManager.onReceived(result)
     }
-    //        this.statusManager.setStatus(TaskStatus.COMPLETE)
     return true
   }
 }
-
-//class DownloadTaskManager extends TaskManager {
-//    constructor(parentTask: FileDownloadTask) {
-//        super(parentTask, new DownloadTaskRepository())
-//    }
-//}
 
 export abstract class GroupDownloadTask<T extends DownloadTaskInfo = DownloadTaskInfo> extends FileDownloadTask<T> {
   readonly childTaskManager: TaskManager

@@ -2,6 +2,9 @@ import TaskManager from './TaskManager';
 import TaskInfo from './TaskInfo';
 import Task from './Task';
 
+/**
+ * 任务构造者
+ */
 export default interface TaskBuilder<T extends Task<TaskInfo>> {
 
     readonly taskManager: TaskManager

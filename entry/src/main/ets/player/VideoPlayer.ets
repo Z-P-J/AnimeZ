@@ -7,6 +7,9 @@ import Logger from '../utils/Logger';
 
 const DEFAULT_ASPECT = 1.9
 
+/**
+ * 视频播放器，封装IjkPlayer
+ */
 @Component
 export struct VideoPlayer {
   @State videoAspRatio: number = DEFAULT_ASPECT

@@ -1,7 +1,10 @@
 import TaskInfo from './TaskInfo'
 
-
-export default interface TaskRepository<T extends TaskInfo = TaskInfo> {
+/**
+ * 任务信息仓库，增删改查任务信息
+ * @author Z-P-J
+ */
+export default interface TaskInfoRepository<T extends TaskInfo = TaskInfo> {
 
     /**
      * 查询所有下载任务

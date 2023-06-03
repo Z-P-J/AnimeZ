@@ -27,7 +27,7 @@ import { LogUtils } from "@ohos/ijkplayer";
 import window from '@ohos.window';
 
 /**
- * 去除原始代码中的单例
+ * 将@ohos/ijkplayer中IjkMediaPlayer源码copy过来并去除原始代码中的单例
  */
 export class IjkMediaPlayer {
 

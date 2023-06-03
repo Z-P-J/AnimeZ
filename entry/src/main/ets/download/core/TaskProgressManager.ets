@@ -2,14 +2,26 @@ import TaskInfo from './TaskInfo';
 import Task from './Task'
 import Logger from '../../utils/Logger';
 
-
+/**
+ * 任务进度管理
+ */
 export default class TaskProgressManager {
+
+    /**
+     * 当前任务
+     */
     private readonly task: Task;
-    //    totalSize = 0;
-    //    receivedSize = 0;
-    //    downloadProgress = 0;
+
+    /**
+     * 任务进度更新频率
+     */
     private readonly progressDuration;
+
+    /**
+     * 最大任务进度
+     */
     private readonly maxProgress;
+
     private progressHandler: Function = null;
 
     private readonly tag: string;
@@ -27,19 +39,27 @@ export default class TaskProgressManager {
         // TODO
     }
 
+    /**
+     * 初始化任务量
+     * @param size
+     */
     onInitSize(size: number) {
-        this.task.taskInfo.totalSize += size;
+        this.task.taskInfo.totalWorkload += size;
         let parentTask = this.task.getParentTask();
         if (parentTask) {
             parentTask.observerDispatcher.progressManager.onInitSize(size);
         }
     }
 
+    /**
+     * 当完成一定的任务量
+     * @param size
+     */
     onReceived(size: number) {
-        this.task.taskInfo.receivedSize += size;
-        Logger.d(this.tag, 'onReceived size=' + size + ' receivedSize=' + this.task.taskInfo.receivedSize);
-        if (this.task.taskInfo.totalSize > 0) {
-            this.task.taskInfo.downloadProgress = this.task.getReceivedSize() / this.task.getTotalSize() * this.maxProgress;
+        this.task.taskInfo.completeWorkload += size;
+        Logger.d(this.tag, 'onReceived size=' + size + ' receivedSize=' + this.task.taskInfo.completeWorkload);
+        if (this.task.taskInfo.totalWorkload > 0) {
+            this.task.taskInfo.downloadProgress = this.task.getCompleteWorkload() / this.task.getTotalWorkload() * this.maxProgress;
         }
         let currentTime = new Date().getTime()
         if (this.lastTime - currentTime > 500) {
@@ -52,6 +72,9 @@ export default class TaskProgressManager {
         }
     }
 
+    /**
+     * 循环更新任务进度
+     */
     loopForProgress() {
         if (this.progressHandler) {
             return;
@@ -74,6 +97,9 @@ export default class TaskProgressManager {
 
     }
 
+    /**
+     * 是否支持更新任务进度
+     */
     protected canLoopForProgress() {
         if (this.task.observerDispatcher.observers) {
             return this.task.isRunning();

@@ -1,13 +1,21 @@
-import {MimeTypeMap} from './MimeTypes'
+import { MimeTypeMap } from './MimeTypes'
 
 const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
 const CONTENT_DISPOSITION_PATTERN = new RegExp("attachment;\\s*filename\\s*=\\s*(\"?)([^\"]*)\\1\\s*$");
 
+/**
+ * 下载工具类
+ * @author Z-P-J
+ */
 export class DownloadUtils {
     private constructor() {
     }
 
+    /**
+     * 格式化文件大小
+     * @param bytes
+     */
     static formatFileSize(bytes: number): string {
 
         let size = bytes;
@@ -23,10 +31,20 @@ export class DownloadUtils {
         return `${size} ${units[unitIndex]}`;
     }
 
+    /**
+     * 格式化下载进度
+     * @param progress
+     */
     static formatProgress(progress: number) {
         return `${Math.round(progress)} %`;
     }
 
+    /**
+     * 获取下载任务文件名
+     * @param url
+     * @param contentDisposition
+     * @param mimeType
+     */
     static guessFileName(url: string, contentDisposition?: string, mimeType?: string): string {
 
         let fileName;
@@ -59,7 +77,7 @@ export class DownloadUtils {
         if (!fileName) {
             // TODO
             return null
-//            fileName = 'Unknown-File';
+            //            fileName = 'Unknown-File';
         }
 
         let extension;
@@ -113,6 +131,10 @@ export class DownloadUtils {
         return fileName + extension;
     }
 
+    /**
+     * 从content-disposition中解析文件名
+     * @param contentDisposition
+     */
     static parseContentDisposition(contentDisposition: string) {
         let result = CONTENT_DISPOSITION_PATTERN.exec(contentDisposition);
         return result[2];

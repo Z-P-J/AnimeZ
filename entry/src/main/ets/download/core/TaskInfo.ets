@@ -1,36 +1,74 @@
-import { TaskStatus } from './TaskManager';
+import { TaskStatus } from './Task';
 
-
+/**
+ * 任务信息
+ */
 export default class TaskInfo {
+
+    /**
+     * 任务id
+     */
     readonly taskId: number;
+
+    /**
+     * 父任务id
+     */
     readonly parentTaskId: number
-    // TODO
+
+    /**
+     * 任务名
+     */
     taskName: string
+
+    /**
+     * 任务状态
+     */
     status: number = TaskStatus.CREATED
-    //    fileName: string;
-    //    downloadDir: string;
-    //
-    //    url: string;
 
-    totalSize = 0;
-    receivedSize = 0;
-    downloadProgress = 0;
+    /**
+     * 总任务量
+     * TODO 重命名
+     */
+    totalWorkload: number = 0;
 
-    createTime = 0
+    /**
+     * 已完成任务量
+     * TODO 重命名
+     */
+    completeWorkload: number = 0;
 
-//    accessTime = 0
+    /**
+     * 任务进度
+     * TODO 重命名为taskProgress
+     */
+    downloadProgress: number = 0;
 
-    finishedTime = 0
+    /**
+     * 任务创建时间
+     */
+    createTime: number = 0
 
-    //    blockDownload: boolean = false;
+    /**
+     * 任务完成时间
+     */
+    finishedTime: number = 0
 
+    /**
+     * 任务是否准备完成
+     */
     prepared: boolean = false;
 
+    /**
+     * 任务信息，一般用于保存错误信息
+     */
     message: string = null;
 
+    /**
+     * 任务请求头信息，可用于自定义任务信息
+     */
     header: Object = null
 
-    bufferSize: number = 512 * 1024
+
 
     constructor(taskId: number, parentTaskId: number, createTime: number = new Date().getTime()) {
         this.taskId = taskId

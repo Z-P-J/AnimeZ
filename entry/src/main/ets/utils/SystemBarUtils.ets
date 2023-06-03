@@ -1,6 +1,9 @@
 import Logger from './Logger';
 import window from '@ohos.window';
 
+/**
+ * 状态栏和导航栏工具类
+ */
 export default class SystemBarUtils {
 
   /**

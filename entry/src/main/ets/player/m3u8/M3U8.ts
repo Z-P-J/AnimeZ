@@ -1,4 +1,7 @@
 
+/**
+ * m3u8分片
+ */
 export class M3u8Segment {
 
     /**
@@ -88,8 +91,10 @@ export class M3u8Segment {
 
 }
 
+/**
+ * m3u8信息实体类
+ */
 export default class M3u8 {
-
 
 
     /**

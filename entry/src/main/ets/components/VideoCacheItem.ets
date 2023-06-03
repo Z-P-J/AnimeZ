@@ -1,11 +1,11 @@
+import { TaskStatus } from '../download/core/Task';
+import { TaskStatusObserver } from '../download/core/Task';
 import promptAction from '@ohos.promptAction';
 import { TaskManagerObserver } from '../download/core/TaskManager'
 import M3U8Downloader from '../player/m3u8/M3U8Downloader'
 import { ZDownloader } from '../download/ZDownloader'
 import EpisodeInfo from '../entity/EpisodeInfo'
 import { getTheme } from '../utils/Themes'
-import { TaskStatus } from '../download/core/TaskManager'
-import { TaskStatusObserver } from '../download/core/TaskManager'
 import Logger from '../utils/Logger'
 import { FileDownloadTask } from '../download/FileDownloadTask'
 
@@ -22,7 +22,7 @@ export struct VideoCacheItem {
     }
   }
   private readonly observer: TaskManagerObserver<FileDownloadTask> = {
-    onMissionLoaded: (tasks: FileDownloadTask[]) => {
+    onTaskLoaded: (tasks: FileDownloadTask[]) => {
       let target = tasks.find((task) => {
         return task.taskInfo.originalUrl == this.episodeInfo.link
       })
@@ -32,10 +32,10 @@ export struct VideoCacheItem {
         this.status = target.getStatus()
       }
     },
-    onMissionCreateFailed: (task: FileDownloadTask, error: any) => {
+    onTaskCreateFailed: (task: FileDownloadTask, error: any) => {
       Logger.e(this, 'onMissionCreateFailed id=' + task.getTaskId() + " error=" + JSON.stringify(error))
     },
-    onMissionAdd: (task: FileDownloadTask) => {
+    onTaskAdd: (task: FileDownloadTask) => {
       Logger.e(this, 'onMissionAdd id=' + task.getTaskId())
       if (task.taskInfo.originalUrl == this.episodeInfo.link) {
         this.downloadTask = task
@@ -43,14 +43,14 @@ export struct VideoCacheItem {
         this.status = task.getStatus()
       }
     },
-    onMissionDelete: (task: FileDownloadTask) => {
+    onTaskRemove: (task: FileDownloadTask) => {
       if (this.downloadTask && this.downloadTask.getTaskId() == task.getTaskId()) {
         this.downloadTask.removeStatusObserver(this.statusObserver)
         this.downloadTask = null
         this.status = -1
       }
     },
-    onMissionFinished: (task: FileDownloadTask) => {
+    onTaskComplete: (task: FileDownloadTask) => {
     }
   }
 

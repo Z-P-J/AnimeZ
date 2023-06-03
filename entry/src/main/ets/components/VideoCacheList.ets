@@ -1,6 +1,5 @@
 import M3U8Downloader from '../player/m3u8/M3U8Downloader';
 import { ZDownloader } from '../download/ZDownloader';
-import promptAction from '@ohos.promptAction';
 import { VideoCacheItem } from './VideoCacheItem';
 import ImmersionBarSpace from './ImmersionBarSpace';
 import router from '@ohos.router';
@@ -8,10 +7,7 @@ import EpisodeInfo from '../entity/EpisodeInfo';
 import { getTheme } from '../utils/Themes';
 import EpisodeList from '../entity/EpisodeList';
 import VideoDetailInfo from '../entity/VideoDetailInfo';
-import { TaskStatus } from '../download/core/TaskManager';
-import { TaskStatusObserver } from '../download/core/TaskManager';
 import Logger from '../utils/Logger';
-import TaskObserver from '../download/core/TaskObserver';
 import { FileDownloadTask } from '../download/FileDownloadTask';
 
 @Component
@@ -112,7 +108,7 @@ export struct VideoCacheList {
    */
   private downloadAll(episodeList: EpisodeList) {
     let observer = {
-      onMissionLoaded: (tasks: FileDownloadTask[]) => {
+      onTaskLoaded: (tasks: FileDownloadTask[]) => {
         ZDownloader.get(M3U8Downloader).removeObserver(observer)
 
         for (let episode of episodeList.episodes) {
@@ -133,13 +129,13 @@ export struct VideoCacheList {
         }
 
       },
-      onMissionCreateFailed: (task: FileDownloadTask, error: any) => {
+      onTaskCreateFailed: (task: FileDownloadTask, error: any) => {
       },
-      onMissionAdd: (task: FileDownloadTask) => {
+      onTaskAdd: (task: FileDownloadTask) => {
       },
-      onMissionDelete: (task: FileDownloadTask) => {
+      onTaskRemove: (task: FileDownloadTask) => {
       },
-      onMissionFinished: (task: FileDownloadTask) => {
+      onTaskComplete: (task: FileDownloadTask) => {
       }
     }
     ZDownloader.get(M3U8Downloader).addObserver(observer)

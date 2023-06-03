@@ -8,16 +8,10 @@ import { ValuesBucket, ValueType } from '../db/AbsTable';
 import rdb from '@ohos.data.relationalStore';
 
 /**
- * 下载管理
+ * 下载任务数据库和数据库表
  */
 @Table({ db: 'download_manager', name: 'download_tasks' })
 export class FileDownloadTable extends AbsTable<DownloadTaskInfo> {
-
-//  protected async init(db: rdb.RdbStore): Promise<void> {
-//    await db.executeSql('ALTER TABLE download_tasks ADD COLUMN taskName TEXT;')
-//    await db.executeSql('update download_tasks set taskName = fileName;')
-//    return db.executeSql(this.getCreateTableSql())
-//  }
 
   getColumnId(): string {
     return 'taskId'
@@ -36,7 +30,11 @@ export class FileDownloadTable extends AbsTable<DownloadTaskInfo> {
 
   bindToValuesBucket(bucket: ValuesBucket, item: DownloadTaskInfo) {
     this.getTableColumns().forEach((col) => {
-      if (typeof item[col] == 'boolean') {
+      if (col == 'totalSize') {
+        bucket[col] = item['totalWorkload']
+      } else if (col == 'receivedSize') {
+        bucket[col] = item['completeWorkload']
+      } else if (typeof item[col] == 'boolean') {
         bucket[col] = item[col] ? 1 : 0
       } else {
         bucket[col] = item[col]
@@ -58,16 +56,14 @@ export class FileDownloadTable extends AbsTable<DownloadTaskInfo> {
     info['downloadDir'] = cursor.getString(cursor.getColumnIndex('downloadDir'))
     info['originalUrl'] = cursor.getString(cursor.getColumnIndex('originalUrl'))
     info['url'] = cursor.getString(cursor.getColumnIndex('url'))
-    info['totalSize'] = cursor.getLong(cursor.getColumnIndex('totalSize'))
-    info['receivedSize'] = cursor.getLong(cursor.getColumnIndex('receivedSize'))
+    info['totalWorkload'] = cursor.getLong(cursor.getColumnIndex('totalSize'))
+    info['completeWorkload'] = cursor.getLong(cursor.getColumnIndex('receivedSize'))
     info['prepared'] = cursor.getLong(cursor.getColumnIndex('prepared')) > 0
     info['blockDownload'] = cursor.getLong(cursor.getColumnIndex('blockDownload')) > 0
     info['status'] = cursor.getLong(cursor.getColumnIndex('status'))
     info['offset'] = cursor.getLong(cursor.getColumnIndex('offset'))
     info['contentLength'] = cursor.getLong(cursor.getColumnIndex('contentLength'))
     info['finishedTime'] = cursor.getLong(cursor.getColumnIndex('finishedTime'))
-
-//    info['coverUrl'] = cursor.getString(cursor.getColumnIndex('coverUrl'))
     return info
   }
 

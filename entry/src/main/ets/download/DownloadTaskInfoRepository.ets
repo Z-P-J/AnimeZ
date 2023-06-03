@@ -2,9 +2,9 @@ import Logger from '../utils/Logger';
 import SQLite from '../db/SQLite';
 import DownloadTaskInfo from './DownloadTaskInfo';
 import {FileDownloadTable} from './FileDownloadDao';
-import TaskRepository from './core/TaskRepository';
+import TaskInfoRepository from './core/TaskInfoRepository';
 
-export default class DownloadTaskRepository implements TaskRepository<DownloadTaskInfo> {
+export default class DownloadTaskInfoRepository implements TaskInfoRepository<DownloadTaskInfo> {
 
     async exists(taskInfo: DownloadTaskInfo): Promise<boolean> {
         if (SQLite.with(FileDownloadTable)

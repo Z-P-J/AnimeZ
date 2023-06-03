@@ -1,21 +1,18 @@
-import TaskIdGenerator from './core/TaskIdGenerator';
-import DownloadTaskRepository from './DownloadTaskRepository';
-import { ZDownloader } from './ZDownloader';
+import Task from './core/Task';
+import { TaskStatus } from './core/Task';
+import DownloadTaskInfoRepository from './DownloadTaskInfoRepository';
 import DownloadTaskBuilder from './DownloadTaskBuilder';
 import DownloadTaskInfo from './DownloadTaskInfo';
-import TaskInfo from './core/TaskInfo';
-import TaskBuilder from './core/TaskBuilder';
-import { ChildDownloadTask, FileDownloadTask, GroupDownloadTask } from './FileDownloadTask';
-import TaskObserver from './core/TaskObserver';
+import { FileDownloadTask, GroupDownloadTask } from './FileDownloadTask';
 import fs from '@ohos.file.fs';
 import http from '@ohos.net.http';
 import Logger from '../utils/Logger';
-import TaskManager, { TaskStatus } from './core/TaskManager';
+import TaskManager from './core/TaskManager';
 import { Downloader } from './Downloader';
 
 class DownloadTaskManager extends TaskManager {
     constructor(parentTask: FileDownloadTask = null) {
-        super(parentTask, new DownloadTaskRepository());
+        super(parentTask, new DownloadTaskInfoRepository());
     }
 
     createTask(taskInfo: DownloadTaskInfo): BlockTask  {
@@ -24,6 +21,9 @@ class DownloadTaskManager extends TaskManager {
 
 }
 
+/**
+ * 支持分片下载的下载任务
+ */
 class MultiDownloadTask extends GroupDownloadTask<DownloadTaskInfo> {
 
     constructor(manager: TaskManager, taskInfo: DownloadTaskInfo) {
@@ -40,7 +40,7 @@ class MultiDownloadTask extends GroupDownloadTask<DownloadTaskInfo> {
             return;
         }
 
-        let totalSize = this.getTotalSize();
+        let totalSize = this.getTotalWorkload();
         if (this.taskInfo.blockDownload) {
             // 分块下载，断点续传
             if (totalSize < 1024 * 1024) {
@@ -90,19 +90,9 @@ class MultiDownloadTask extends GroupDownloadTask<DownloadTaskInfo> {
 
 }
 
-//class BlockTaskManager extends BaseTaskManager<BlockTask> {
-//    constructor(parentTask: DownloadTask) {
-//        super(parentTask);
-//    }
-//}
-
-//class BlockDownloadTaskInfo extends DownloadTaskInfo {
-//    begin: number;
-//    end: number;
-//
-//
-//}
-
+/**
+ * 分块下载子任务
+ */
 class BlockTask extends FileDownloadTask {
 //    private bufferSize = 128 * 1024;
 
@@ -134,7 +124,7 @@ class BlockTask extends FileDownloadTask {
             return
         }
 
-        let range = 'bytes=' + (this.begin + this.getReceivedSize()) + '-';
+        let range = 'bytes=' + (this.begin + this.getCompleteWorkload()) + '-';
         if (this.end > 0) {
             range = range + this.end;
         }
@@ -180,7 +170,7 @@ class BlockTask extends FileDownloadTask {
     }
 
     saveInner(buffer: ArrayBuffer) {
-        if (this.getStatus() != TaskStatus.RUNNING) {
+        if (this.getStatus() != TaskStatus.PROCESSING) {
             return;
         }
         fs.open(this.getFilePath(), fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY, (err, file) => {
@@ -193,7 +183,7 @@ class BlockTask extends FileDownloadTask {
     }
 
     private saveSliceInner(fd: number, buffer: ArrayBuffer, offset: number) {
-        if (this.getStatus() != TaskStatus.RUNNING) {
+        if (this.getStatus() != TaskStatus.PROCESSING) {
             return;
         }
         let end = Math.min(offset + this.taskInfo.bufferSize, buffer.byteLength);
@@ -201,12 +191,12 @@ class BlockTask extends FileDownloadTask {
         Logger.d(this, 'saveSlice offset=' + offset + ' end=' + end + " byteLength=" + buffer.byteLength);
         fs.write(fd, sliceBuffer,
             {
-                offset: this.begin + this.getReceivedSize(),
+                offset: this.begin + this.getCompleteWorkload(),
                 length: sliceBuffer.byteLength,
                 encoding: 'utf-8'
             },
             (err, result) => {
-                if (this.getStatus() != TaskStatus.RUNNING) {
+                if (this.getStatus() != TaskStatus.PROCESSING) {
                     return;
                 }
                 if (err) {
@@ -223,43 +213,13 @@ class BlockTask extends FileDownloadTask {
     }
 }
 
+/**
+ * 支持分块下载的下载器
+ */
 export default class MultiDownloader extends Downloader {
-
-//    constructor() {
-//        super();
-//    }
-//
-//    with(url: string): DownloadTaskBuilder<MultiDownloadTask> {
-//        return new DownloadTaskBuilder<MultiDownloadTask>(this, url)
-//    }
 
     createTask(taskInfo: DownloadTaskInfo): FileDownloadTask  {
         return new MultiDownloadTask(this, taskInfo);
-    }
-
-//    buildTask(builder: DownloadTaskBuilder): DownloadTask {
-//        let downloadTask = new MultiDownloadTask(this, builder.url, builder.dir);
-//        this.addTask(downloadTask);
-//        return downloadTask;
-//    }
-
-}
-
-export class MultiDownloadTaskBuilder extends DownloadTaskBuilder<MultiDownloadTask> {
-
-    constructor(taskManager: TaskManager, url: string) {
-        super(taskManager, url)
-    }
-
-    build(): MultiDownloadTask {
-//        let downloader = ZDownloader.get(MultiDownloader)
-        let taskInfo = new DownloadTaskInfo(this.taskManager.generateTaskId(), this.taskManager.getParentTaskId())
-        taskInfo.url = this.url
-        taskInfo.fileName = this.taskName
-        taskInfo.downloadDir = this.downloadDir
-        let downloadTask = new MultiDownloadTask(this.taskManager, taskInfo);
-        this.taskManager.addTask(downloadTask)
-        return downloadTask;
     }
 
 }

@@ -1,5 +1,5 @@
-import { TaskStatus } from '../download/core/TaskManager';
-import { TaskStatusObserver } from '../download/core/TaskManager';
+import { TaskStatusObserver } from '../download/core/Task';
+import { TaskStatus } from '../download/core/Task';
 import Logger from '../utils/Logger';
 import TaskObserver from '../download/core/TaskObserver';
 import { FileDownloadTask } from '../download/FileDownloadTask';
@@ -37,7 +37,7 @@ export struct DownloadItem {
     onError: (errorMessage) => {
       Logger.d(this, "download onError: " + errorMessage);
     },
-    onFinished: () => {
+    onComplete: () => {
       Logger.d(this, "download onFinished");
     },
   }
@@ -65,7 +65,7 @@ export struct DownloadItem {
     } else {
       this.taskName = this.task.getFileName()
     }
-    this.progress = this.task.getProgress();
+    this.progress = this.task.getTaskProgress();
 
     if (this.task.isRunning()) {
       this.task.addObserver(this.observer)
@@ -155,7 +155,7 @@ export struct DownloadItem {
       return '准备中';
     } else if (status == TaskStatus.WAITING) {
       return '等待中';
-    } else if (status == TaskStatus.RUNNING) {
+    } else if (status == TaskStatus.PROCESSING) {
       return this.task.getFormatTotalSize() + ' / ' + this.task.getFormatReceivedSize() + ' ' + this.task.getFormatProgress();
     } else if (status == TaskStatus.PAUSED) {
       return '已暂停';

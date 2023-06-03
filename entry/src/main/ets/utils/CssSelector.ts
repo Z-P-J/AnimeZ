@@ -10,7 +10,8 @@ import { NodeFinder, RootNodeFinder, NthChildNodeFinder } from './NodeFinder';
 import { AnyNode } from "domhandler";
 
 /**
- * 通过css选择器查找html中的dom元素，目前只支持部分选择器，待完善。
+ * 通过css选择器查找html中的dom元素
+ * TODO 目前只支持部分选择器，待完善。
  */
 export class CssSelector {
     private selector: string;
@@ -94,19 +95,6 @@ export class CssSelector {
                 let token = this.nextToken();
                 Logger.e(this, 'parse token=' + token)
                 if (token.startsWith('nth-child')) {
-//                    let index = parseInt(token.substring(token.indexOf('(') + 1, token.indexOf(')')))
-//                    Logger.e(this, 'parse index=' + index)
-//                    let f = new NthChildNodeFinder(index - 1)
-//                    if (finder) {
-//                        parentFinder = currentFinder;
-//                        currentFinder.nextFinder = finder;
-//                        currentFinder = finder;
-//                        finder = null;
-//                    }
-//                    parentFinder = currentFinder;
-//                    currentFinder.nextFinder = f;
-//                    currentFinder = f;
-
                     let index = parseInt(token.substring(token.indexOf('(') + 1, token.indexOf(')'))) - 1
                     Logger.e(this, 'parse index=' + index + " finder=" + JSON.stringify(finder))
                     if (finder) {
@@ -121,8 +109,6 @@ export class CssSelector {
                     } else {
                         finder = new NthChildNodeFinder(index)
                     }
-
-
                 } else {
                     throw new Error("no support token: " + token);
                 }
@@ -176,7 +162,7 @@ export class CssSelector {
     }
 
     /**
-     * 解析token字符串，即选择器字符串中国除了一些特殊字符外的字符串，比如class属性名称、id属性名称、tag名称等
+     * 解析token字符串，即选择器字符串中除了一些特殊字符外的字符串，比如class属性名称、id属性名称、tag名称等
      */
     private nextToken(): string {
         let start = this.pos;

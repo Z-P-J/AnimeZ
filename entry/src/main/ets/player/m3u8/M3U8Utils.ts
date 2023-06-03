@@ -1,7 +1,6 @@
 import { DownloadUtils } from '../../download/DownloadUtils';
 import Logger from '../../utils/Logger';
-import { M3u8Segment } from './M3U8';
-import M3u8 from './M3U8';
+import M3u8, { M3u8Segment } from './M3U8';
 import HttpUtils from '../../utils/HttpUtils';
 import fs from '@ohos.file.fs';
 
@@ -41,7 +40,18 @@ const REGEX_IV = new RegExp("IV=([^,.*]+)");
 const KEYFORMAT_IDENTITY = "identity";
 const REGEX_ATTR_BYTERANGE = new RegExp("BYTERANGE=\"(\\d+(?:@\\d+)?)\\b\"");
 
+/**
+ * 解析m3u8和保存m3u8
+ * 参考
+ */
 export default class M3U8Utils {
+
+    /**
+     * 从链接中解析m3u8信息
+     * @param parentUrl 父链接
+     * @param videoUrl m3u8视频链接
+     * @param content m3u8内容
+     */
     static async parse(parentUrl: string, videoUrl: string, content?: string): Promise<M3u8> {
         //        let content = await HttpUtils.getString(videoUrl)
         Logger.e(this, 'parse parentUrl=' + parentUrl + ' videoUrl=' + videoUrl)
@@ -204,6 +214,11 @@ export default class M3U8Utils {
         return m3u8;
     }
 
+    /**
+     * 将M3u8转换为字符串，并保存至本地
+     * @param m3u8
+     * @param path
+     */
     static async saveM3U8OriginInfo(m3u8: M3u8, path: string): Promise<number> {
 
         let content = PLAYLIST_HEADER + '\n' + TAG_VERSION + ":" + m3u8.version + "\n"
@@ -245,6 +260,11 @@ export default class M3U8Utils {
         return fs.write(file.fd, content, {encoding: 'utf-8'})
     }
 
+    /**
+     * 将M3u8中的分片地址和key地址转换为本地路径，转换为字符串并保存至本地。保存的文件用于本地播放
+     * @param m3u8
+     * @param path
+     */
     static async saveM3U8LocalInfo(m3u8: M3u8, path: string): Promise<number> {
 
         let content = PLAYLIST_HEADER + '\n' + TAG_VERSION + ":" + m3u8.version + "\n"
@@ -285,18 +305,7 @@ export default class M3U8Utils {
         let file = await fs.open(path, fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
         return fs.write(file.fd, content, {encoding: 'utf-8'})
     }
-
-    /**
-     *     public static String parseStringAttr(String line, Pattern pattern) {
-     if (pattern == null)
-     return null;
-     Matcher matcher = pattern.matcher(line);
-     if (matcher.find() && matcher.groupCount() == 1) {
-     return matcher.group(1);
-     }
-     return null;
-     }
-     */
+    
     static parseStringAttr(line, re: RegExp): string {
         let match = re.exec(line)
         Logger.e(this, 'match=' + match + " len=" + match.length)

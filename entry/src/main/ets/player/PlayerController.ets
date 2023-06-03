@@ -15,6 +15,9 @@ enum PanelType {
 
 }
 
+/**
+ * 播放器控制界面
+ */
 @Component
 export struct PlayerController {
   @State currentTime: string = "00:00";

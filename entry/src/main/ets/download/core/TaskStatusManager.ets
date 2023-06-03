@@ -1,18 +1,35 @@
-import TaskInfo from './TaskInfo';
-import Task from './Task';
+import Task, { TaskStatus, TaskStatusObserver } from './Task';
 import Logger from '../../utils/Logger';
-import { TaskStatusObserver } from './TaskManager';
-import { TaskStatus } from './TaskManager';
 
+/**
+ * 任务状态管理
+ */
 export default class TaskStatusManager {
+
+    /**
+     * 当前任务
+     */
     private readonly task: Task;
+
+    /**
+     * 当前任务状态
+     */
     private status: TaskStatus = TaskStatus.CREATED;
-    // 运行态标志。例如RUNNING状态下statusFlag不为null，
-    // 当此时程序崩溃，重新打开应用时，任务状态仍是RUNNING，但是由于object为null，由此判断并非处于RUNNING状态
+
+    /**
+     * 运行态标志。例如RUNNING状态下statusFlag不为null，当此时程序崩溃，重新打开应用时，恢复任务状态时仍是RUNNING，
+     * 但是由于object为null，由此判断并非处于RUNNING状态
+     */
     private statusFlag: object = null;
 
+    /**
+     * 任务状态观察者数组
+     */
     private observers: TaskStatusObserver[];
 
+    /**
+     * 日志tag，用于debug
+     */
     private readonly tag: string;
 
     constructor(task: Task) {
@@ -26,7 +43,7 @@ export default class TaskStatusManager {
     }
 
     getStatus(): TaskStatus {
-        if (this.status == TaskStatus.PREPARING || this.status == TaskStatus.RUNNING || this.status == TaskStatus.WAITING) {
+        if (this.status == TaskStatus.PREPARING || this.status == TaskStatus.PROCESSING || this.status == TaskStatus.WAITING) {
             if (!this.statusFlag) {
                 if (this.getMessage()) {
                     this.status = TaskStatus.ERROR;
@@ -42,7 +59,7 @@ export default class TaskStatusManager {
         let oldStatus = this.status;
         this.status = status;
         this.task.taskInfo.message = message;
-        if (status == TaskStatus.PREPARING || status == TaskStatus.RUNNING || status == TaskStatus.WAITING) {
+        if (status == TaskStatus.PREPARING || status == TaskStatus.PROCESSING || status == TaskStatus.WAITING) {
             if (!this.statusFlag) {
                 this.statusFlag = new Object();
             }
@@ -66,7 +83,7 @@ export default class TaskStatusManager {
             case TaskStatus.PREPARING:
                 this.task.observerDispatcher.notifyPreparing();
                 break;
-            case TaskStatus.RUNNING:
+            case TaskStatus.PROCESSING:
                 this.task.observerDispatcher.notifyStart();
                 break;
             case TaskStatus.WAITING:
@@ -79,7 +96,7 @@ export default class TaskStatusManager {
                 this.task.observerDispatcher.notifyError(this.getMessage());
                 break;
             case TaskStatus.COMPLETE:
-                this.task.observerDispatcher.notifyFinished();
+                this.task.observerDispatcher.notifyComplete();
                 break;
         }
 

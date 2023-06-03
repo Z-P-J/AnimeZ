@@ -88,11 +88,11 @@ export default class TaskObserverDispatcher {
         }
     }
 
-    notifyFinished() {
+    notifyComplete() {
         if (this.task && this.observers) {
             this.stopProgress()
             this.observers.forEach((o) => {
-                o.onFinished();
+                o.onComplete();
             });
         }
     }
@@ -111,13 +111,13 @@ export default class TaskObserverDispatcher {
     notifyProgress(totalSize?: number, receivedSize?: number, progress?: number) {
         if (this.task && this.observers) {
             if (totalSize == undefined) {
-                totalSize = this.task.getTotalSize()
+                totalSize = this.task.getTotalWorkload()
             }
             if (receivedSize == undefined) {
-                receivedSize = this.task.getReceivedSize()
+                receivedSize = this.task.getCompleteWorkload()
             }
             if (progress == undefined) {
-                progress = this.task.getProgress()
+                progress = this.task.getTaskProgress()
             }
             this.observers.forEach((o) => {
                 o.onProgress(totalSize, receivedSize, progress);

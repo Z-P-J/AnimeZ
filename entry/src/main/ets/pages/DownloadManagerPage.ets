@@ -98,20 +98,20 @@ struct DownloadManagerPage {
     { name: '最强主宰 动态漫画 第29集', url: 'https://ukzy.ukubf4.com/20230402/ilm8IR50/index.m3u8' }
   ]
   private readonly observer: TaskManagerObserver<M3U8DownloadTask> = {
-    onMissionLoaded: (tasks: M3U8DownloadTask[]) => {
+    onTaskLoaded: (tasks: M3U8DownloadTask[]) => {
       this.tasks = this.tasks.concat(tasks)
       Logger.e(this, 'onMissionLoaded tasks len=' + tasks.length)
       this.onTasksChanged()
     },
-    onMissionCreateFailed: (task: M3U8DownloadTask, error: any) => {
+    onTaskCreateFailed: (task: M3U8DownloadTask, error: any) => {
       Logger.e(this, 'onMissionCreateFailed id=' + task.getTaskId() + " error=" + JSON.stringify(error))
     },
-    onMissionAdd: (task: M3U8DownloadTask) => {
+    onTaskAdd: (task: M3U8DownloadTask) => {
       Logger.e(this, 'onMissionAdd id=' + task.getTaskId())
       this.tasks.push(task)
       this.onTasksChanged()
     },
-    onMissionDelete: (task: M3U8DownloadTask) => {
+    onTaskRemove: (task: M3U8DownloadTask) => {
 
       this.tasks = this.tasks.filter((item) => {
         return item != task
@@ -125,7 +125,7 @@ struct DownloadManagerPage {
       //        this.onTasksChanged()
       //      }
     },
-    onMissionFinished: (task: M3U8DownloadTask) => {
+    onTaskComplete: (task: M3U8DownloadTask) => {
       Logger.e(this, 'onMissionFinished id=' + task.getTaskId())
     }
   }

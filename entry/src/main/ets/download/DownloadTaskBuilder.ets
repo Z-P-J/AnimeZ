@@ -4,6 +4,9 @@ import TaskManager from './core/TaskManager';
 import { FileDownloadTask } from './FileDownloadTask';
 import TaskBuilder from './core/TaskBuilder';
 
+/**
+ * 下载任务构造者
+ */
 export default class DownloadTaskBuilder<T extends FileDownloadTask> implements TaskBuilder<T> {
     readonly taskManager: TaskManager<Task, T>
     taskName: string;

@@ -1,26 +1,26 @@
 import Task from './core/Task';
-import DownloadTaskRepository from './DownloadTaskRepository';
+import DownloadTaskInfoRepository from './DownloadTaskInfoRepository';
 import { FileDownloadTask } from './FileDownloadTask';
 import TaskInfo from './core/TaskInfo';
-import TaskRepository from './core/TaskRepository';
+import TaskInfoRepository from './core/TaskInfoRepository';
 import TaskManager from './core/TaskManager';
 import DownloadTaskBuilder from './DownloadTaskBuilder';
 
+/**
+ * 下载器抽象类，Downloader本质上是对下载任务的管理，所以继承自TaskManager
+ * Downloader和TaskManager的区别是Downloader支持创建下载任务
+ */
 export abstract class Downloader<T extends FileDownloadTask = FileDownloadTask> extends TaskManager<Task, T> {
-    constructor(taskRepository: TaskRepository<TaskInfo> = new DownloadTaskRepository()) {
-        super(null, taskRepository);
+    constructor(taskInfoRepository: TaskInfoRepository<TaskInfo> = new DownloadTaskInfoRepository()) {
+        super(null, taskInfoRepository);
     }
 
-//    abstract with(url: string): DownloadTaskBuilder<T>
-
+    /**
+     * 创建下载任务Builder
+     * @param url
+     */
     with(url: string): DownloadTaskBuilder<T> {
         return new DownloadTaskBuilder<T>(this, url)
     }
-
-//    with(url: string): DownloadTaskBuilder {
-//        return new DownloadTaskBuilder(0, url)
-//    }
-
-//    abstract buildTask(builder: TaskBuilder): DownloadTask;
 
 }

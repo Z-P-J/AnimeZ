@@ -38,6 +38,9 @@ export interface FullScreenChangeListener {
 
 }
 
+/**
+ * 播放器管理
+ */
 export class PlayerManager {
   private readonly mIjkMediaPlayer = new IjkMediaPlayer()
   private url: string
