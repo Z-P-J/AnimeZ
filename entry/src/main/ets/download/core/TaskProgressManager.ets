@@ -1,6 +1,5 @@
-import TaskInfo from './TaskInfo';
 import Task from './Task'
-import Logger from '../../utils/Logger';
+import Logger from '../../utils/Logger'
 
 /**
  * 任务进度管理
@@ -10,29 +9,33 @@ export default class TaskProgressManager {
     /**
      * 当前任务
      */
-    private readonly task: Task;
+    private readonly task: Task
 
     /**
      * 任务进度更新频率
      */
-    private readonly progressDuration;
+    private readonly progressDuration
 
     /**
      * 最大任务进度
      */
-    private readonly maxProgress;
+    private readonly maxProgress
 
-    private progressHandler: Function = null;
+    private progressHandler: Function = null
 
-    private readonly tag: string;
+    private readonly tag: string
 
     private lastTime: number = 0
 
     constructor(task: Task, maxProgress: number = 100, progressDuration: number = 1000) {
-        this.task = task;
+        this.task = task
         this.tag = task.constructor.name + ".ProgressManager"
         this.progressDuration = progressDuration
         this.maxProgress = maxProgress
+        
+        if (task.getTotalWorkload() > 0) {
+            task.taskInfo.taskProgress = task.getCompleteWorkload() / task.getTotalWorkload() * this.maxProgress
+        }
     }
 
     init(task: Task) {
@@ -44,10 +47,10 @@ export default class TaskProgressManager {
      * @param size
      */
     onInitSize(size: number) {
-        this.task.taskInfo.totalWorkload += size;
-        let parentTask = this.task.getParentTask();
+        this.task.taskInfo.totalWorkload += size
+        let parentTask = this.task.getParentTask()
         if (parentTask) {
-            parentTask.observerDispatcher.progressManager.onInitSize(size);
+            parentTask.observerDispatcher.progressManager.onInitSize(size)
         }
     }
 
@@ -56,19 +59,19 @@ export default class TaskProgressManager {
      * @param size
      */
     onReceived(size: number) {
-        this.task.taskInfo.completeWorkload += size;
-        Logger.d(this.tag, 'onReceived size=' + size + ' receivedSize=' + this.task.taskInfo.completeWorkload);
+        this.task.taskInfo.completeWorkload += size
+        Logger.d(this.tag, 'onReceived size=' + size + ' receivedSize=' + this.task.taskInfo.completeWorkload)
         if (this.task.taskInfo.totalWorkload > 0) {
-            this.task.taskInfo.downloadProgress = this.task.getCompleteWorkload() / this.task.getTotalWorkload() * this.maxProgress;
+            this.task.taskInfo.taskProgress = this.task.getCompleteWorkload() / this.task.getTotalWorkload() * this.maxProgress
         }
         let currentTime = new Date().getTime()
         if (this.lastTime - currentTime > 500) {
             this.task.manager.onProgressChanged(this.task)
             this.lastTime = currentTime
         }
-        let parentTask = this.task.getParentTask();
+        let parentTask = this.task.getParentTask()
         if (parentTask) {
-            parentTask.observerDispatcher.progressManager.onReceived(size);
+            parentTask.observerDispatcher.progressManager.onReceived(size)
         }
     }
 
@@ -77,18 +80,18 @@ export default class TaskProgressManager {
      */
     loopForProgress() {
         if (this.progressHandler) {
-            return;
+            return
         }
         if (this.canLoopForProgress()) {
             this.progressHandler = () => {
                 if (this.canLoopForProgress()) {
-                    this.task.observerDispatcher.notifyProgress();
-                    setTimeout(this.progressHandler, this.progressDuration);
+                    this.task.observerDispatcher.notifyProgress()
+                    setTimeout(this.progressHandler, this.progressDuration)
                 } else {
-                    this.progressHandler = null;
+                    this.progressHandler = null
                 }
             }
-            setTimeout(this.progressHandler, this.progressDuration);
+            setTimeout(this.progressHandler, this.progressDuration)
         }
     }
 
@@ -102,8 +105,8 @@ export default class TaskProgressManager {
      */
     protected canLoopForProgress() {
         if (this.task.observerDispatcher.observers) {
-            return this.task.isRunning();
+            return this.task.isRunning()
         }
-        return false;
+        return false
     }
 }

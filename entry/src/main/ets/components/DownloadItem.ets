@@ -1,3 +1,4 @@
+import { M3U8DownloadTask } from '../player/m3u8/M3U8Downloader';
 import { TaskStatusObserver } from '../download/core/Task';
 import { TaskStatus } from '../download/core/Task';
 import Logger from '../utils/Logger';
@@ -6,13 +7,14 @@ import { FileDownloadTask } from '../download/FileDownloadTask';
 
 @Component
 export struct DownloadItem {
-  private task: FileDownloadTask
+  private task: M3U8DownloadTask
   @State taskName: string = '';
   @State info: string = '已创建';
   @State isFinished: boolean = false;
   @State status: number = TaskStatus.CREATED
   @State canPause: boolean = false;
   @State progress: number = 0;
+  @State progressScale: number = 0;
 
   @Link selectMode: boolean
 
@@ -33,6 +35,7 @@ export struct DownloadItem {
       this.progress = progress
       Logger.d(this, "download onProgress total: " + totalSize + " received: " + receivedSize + " progress: " + progress);
       this.info = this.getTaskInfo();
+      this.showProgressAnim()
     },
     onError: (errorMessage) => {
       Logger.d(this, "download onError: " + errorMessage);
@@ -80,54 +83,78 @@ export struct DownloadItem {
   }
 
   build() {
-    Row() {
-      Image($r('app.media.icon'))
-        .width(20)
-        .height(20)
-        .margin({ left: 16, right: 16 })
-        .objectFit(ImageFit.Contain)
-
-      Column() {
-        Text(this.taskName)
-          .fontSize(14)
-          .fontWeight(FontWeight.Bold)
-          .align(Alignment.Start)
-          .width('100%')
-
-        Progress({ value: this.progress, type: ProgressType.Linear })
-          .margin({ top: 4, bottom: 4 })
-          .width('100%')
-
-        Text(this.info)
-          .fontSize(10)
-          .align(Alignment.Start)
-          .width('100%')
-      }
-      .layoutWeight(1)
-      .margin({ top: 10, bottom: 10, right: 14 })
-
+    Stack() {
       if (this.status != TaskStatus.COMPLETE) {
-        Image(this.canPause ? $r('app.media.ic_download_pause') : $r('app.media.ic_download_resume'))
-          .width(28)
-          .height(28)
-          .margin({ right: 14 })
-          .objectFit(ImageFit.Contain)
-          .onClick(() => {
-            if (this.task.canPause()) {
-              this.task.pause()
-            } else if (this.task.canStart()) {
-              this.task.addObserver(this.observer)
-              this.task.addStatusObserver(this.statusObserver)
-              this.task.start()
-            }
+        Row()
+          .backgroundColor($r('app.color.background_color_accent'))
+          .width('100%')
+          .height('100%')
+          .scale({x: this.progressScale, centerX: 0})
+          .onAppear(() => {
+            this.showProgressAnim(500)
           })
       }
-      Blank()
+      Row() {
+        Image(this.task.videoInfo.coverUrl)
+          .alt($r('app.media.pic_load_failed'))
+          .height('100%')
+          .aspectRatio(1.6)
+          .borderRadius(4)
+          .margin({left: 16, right: 16})
+          .objectFit(ImageFit.Cover)
+
+        Column() {
+          Text(this.taskName)
+            .fontSize(14)
+            .fontWeight(FontWeight.Bold)
+            .align(Alignment.Start)
+            .width('100%')
+          Text(this.info)
+            .fontSize(10)
+            .align(Alignment.Start)
+            .width('100%')
+        }
+        .justifyContent(FlexAlign.SpaceBetween)
+        .layoutWeight(1)
+        .height('100%')
+        .margin({ right: 16 })
+
+        if (this.status != TaskStatus.COMPLETE) {
+          Image(this.canPause ? $r('app.media.ic_download_pause') : $r('app.media.ic_download_resume'))
+            .width(28)
+            .height(28)
+            .margin({ right: 14 })
+            .objectFit(ImageFit.Contain)
+            .onClick(() => {
+              if (this.task.canPause()) {
+                this.task.pause()
+              } else if (this.task.canStart()) {
+                this.task.addObserver(this.observer)
+                this.task.addStatusObserver(this.statusObserver)
+                this.task.start()
+              }
+            })
+        }
+        Blank()
+      }
+      .width('100%')
+      .height('100%')
+      .padding({top: 12, bottom: 12})
     }
     .width('100%')
+    .height(80)
     .backgroundColor(this.selectMode ? Color.Blue : Color.White)
-    .borderRadius(16)
-    .padding(8)
+  }
+
+  private showProgressAnim(duration: number = 250) {
+    animateTo({
+      duration: duration,
+      curve: Curve.ExtremeDeceleration,
+      iterations: 1,
+      playMode: PlayMode.Normal
+    }, () => {
+      this.progressScale = this.progress / 100
+    })
   }
 
   getActionIcon(): Resource {

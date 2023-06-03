@@ -91,12 +91,9 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
     }
     if (this.taskInfoRepository) {
       this.isLoading = true;
-      this.taskInfoRepository.queryAll(this.getParentTaskId())
-        .then((infoList) => {
-          Logger.d(this, 'queryAll finished!')
-          infoList.forEach((info) => {
-            this.addTaskInner(this.createTask(info))
-          })
+      this.loadTasksInner()
+        .then(() => {
+          Logger.d(this, 'loadTasksInner finished!')
           this.isLoading = false;
           this.isTaskLoaded = true
 
@@ -107,9 +104,27 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
           }
         })
         .catch((e) => {
-          Logger.d(this, 'queryAll failed! e=' + JSON.stringify(e))
+          Logger.d(this, 'loadTasksInner failed! e=' + JSON.stringify(e))
         })
     }
+  }
+
+  private async loadTasksInner(): Promise<void> {
+    let infoList = await this.taskInfoRepository.queryAll(this.getParentTaskId())
+    Logger.d(this, 'queryAll finished! infoList=' + JSON.stringify(infoList))
+    for (let info of infoList) {
+      let task = this.createTask(info)
+      await task.doRestore()
+      this.addTaskInner(task)
+    }
+//    this.isLoading = false;
+//    this.isTaskLoaded = true
+//
+//    if (this.observers) {
+//      this.observers.forEach((o) => {
+//        o.onTaskLoaded(this.tasks)
+//      })
+//    }
   }
 
   /**
@@ -186,9 +201,7 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
     if (!this.childStatusObserver) {
       this.childStatusObserver = {
         onStatusChanged: (task: T, oldStatus: TaskStatus, status: TaskStatus) => {
-
           this.updateTaskInfo(task)
-
           if (status == TaskStatus.COMPLETE) {
             if (this.observers) {
               this.observers.forEach((o) => {
@@ -196,7 +209,6 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
               })
             }
           }
-
           if (oldStatus == TaskStatus.PROCESSING || oldStatus == TaskStatus.PREPARING) {
             if (status == TaskStatus.ERROR || status == TaskStatus.COMPLETE) {
               Logger.d(this, "onStatusChanged runningCount=" + this.processingCount);

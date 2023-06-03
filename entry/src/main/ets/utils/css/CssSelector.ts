@@ -1,4 +1,4 @@
-import Logger from './Logger';
+import Logger from '../Logger';
 import { OrNodeFinder } from './NodeFinder';
 import { AndNodeFinder } from './NodeFinder';
 import { CombineNodeFinder } from './NodeFinder';
@@ -6,7 +6,6 @@ import { TagNodeFinder } from './NodeFinder';
 import { ClassNodeFinder } from './NodeFinder';
 import { IdNodeFinder } from './NodeFinder';
 import { NodeFinder, RootNodeFinder, NthChildNodeFinder } from './NodeFinder';
-
 import { AnyNode } from "domhandler";
 
 /**

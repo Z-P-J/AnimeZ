@@ -1,3 +1,5 @@
+import VideoDetailInfo from '../entity/VideoDetailInfo';
+import { M3U8DownloadTask } from '../player/m3u8/M3U8Downloader';
 import { TaskStatus } from '../download/core/Task';
 import { TaskStatusObserver } from '../download/core/Task';
 import promptAction from '@ohos.promptAction';
@@ -7,13 +9,13 @@ import { ZDownloader } from '../download/ZDownloader'
 import EpisodeInfo from '../entity/EpisodeInfo'
 import { getTheme } from '../utils/Themes'
 import Logger from '../utils/Logger'
-import { FileDownloadTask } from '../download/FileDownloadTask'
 
 @Component
 export struct VideoCacheItem {
   @StorageLink('theme') theme: number = 0
+  private videoDetailInfo: VideoDetailInfo
   private episodeInfo: EpisodeInfo
-  @State downloadTask: FileDownloadTask = null
+  @State downloadTask: M3U8DownloadTask = null
   @State status: number = -1
   private statusObserver: TaskStatusObserver = {
     onStatusChanged: (task, oldStatus, status) => {
@@ -21,8 +23,8 @@ export struct VideoCacheItem {
       this.status = status
     }
   }
-  private readonly observer: TaskManagerObserver<FileDownloadTask> = {
-    onTaskLoaded: (tasks: FileDownloadTask[]) => {
+  private readonly observer: TaskManagerObserver<M3U8DownloadTask> = {
+    onTaskLoaded: (tasks: M3U8DownloadTask[]) => {
       let target = tasks.find((task) => {
         return task.taskInfo.originalUrl == this.episodeInfo.link
       })
@@ -32,10 +34,10 @@ export struct VideoCacheItem {
         this.status = target.getStatus()
       }
     },
-    onTaskCreateFailed: (task: FileDownloadTask, error: any) => {
+    onTaskCreateFailed: (task: M3U8DownloadTask, error: any) => {
       Logger.e(this, 'onMissionCreateFailed id=' + task.getTaskId() + " error=" + JSON.stringify(error))
     },
-    onTaskAdd: (task: FileDownloadTask) => {
+    onTaskAdd: (task: M3U8DownloadTask) => {
       Logger.e(this, 'onMissionAdd id=' + task.getTaskId())
       if (task.taskInfo.originalUrl == this.episodeInfo.link) {
         this.downloadTask = task
@@ -43,14 +45,14 @@ export struct VideoCacheItem {
         this.status = task.getStatus()
       }
     },
-    onTaskRemove: (task: FileDownloadTask) => {
+    onTaskRemove: (task: M3U8DownloadTask) => {
       if (this.downloadTask && this.downloadTask.getTaskId() == task.getTaskId()) {
         this.downloadTask.removeStatusObserver(this.statusObserver)
         this.downloadTask = null
         this.status = -1
       }
     },
-    onTaskComplete: (task: FileDownloadTask) => {
+    onTaskComplete: (task: M3U8DownloadTask) => {
     }
   }
 
@@ -98,6 +100,8 @@ export struct VideoCacheItem {
       if (!this.downloadTask) {
         this.downloadTask = ZDownloader.get(M3U8Downloader)
           .with(this.episodeInfo.link)
+          .setPageLink(this.videoDetailInfo.url)
+          .setCoverUrl(this.videoDetailInfo.coverUrl)
           .setTaskName(this.episodeInfo.desc)
           .setFileName('index.m3u8')
           .setDownloadDir(getContext(this).filesDir + "/download/")

@@ -26,7 +26,7 @@ struct DownloadManagerList {
 
   build() {
     Column() {
-      List({ space: 16 }) {
+      List() {
         ForEach(this.tasks.map((task, i) => {
           return i
         }), (i) => {
@@ -40,7 +40,7 @@ struct DownloadManagerList {
           .onClick(() => {
             let task = this.tasks[i]
             if (task.isComplete()) {
-              router.pushUrl({url: 'pages/LocalVideoPlayerPage', params: {video_path: task.getLocalM3u8Path()}})
+              router.pushUrl({url: 'pages/LocalVideoPlayerPage', params: {video_path: task.getLocalM3U8Path()}})
             }
           })
           .gesture(LongPressGesture({ repeat: false })
@@ -50,6 +50,7 @@ struct DownloadManagerList {
             }))
         })
 
+        // TODO 这样写竟然报错？？？？
 //        ForEach(this.tasks, (task: M3U8DownloadTask) => {
 //          ListItem() {
 //            DownloadItem({ selectMode: $selectMode, task: task })
@@ -71,7 +72,6 @@ struct DownloadManagerList {
 //        })
       }
       .edgeEffect(EdgeEffect.Spring)
-      .padding(16)
       .width('100%')
       .height('100%')
     }
@@ -91,7 +91,7 @@ struct DownloadManagerPage {
   @State tasks: M3U8DownloadTask[] = []
 
   // TODO 测试数据
-  testData = [
+  private testData = [
     { name: '最强主宰 动态漫画 第41集', url: 'https://ukzy.ukubf4.com/20230514/n77WsZgB/index.m3u8' },
     { name: '最强主宰 动态漫画 第40集', url: 'https://ukzy.ukubf4.com/20230509/esQzkKyr/index.m3u8' },
     { name: '最强主宰 动态漫画 第39集', url: 'https://ukzy.ukubf4.com/20230507/T3yYyWxB/index.m3u8' },
@@ -117,13 +117,6 @@ struct DownloadManagerPage {
         return item != task
       })
       this.onTasksChanged()
-
-      //      let index = this.tasks.indexOf(task)
-      //      Logger.e(this, 'onMissionDelete id=' + task.getTaskId() + " index=" + index)
-      //      if (index >= 0) {
-      //        this.tasks.slice(index, 1)
-      //        this.onTasksChanged()
-      //      }
     },
     onTaskComplete: (task: M3U8DownloadTask) => {
       Logger.e(this, 'onMissionFinished id=' + task.getTaskId())
@@ -167,10 +160,8 @@ struct DownloadManagerPage {
       TitleBar({ title: '下载管理' })
 
       Row() {
-
         Button('添加任务')
           .onClick(() => {
-
             if (this.testData.length > 0) {
               let data = this.testData.splice(0, 1)[0]
               Logger.e(this, 'add task data=' + JSON.stringify(data))
@@ -182,15 +173,7 @@ struct DownloadManagerPage {
                 .build()
               downloadTask.start()
             }
-
-            //            let url = "https://ukzy.ukubf4.com/20230402/ilm8IR50/index.m3u8"
-            //            let downloadTask = DOWNLOADER.with(url)
-            //              .setTaskName("index.m3u8")
-            //              .setDownloadDir(getContext(this).filesDir + "/download/" + CryptoJS.MD5(url))
-            //              .build()
-            //            downloadTask.start()
           })
-
         Button('移除任务')
           .onClick(() => {
             Logger.e(this, 'delete task len=' + this.tasks.length)
@@ -220,7 +203,7 @@ struct DownloadManagerPage {
       }
       ImmersionBarSpace()
     }
-    .backgroundColor(getTheme(this.theme).background_color_accent)
+    .backgroundColor(getTheme(this.theme).background_color)
     .width('100%')
     .height('100%')
   }

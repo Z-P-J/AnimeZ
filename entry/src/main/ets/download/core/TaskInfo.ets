@@ -41,7 +41,7 @@ export default class TaskInfo {
      * 任务进度
      * TODO 重命名为taskProgress
      */
-    downloadProgress: number = 0;
+    taskProgress: number = 0;
 
     /**
      * 任务创建时间

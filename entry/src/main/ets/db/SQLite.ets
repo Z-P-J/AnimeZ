@@ -3,8 +3,6 @@ import DatabaseImpl from './DatabaseImpl';
 import ITable from './ITable';
 import AbsTable from './AbsTable';
 import Logger from '../utils/Logger';
-
-import HashMap from '@ohos.util.HashMap';
 import 'reflect-metadata';
 
 /**
@@ -32,29 +30,6 @@ export default class SQLite {
             return new DatabaseImpl(dbName);
         })
         return database.getTable(tableClass)
-
-
-//        let globalDatabaseMap = Globals.get<HashMap<any, any>>('global_database_map', () => {
-//            return new HashMap<any, any>()
-//        })
-
-//        let globalDatabaseMap = globalThis.globalDatabaseMap
-//        Logger.e(this, 'globalDatabaseMap.class=' + globalDatabaseMap )
-//
-//        if (!globalDatabaseMap) {
-//            globalDatabaseMap = {}
-//            globalThis.globalDatabaseMap = globalDatabaseMap
-//        }
-
-//        Logger.e(this, 'globalDatabaseMap=' + JSON.stringify(globalDatabaseMap) )
-//        let database = globalDatabaseMap.get(dbName)
-//        Logger.e(this, 'database=' + database )
-//        if (!(database instanceof DatabaseImpl)) {
-//            database = new DatabaseImpl(dbName)
-//            globalDatabaseMap.set(dbName, database)
-//        }
-//        Logger.e(this, 'getTable')
-//        return database.getTable(tableClass)
     }
 
 }

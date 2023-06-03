@@ -1,3 +1,4 @@
+import Logger from '../../utils/Logger';
 import TaskInfo from './TaskInfo';
 import TaskObserverDispatcher from './TaskObserverDispatcher';
 import TaskStatusManager from './TaskStatusManager';
@@ -176,6 +177,11 @@ export default interface Task<T extends TaskInfo = TaskInfo> {
     canStart(): boolean;
 
     /**
+     * 从本地恢复任务的逻辑
+     */
+    doRestore();
+
+    /**
      * 初始化逻辑
      */
     doInit();
@@ -254,7 +260,7 @@ export abstract class AbsTask<I extends TaskInfo = TaskInfo> implements Task<I> 
     }
 
     getTaskProgress() {
-        return this.taskInfo.downloadProgress;
+        return this.taskInfo.taskProgress;
     }
 
     getTaskSpeed() {
@@ -344,6 +350,10 @@ export abstract class AbsTask<I extends TaskInfo = TaskInfo> implements Task<I> 
             return false;
         }
         return this.isPaused() || this.isError() || this.getStatus() == TaskStatus.CREATED;
+    }
+
+    async doRestore(): Promise<void> {
+        // do nothing
     }
 
     abstract doInit();

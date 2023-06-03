@@ -1,4 +1,3 @@
-import Logger from './Logger';
 import { NodeWithChildren, AnyNode } from "domhandler";
 import * as DomUtils from 'domutils'
 

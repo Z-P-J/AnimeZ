@@ -2,15 +2,14 @@ import { DramaList } from '../../entity/HomepageData';
 import HomepageData from '../../entity/HomepageData';
 import Logger from '../../utils/Logger';
 import EpisodeInfo from '../../entity/EpisodeInfo';
-import { CssSelector } from '../../utils/CssSelector';
+import { CssSelector } from '../../utils/css/CssSelector';
 import VideoInfo from '../../entity/VideoInfo';
 import EpisodeList from '../../entity/EpisodeList';
 import VideoDetailInfo from '../../entity/VideoDetailInfo';
 import HttpUtils from '../../utils/HttpUtils';
 import DataSource from '../DataSource';
-import { parseDocument } from 'htmlparser2'
 import * as DomUtils from 'domutils'
-import { Element, Document, AnyNode } from "domhandler"
+import { Element, Document } from "domhandler"
 
 const PREFIX_DATA = "var player_aaaa="
 const BASE_URL = 'http://www.bimiacg4.net'

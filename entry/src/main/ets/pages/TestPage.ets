@@ -16,6 +16,7 @@ struct TestPage {
   private playerManager: PlayerManager = new PlayerManager()
   @State isFullScreen: boolean = false
   @State rightPanelScale: number = 0
+  @State progressRatio: number = 0
 
   aboutToAppear() {
     Logger.e(this, 'TestPage aboutToAppear playStatus=' + this.playStatus)
@@ -51,14 +52,14 @@ struct TestPage {
         Row() {
           if (this.isFullScreen) {
             Column() {
-//              Text('1111111')
+              //              Text('1111111')
               Scroll() {
                 Column() {
-//                  ForEach(['0.5', '0.75', '1.0', '1.25', '1.5', '1.75', '2.0', '2.5', '3.0'], (speed) => {
-//                    Text(speed)
-//                      .padding(8)
-//                      .fontColor(Color.Black)
-//                  })
+                  //                  ForEach(['0.5', '0.75', '1.0', '1.25', '1.5', '1.75', '2.0', '2.5', '3.0'], (speed) => {
+                  //                    Text(speed)
+                  //                      .padding(8)
+                  //                      .fontColor(Color.Black)
+                  //                  })
 
                   Text('播放器')
                     .alignSelf(ItemAlign.Start)
@@ -71,7 +72,7 @@ struct TestPage {
                         .textAlign(TextAlign.Center)
                         .fontColor(Color.White)
                         .fontSize(10)
-                        .padding({top: 12, bottom: 12})
+                        .padding({ top: 12, bottom: 12 })
                         .borderRadius(6)
                         .margin({ bottom: 8 })
                         .constraintSize({
@@ -79,7 +80,7 @@ struct TestPage {
                         })
                         .maxLines(1)
                         .onClick(() => {
-                          promptAction.showToast({message: 'TODO 播放器'})
+                          promptAction.showToast({ message: 'TODO 播放器' })
                         })
                     })
                   }
@@ -96,7 +97,7 @@ struct TestPage {
                         .textAlign(TextAlign.Center)
                         .fontColor(Color.White)
                         .fontSize(10)
-                        .padding({top: 12, bottom: 12})
+                        .padding({ top: 12, bottom: 12 })
                         .borderRadius(6)
                         .margin({ bottom: 8 })
                         .constraintSize({
@@ -104,7 +105,7 @@ struct TestPage {
                         })
                         .maxLines(1)
                         .onClick(() => {
-                          promptAction.showToast({message: 'TODO 更改画面尺寸'})
+                          promptAction.showToast({ message: 'TODO 更改画面尺寸' })
                         })
                     })
                   }
@@ -131,14 +132,14 @@ struct TestPage {
       .width('100%')
       .aspectRatio(1.9)
 
-            VideoPlayer({ playerManager: this.playerManager })
-              .width('100%')
+      VideoPlayer({ playerManager: this.playerManager })
+        .width('100%')
       //        .height('28%')
 
 
       Button('test')
         .onClick(() => {
-//          this.isFullScreen = !this.isFullScreen
+          //          this.isFullScreen = !this.isFullScreen
 
 
           if (this.isFullScreen) {
@@ -176,8 +177,65 @@ struct TestPage {
           }
 
 
-
         })
+
+      Stack({ alignContent: Alignment.Start }) {
+        Row()
+          .backgroundColor($r('app.color.background_color_accent'))
+          .width('100%')
+          .height('100%')
+          .scale({ x: this.progressRatio / 100, centerX: 0 })
+
+        Row() {
+          Image($r('app.media.icon'))
+            .height('100%')
+            .aspectRatio(1.5)
+            .borderRadius(4)
+            .margin({ left: 16, right: 16 })
+            .objectFit(ImageFit.Cover)
+
+          Column() {
+            Text("TaskName")
+              .fontSize(14)
+              .fontWeight(FontWeight.Bold)
+              .align(Alignment.Start)
+              .width('100%')
+
+            Text('info')
+              .fontSize(10)
+              .align(Alignment.Start)
+              .width('100%')
+          }
+          .justifyContent(FlexAlign.SpaceBetween)
+          .layoutWeight(1)
+          .height('100%')
+          .margin({ right: 16 })
+
+          Blank()
+        }
+        .width('100%')
+        .height('100%')
+        .padding({ top: 8, bottom: 8 })
+      }
+      .width('100%')
+      .height(80)
+      .backgroundColor('#eeeeee')
+      .onAppear(() => {
+        let id = setInterval(() => {
+          if (this.progressRatio >= 100) {
+            clearInterval(id)
+            return
+          }
+          animateTo({
+            duration: 250,
+            curve: Curve.ExtremeDeceleration,
+            iterations: 1,
+            playMode: PlayMode.Normal
+          }, () => {
+            this.progressRatio += 1
+          })
+        }, 1000)
+      })
 
       //      Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start, wrap: FlexWrap.Wrap }) {
       //        Button('重置').margin(8)

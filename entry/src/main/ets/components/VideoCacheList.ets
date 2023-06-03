@@ -58,7 +58,7 @@ export struct VideoCacheList {
 
                 Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start, wrap: FlexWrap.Wrap }) {
                   ForEach(episodeList.episodes, (item: EpisodeInfo, episodeIndex: number) => {
-                    VideoCacheItem({ episodeInfo: item })
+                    VideoCacheItem({ videoDetailInfo: this.videoDetailInfo, episodeInfo: item })
                       .width('22%')
                       .margin({ bottom: 8, right: (episodeIndex + 1) % 4 == 0 ? 0 : '4%' })
                   })

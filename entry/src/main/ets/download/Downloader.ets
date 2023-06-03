@@ -1,3 +1,4 @@
+import DownloadTaskInfo from './DownloadTaskInfo';
 import Task from './core/Task';
 import DownloadTaskInfoRepository from './DownloadTaskInfoRepository';
 import { FileDownloadTask } from './FileDownloadTask';
@@ -21,6 +22,22 @@ export abstract class Downloader<T extends FileDownloadTask = FileDownloadTask> 
      */
     with(url: string): DownloadTaskBuilder<T> {
         return new DownloadTaskBuilder<T>(this, url)
+    }
+
+    /**
+     * 创建下载任务
+     * @param builder
+     */
+    buildTask(builder: DownloadTaskBuilder<T>): T {
+        let taskInfo = new DownloadTaskInfo(this.generateTaskId(), this.getParentTaskId())
+        taskInfo.taskName = builder.taskName
+        taskInfo.originalUrl = builder.url
+        taskInfo.url = builder.url
+        taskInfo.fileName = builder.fileName
+        taskInfo.downloadDir = builder.downloadDir
+        let downloadTask = this.createTask(taskInfo);
+        this.addTask(downloadTask)
+        return downloadTask;
     }
 
 }
