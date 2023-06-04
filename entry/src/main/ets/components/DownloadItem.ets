@@ -16,6 +16,7 @@ export struct DownloadItem {
   @State progress: number = 0;
   @State progressScale: number = 0;
 
+  @Link selections: number[]
   @Link selectMode: boolean
 
   private readonly observer: TaskObserver = {
@@ -50,10 +51,6 @@ export struct DownloadItem {
       this.info = this.getTaskInfo();
       this.canPause = task.canPause()
       this.status = status
-      if (task.canStart()) {
-        this.task.removeStatusObserver(this.statusObserver)
-        this.task.removeObserver(this.observer)
-      }
     }
   }
 
