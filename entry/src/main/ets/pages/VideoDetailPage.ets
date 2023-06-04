@@ -129,6 +129,12 @@ struct VideoDetailPage {
       this.pausedOnHide = false
     }
     promptAction.showToast({message: 'onPageHide'})
+    SystemBarUtils.setWindowSystemBarProperties({
+      statusBarColor: '#00000000',
+      statusBarContentColor: '#000000',
+      navigationBarColor: '#00000000',
+      navigationBarContentColor: '#000000'
+    })
   }
 
   onBackPress() {

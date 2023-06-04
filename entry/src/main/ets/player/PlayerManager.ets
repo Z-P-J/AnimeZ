@@ -63,7 +63,7 @@ export class PlayerManager {
     this.mIjkMediaPlayer.reset();
 
     //设置debug模式
-    this.mIjkMediaPlayer.setDebug(true);
+    this.mIjkMediaPlayer.setDebug(false);
     //初始化配置
     this.mIjkMediaPlayer.native_setup();
     // 屏幕常亮

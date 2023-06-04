@@ -67,7 +67,7 @@ export struct DownloadItem {
     }
     this.progress = this.task.getTaskProgress();
 
-    if (this.task.isRunning()) {
+    if (this.task.isProcessing()) {
       this.task.addObserver(this.observer)
       this.task.addStatusObserver(this.statusObserver)
     }

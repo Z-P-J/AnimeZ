@@ -67,6 +67,11 @@ export default interface Task<T extends TaskInfo = TaskInfo> {
     getTaskId(): number;
 
     /**
+     * 任务名
+     */
+    getTaskName(): string;
+
+    /**
      * 任务工作量
      */
     getTotalWorkload();
@@ -144,7 +149,7 @@ export default interface Task<T extends TaskInfo = TaskInfo> {
     /**
      * 任务是否在进行中
      */
-    isRunning(): boolean;
+    isProcessing(): boolean;
 
     /**
      * 任务是否在等待中
@@ -165,6 +170,11 @@ export default interface Task<T extends TaskInfo = TaskInfo> {
      * 任务是否出错了
      */
     isError(): boolean;
+
+    /**
+     * 任务是否已停止，处于非运行态（pause、error、complete）
+     */
+    isStopped(): boolean
 
     /**
      * 任务是否可以暂停
@@ -251,6 +261,10 @@ export abstract class AbsTask<I extends TaskInfo = TaskInfo> implements Task<I> 
         return this.taskInfo.taskId
     }
 
+    getTaskName(): string {
+        return this.taskInfo.taskName
+    }
+
     getTotalWorkload() {
         return this.taskInfo.totalWorkload;
     }
@@ -321,7 +335,7 @@ export abstract class AbsTask<I extends TaskInfo = TaskInfo> implements Task<I> 
         return this.taskInfo.prepared;
     }
 
-    isRunning(): boolean {
+    isProcessing(): boolean {
         return this.getStatus() == TaskStatus.PROCESSING;
     }
 
@@ -341,8 +355,12 @@ export abstract class AbsTask<I extends TaskInfo = TaskInfo> implements Task<I> 
         return this.getStatus() == TaskStatus.ERROR;
     }
 
+    isStopped(): boolean {
+        return this.canStart();
+    }
+
     canPause(): boolean {
-        return this.isRunning() || this.isWaiting() || this.isPreparing();
+        return this.isProcessing() || this.isWaiting() || this.isPreparing();
     }
 
     canStart(): boolean {

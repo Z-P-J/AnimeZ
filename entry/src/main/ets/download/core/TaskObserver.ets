@@ -27,7 +27,7 @@ export default interface TaskObserver {
     /**
      * 任务进度更新
      */
-    onProgress(totalSize: number, receivedSize: number, progress: number): void;
+    onProgress(totalWorkload: number, completeWorkload: number, progress: number): void;
 
     /**
      * 任务完成

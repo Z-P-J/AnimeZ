@@ -14,30 +14,6 @@ import ImmersionBarSpace from '../components/ImmersionBarSpace';
 
 const DOWNLOADER: M3U8Downloader = ZDownloader.get(M3U8Downloader)
 
-const MENU = [
-  {
-    value: '暂停',
-    action: () => {
-    }
-  },
-  {
-    value: '播放',
-    action: () => {
-    }
-  },
-  {
-    value: '详情',
-    action: () => {
-    }
-  },
-  {
-    value: '删除',
-    action: () => {
-    }
-  }
-]
-
-
 /**
  * 下载项
  */
@@ -79,9 +55,20 @@ struct DownloadItem {
     onPaused: () => {
       Logger.d(this, "download onPaused");
     },
-    onProgress: (totalSize: number, receivedSize: number, progress: number) => {
-      this.progress = progress
-      Logger.d(this, "download onProgress total: " + totalSize + " received: " + receivedSize + " progress: " + progress);
+    onProgress: (totalWorkload: number, completeWorkload: number, progress: number) => {
+      let childTasks = this.task.childTaskManager.tasks
+      if (childTasks.length > 0) {
+        let completeCount = 0
+        childTasks.forEach((task) => {
+          if (task.isComplete()) {
+            completeCount++
+          }
+        })
+        this.progress = completeCount / childTasks.length * 100
+      } else {
+        this.progress = progress
+      }
+      Logger.d(this, "download onProgress total: " + totalWorkload + " received: " + completeWorkload + " progress: " + progress);
       this.info = this.getTaskInfo();
       this.showProgressAnim()
     },
@@ -118,10 +105,8 @@ struct DownloadItem {
     }
     this.progress = this.task.getTaskProgress();
 
-    if (this.task.isRunning()) {
-      this.task.addObserver(this.observer)
-      this.task.addStatusObserver(this.statusObserver)
-    }
+    this.task.addObserver(this.observer)
+    this.task.addStatusObserver(this.statusObserver)
   }
 
   aboutToDisappear() {
@@ -148,7 +133,7 @@ struct DownloadItem {
           Image(this.isSelected ? $r('app.media.ic_selection_selected') : $r('app.media.ic_selection_none'))
             .width(24)
             .height(24)
-            .margin({left: 16})
+            .margin({ left: 16 })
             .fillColor(this.isSelected ? $r('app.color.primary_color_accent') : getTheme(this.theme).color_text_minor)
         }
         Image(this.task.videoInfo.coverUrl)
@@ -284,10 +269,23 @@ struct DownloadManagerList {
             }
           })
           .gesture(LongPressGesture({ repeat: false })
-            .onActionEnd(() => {
+            .onAction((event) => {
               Logger.e(this, 'onLongPress')
-              this.selectionManager.toggleSelectionMode()
-            }))
+              // 长按多选
+              if (!this.selectionManager.isSelectionMode()) {
+                this.selectionManager.toggleSelectionMode()
+              }
+              this.selectionManager.toggleSelectItem(this.tasks[i])
+            })
+            //            .onActionEnd(() => {
+            //              Logger.e(this, 'onLongPress')
+            //              // 长按多选
+            //              if (!this.selectionManager.isSelectionMode()) {
+            //                this.selectionManager.toggleSelectionMode()
+            //              }
+            //              this.selectionManager.toggleSelectItem(this.tasks[i])
+            //            })
+          )
         })
 
         // TODO 这样写竟然报错？？？？
@@ -331,6 +329,9 @@ struct DownloadManagerPage {
   @State selectCount: number = 0
   @State hasSelectAll: boolean = false
   @State tasks: M3U8DownloadTask[] = []
+  @State taskCount: number = 0
+  @State isAllComplete: boolean = false
+  @State canPauseAll: boolean = false
   private readonly selectionManager: SelectionManager<M3U8DownloadTask> = new SelectionManager<M3U8DownloadTask>()
 
   // TODO 测试数据
@@ -362,6 +363,10 @@ struct DownloadManagerPage {
     },
     onTaskComplete: (task: M3U8DownloadTask) => {
       Logger.e(this, 'onMissionFinished id=' + task.getTaskId())
+      this.onTasksChanged()
+    },
+    onTaskStatusChanged: (task: M3U8DownloadTask, oldStatus: TaskStatus, newStatus: TaskStatus) => {
+      this.onTasksChanged()
     }
   }
   private readonly selectionObserver: OnSelectChangeObserver<M3U8DownloadTask> = {
@@ -423,8 +428,6 @@ struct DownloadManagerPage {
   build() {
     Column() {
       ImmersionBarSpace()
-      //      TitleBar({ title: '下载管理' })
-
       Column() {
         Row() {
           Image($r('app.media.ic_arrow_left'))
@@ -461,31 +464,68 @@ struct DownloadManagerPage {
         .width('100%')
       }
 
-      Row() {
-        Button('添加任务')
-          .onClick(() => {
-            if (this.testData.length > 0) {
-              let data = this.testData.splice(0, 1)[0]
-              Logger.e(this, 'add task data=' + JSON.stringify(data))
-              let url = data['url']
-              let downloadTask = DOWNLOADER.with(url)
-                .setTaskName(data['name'])
-                .setFileName("index.m3u8")
-                .setDownloadDir(getContext(this).filesDir + "/download/")
-                .build()
-              downloadTask.start()
-            }
-          })
-        Button('移除任务')
-          .onClick(() => {
-            Logger.e(this, 'delete task len=' + this.tasks.length)
-            if (this.tasks.length > 0) {
-              this.tasks[0].delete()
-            }
-          })
-      }
+//      Row() {
+//        Button('添加任务')
+//          .onClick(() => {
+//            if (this.testData.length > 0) {
+//              let data = this.testData.splice(0, 1)[0]
+//              Logger.e(this, 'add task data=' + JSON.stringify(data))
+//              let url = data['url']
+//              let downloadTask = DOWNLOADER.with(url)
+//                .setTaskName(data['name'])
+//                .setFileName("index.m3u8")
+//                .setDownloadDir(getContext(this).filesDir + "/download/")
+//                .build()
+//              downloadTask.start()
+//            }
+//          })
+//        Button('移除任务')
+//          .onClick(() => {
+//            Logger.e(this, 'delete task len=' + this.tasks.length)
+//            if (this.tasks.length > 0) {
+//              this.tasks[0].delete()
+//            }
+//          })
+//      }
 
       if (this.state == ViewState.CONTENT) {
+        Row() {
+          if (this.isAllComplete) {
+            Text() {
+              Span('已缓存 ')
+                .fontColor(getTheme(this.theme).color_text_major)
+              Span(`${this.taskCount}`)
+                .fontColor(getTheme(this.theme).primary_color)
+            }
+              .height(32)
+          } else {
+            Row() {
+              Text(this.canPauseAll ? '全部暂停' : '全部开始')
+                .margin({ right: 4 })
+                .fontSize(12)
+                .fontColor(this.selectMode ? getTheme(this.theme).color_text_minor : getTheme(this.theme).color_text_major)
+              Image(this.canPauseAll ? $r('app.media.ic_pause') : $r('app.media.ic_download2'))
+                .width(16)
+                .height(16)
+                .fillColor(this.selectMode ? getTheme(this.theme).color_text_minor : getTheme(this.theme).color_text_major)
+            }
+            .padding({ top: 8, bottom: 8 })
+            .onClick(() => {
+              if (this.selectMode) {
+                return
+              }
+              if (this.canPauseAll) {
+                DOWNLOADER.pauseAll()
+              } else {
+                DOWNLOADER.startAll()
+              }
+            })
+          }
+        }
+        .justifyContent(FlexAlign.End)
+        .padding({ left: 16, right: 16 })
+        .width('100%')
+
         DownloadManagerList({ tasks: $tasks, selectionManager: this.selectionManager })
           .layoutWeight(1)
         if (this.selectMode) {
@@ -494,13 +534,14 @@ struct DownloadManagerPage {
               Image(this.hasSelectAll ? $r('app.media.ic_selection_selected') : $r('app.media.ic_selection_none'))
                 .width(24)
                 .height(24)
-                .fillColor(this.hasSelectAll ? $r('app.color.primary_color_accent') : getTheme(this.theme).color_text_minor)
+                .fillColor(this.hasSelectAll ? $r('app.color.primary_color_accent') : getTheme(this.theme)
+                                                                                        .color_text_minor)
               Text(this.hasSelectAll ? '全不选' : '全选')
                 .fontColor(getTheme(this.theme).color_text_major)
-                .fontSize(16)
+                .fontSize(14)
                 .margin({ left: 8 })
             }
-            .margin({left: 16})
+            .margin({ left: 16 })
             .onClick(() => {
               if (this.hasSelectAll) {
                 this.selectionManager.clearSelections()
@@ -511,11 +552,36 @@ struct DownloadManagerPage {
 
             Blank()
             Text(`删除(${this.selectCount})`)
-              .fontColor(Color.Red)
-              .fontSize(16)
+              .fontColor(this.selectCount == 0 ? getTheme(this.theme).color_text_minor : Color.Red)
+              .fontSize(14)
               .margin({ right: 16 })
               .onClick(() => {
-                // TODO 删除
+                if (this.selectCount == 0) {
+                  return
+                }
+
+                AlertDialog.show(
+                  {
+                    title: '移除下载任务',
+                    message: `确认移除选中的${this.selectCount}项下载任务？`,
+                    primaryButton: {
+                      value: '取消',
+                      action: () => {
+                      }
+                    },
+                    secondaryButton: {
+                      value: '确定',
+                      fontColor: Color.Red,
+                      action: () => {
+                        this.selectionManager.getSelections().forEach((task) => {
+                          task.delete()
+                        })
+                        this.selectionManager.toggleSelectionMode()
+                      }
+                    }
+                  }
+                )
+
               })
           }
           .width('100%')
@@ -551,6 +617,11 @@ struct DownloadManagerPage {
     } else {
       this.state = ViewState.EMPTY
     }
+
+    this.taskCount = DOWNLOADER.tasks.length
+    this.isAllComplete = DOWNLOADER.isComplete()
+    this.canPauseAll = DOWNLOADER.canPauseAll()
+
   }
 
   private loadDownloadItems() {

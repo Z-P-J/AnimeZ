@@ -213,6 +213,7 @@ export abstract class GroupDownloadTask<T extends DownloadTaskInfo = DownloadTas
     super(manager, taskInfo)
     this.childTaskManager = childTaskManager
     this.childTaskManager.parentTask = this
+    // TODO 开始时加载子任务
     this.childTaskManager.loadTasks()
   }
 

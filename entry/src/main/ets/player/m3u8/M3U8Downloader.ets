@@ -81,7 +81,15 @@ export class M3U8DownloadTask extends GroupDownloadTask {
   async doRestore(): Promise<void> {
     Logger.e(this, 'doRestore')
     let infoPath = this.taskDir + 'video.info'
-    Logger.e(this, 'doRestore infoPath=' + infoPath)
+    Logger.e(this, 'doRestore infoPath=' + infoPath + ' exists=' + fio.pathExistsSync(infoPath))
+
+    if (!fio.pathExistsSync(infoPath)) {
+      if (this.taskInfo.prepared) {
+        this.taskInfo.prepared = false
+      }
+      return
+    }
+
     let text = await fs.readText(infoPath, { encoding: 'utf-8' })
     Logger.e(this, 'doRestore text=' + text)
     let info = JSON.parse(text);

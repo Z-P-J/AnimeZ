@@ -237,6 +237,22 @@ struct TestPage {
         }, 1000)
       })
 
+      Row() {
+        Row() {
+          Image($r('app.media.ic_download'))
+            .width(16)
+            .height(16)
+          Text('全部开始')
+            .margin({left: 8})
+            .fontSize(12)
+        }
+        .alignSelf(ItemAlign.End)
+        .padding({top: 8, bottom: 8})
+      }
+      .justifyContent(FlexAlign.End)
+      .padding({left: 16, right: 16})
+      .width('100%')
+
       //      Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start, wrap: FlexWrap.Wrap }) {
       //        Button('重置').margin(8)
       //          .onClick(() => {

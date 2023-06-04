@@ -36,6 +36,11 @@ export interface TaskManagerObserver<T extends Task = Task> {
    */
   onTaskComplete(task: T);
 
+  /**
+   * 任务状态改变
+   */
+  onTaskStatusChanged(task: T, oldStatus: TaskStatus, newStatus: TaskStatus)
+
   // TODO 任务冲突、任务冲突策略
   // onTaskConflict(Mission mission, ConflictPolicy.Callback callback);
 }
@@ -81,6 +86,36 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
 
   abstract createTask(taskInfo: TaskInfo): T;
 
+  canPauseAll() {
+    let count = 0
+    this.tasks.forEach((task) => {
+      if (task.canPause()) {
+        count++
+      }
+    })
+    return count > 0
+  }
+
+  canStartAll() {
+    let count = 0
+    this.tasks.forEach((task) => {
+      if (task.canStart()) {
+        count++
+      }
+    })
+    return count > 0
+  }
+
+  isComplete() {
+    let count = 0
+    this.tasks.forEach((task) => {
+      if (!task.isComplete()) {
+        count++
+      }
+    })
+    return count == 0
+  }
+
   /**
    * 从本地加载任务
    */
@@ -104,27 +139,23 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
           }
         })
         .catch((e) => {
-          Logger.d(this, 'loadTasksInner failed! e=' + JSON.stringify(e))
+          Logger.e(this, 'loadTasksInner failed! e=' + JSON.stringify(e))
         })
     }
   }
 
   private async loadTasksInner(): Promise<void> {
+    Logger.d(this, 'loadTasksInner start parentId=' + this.getParentTaskId())
     let infoList = await this.taskInfoRepository.queryAll(this.getParentTaskId())
-    Logger.d(this, 'queryAll finished! infoList=' + JSON.stringify(infoList))
+    if (infoList.length == 0) {
+      return
+    }
+    Logger.d(this, 'loadTasksInner queryAll finished! infoList=' + JSON.stringify(infoList))
     for (let info of infoList) {
       let task = this.createTask(info)
       await task.doRestore()
       this.addTaskInner(task)
     }
-//    this.isLoading = false;
-//    this.isTaskLoaded = true
-//
-//    if (this.observers) {
-//      this.observers.forEach((o) => {
-//        o.onTaskLoaded(this.tasks)
-//      })
-//    }
   }
 
   /**
@@ -202,15 +233,22 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
       this.childStatusObserver = {
         onStatusChanged: (task: T, oldStatus: TaskStatus, status: TaskStatus) => {
           this.updateTaskInfo(task)
-          if (status == TaskStatus.COMPLETE) {
-            if (this.observers) {
+
+          if (this.observers) {
+            this.observers.forEach((o) => {
+              o.onTaskStatusChanged(task, oldStatus, status)
+            })
+            if (status == TaskStatus.COMPLETE) {
               this.observers.forEach((o) => {
                 o.onTaskComplete(task)
               })
             }
           }
-          if (oldStatus == TaskStatus.PROCESSING || oldStatus == TaskStatus.PREPARING) {
-            if (status == TaskStatus.ERROR || status == TaskStatus.COMPLETE) {
+
+          task.canStart()
+
+          if (oldStatus == TaskStatus.PROCESSING || oldStatus == TaskStatus.PREPARING || oldStatus == TaskStatus.WAITING) {
+            if (status == TaskStatus.PAUSED || status == TaskStatus.ERROR || status == TaskStatus.COMPLETE) {
               Logger.d(this, "onStatusChanged runningCount=" + this.processingCount);
               --this.processingCount;
               this.startNext();
@@ -368,9 +406,14 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
   }
 
   /**
-   * 开始下一个任务
+   * 开始下一个等待的任务
    */
   startNext() {
+    if (this.parentTask && this.parentTask.isStopped()) {
+      // 父任务已经停止了，不再开始下一个子任务
+      Logger.e(this, 'startNext parent task is stopped! taskName=' + this.parentTask.getTaskName())
+      return
+    }
     let isComplete = this.processingCount == 0;
     let errorMessage = null;
     Logger.d(this, "startNext runningCount=" + this.processingCount + " len=" + this.tasks.length);

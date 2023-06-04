@@ -1,3 +1,4 @@
+import { TaskStatus } from '../download/core/Task';
 import M3U8Downloader from '../player/m3u8/M3U8Downloader';
 import { ZDownloader } from '../download/ZDownloader';
 import { VideoCacheItem } from './VideoCacheItem';
@@ -121,6 +122,8 @@ export struct VideoCacheList {
           }
           task = ZDownloader.get(M3U8Downloader)
             .with(episode.link)
+            .setPageLink(this.videoDetailInfo.url)
+            .setCoverUrl(this.videoDetailInfo.coverUrl)
             .setTaskName(episode.desc)
             .setFileName('index.m3u8')
             .setDownloadDir(getContext(this).filesDir + "/download/")
@@ -136,6 +139,8 @@ export struct VideoCacheList {
       onTaskRemove: (task: FileDownloadTask) => {
       },
       onTaskComplete: (task: FileDownloadTask) => {
+      },
+      onTaskStatusChanged: (task: FileDownloadTask, oldStatus: TaskStatus, newStatus: TaskStatus) => {
       }
     }
     ZDownloader.get(M3U8Downloader).addObserver(observer)

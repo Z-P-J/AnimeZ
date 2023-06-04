@@ -105,7 +105,7 @@ export default class TaskProgressManager {
      */
     protected canLoopForProgress() {
         if (this.task.observerDispatcher.observers) {
-            return this.task.isRunning()
+            return this.task.isProcessing()
         }
         return false
     }

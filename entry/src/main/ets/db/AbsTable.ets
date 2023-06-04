@@ -15,7 +15,7 @@ export type ValuesBucket = {
 export default abstract class AbsTable<T> implements ITable {
   protected readonly tableName;
   private readonly dbName;
-  private readonly futureDb: Promise<rdb.RdbStore>
+  protected readonly futureDb: Promise<rdb.RdbStore>
 
   constructor(dbName: string, tableName: string) {
     this.dbName = dbName

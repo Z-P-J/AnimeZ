@@ -53,6 +53,9 @@ export struct VideoCacheItem {
       }
     },
     onTaskComplete: (task: M3U8DownloadTask) => {
+    },
+    onTaskStatusChanged: (task: M3U8DownloadTask, oldStatus: TaskStatus, newStatus: TaskStatus) => {
+
     }
   }
 

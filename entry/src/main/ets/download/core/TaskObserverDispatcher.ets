@@ -26,7 +26,6 @@ export default class TaskObserverDispatcher {
     addObserver(observer: TaskObserver) {
         if (!this.observers) {
             this.observers = [];
-//            this.progressManager = new ProgressManager(this.task)
         }
         this.observers.push(observer);
     }
@@ -41,7 +40,6 @@ export default class TaskObserverDispatcher {
                 if (this.observers.length == 0) {
                     this.observers = null;
                     this.stopProgress()
-//                    this.progressManager = null
                 }
                 return true;
             }
@@ -51,9 +49,6 @@ export default class TaskObserverDispatcher {
 
     notifyStart() {
         if (this.task && this.observers) {
-//            if (!this.progressManager) {
-//                this.progressManager = new ProgressManager(this.task)
-//            }
             this.progressManager.loopForProgress()
             this.observers.forEach((o) => {
                 o.onStart();
