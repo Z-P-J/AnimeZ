@@ -301,6 +301,7 @@ export default abstract class TaskManager<P extends Task = Task, T extends Task 
     }
 
     if (status == TaskStatus.CREATED) {
+      // TODO addTask时插入数据库
       this.taskInfoRepository.create(task.taskInfo)
         .then((result) => {
           Logger.d(this, 'start create result=' + result)

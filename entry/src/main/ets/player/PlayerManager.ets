@@ -205,6 +205,7 @@ export class PlayerManager {
     //    }
 
     if (this.episode == episode) {
+      this.setPlayerUrl(episode.videoUrl)
       return
     }
     this.episode = episode;
@@ -219,20 +220,10 @@ export class PlayerManager {
   }
 
   setPlayerUrl(url: string) {
-//    if (this.url === url) {
-//      if (this.status == PlayerStatus.PLAY) {
-//        return
-//      }
-//      this.status = PlayerStatus.PLAY
-//      return
-//    }
+    Logger.e(this, 'setPlayerUrl url=' + url)
     this.url = url;
     this.mIjkMediaPlayer.stop()
-    this.status - PlayerStatus.INIT
-    //    if (this.status != PlayerStatus.INIT) {
-    //      this.mIjkMediaPlayer.reset()
-    //      this.prepare()
-    //    }
+    this.status = PlayerStatus.INIT
   }
 
   private prepare() {
@@ -282,7 +273,7 @@ export class PlayerManager {
 //      this.mIjkMediaPlayer.pause()
 //    }
     this.setStatus(PlayerStatus.BUFFERING)
-    this.mIjkMediaPlayer.seekTo(value);
+    this.mIjkMediaPlayer.seekTo(parseInt(value));
   }
 
   setSpeed(speed: string) {

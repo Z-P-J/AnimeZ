@@ -1,3 +1,6 @@
+import PlayerListener from '../player/SystemPlayerManager';
+import { SystemPlayerManager } from '../player/SystemPlayerManager';
+import { SystemVideoPlayer } from '../player/SystemVideoPlayer';
 import { VideoCacheList } from '../components/VideoCacheList';
 import Settings from '../utils/Settings';
 import { PanelController } from '../components/CustomPanel';
@@ -39,7 +42,8 @@ struct VideoDetailPage {
   @State episodeIndex: number = 0;
   @State state: number = ViewState.LOADING
   @State errorMessage: string = ''
-  private playerManager: PlayerManager = new PlayerManager()
+//  private playerManager: PlayerManager = new PlayerManager()
+  private readonly playerManager: SystemPlayerManager = new SystemPlayerManager()
   private url: string
   private historyInfo: VideoHistoryInfo
   @State collectionInfo: VideoCollectionInfo = null
@@ -56,6 +60,22 @@ struct VideoDetailPage {
 
   private readonly panelController: PanelController = new PanelController()
   private pausedOnHide = false
+
+  private readonly playerListener: PlayerListener = {
+    onStatusChanged: (status: number) => {
+      if (status == PlayerStatus.DONE) {
+        if (Settings.isAutoPlayNextEpisode()) {
+          let episodeList = this.videoDetailInfo.episodes[this.episodeListIndex]
+          if (this.episodeIndex < episodeList.episodes.length - 1) {
+            this.playVideo(this.episodeListIndex, this.episodeIndex + 1)
+          }
+        }
+      }
+    },
+    onEpisodeChanged: (episode: EpisodeInfo) => {},
+    onVideoSpeedChanged: (videoSpeed: number) => {},
+    onFullScreenChanged: (isFullScreen: boolean) => {}
+  }
 
   aboutToAppear() {
     //    // TODO 测试
@@ -92,12 +112,7 @@ struct VideoDetailPage {
   }
 
   aboutToDisappear() {
-    SystemBarUtils.setWindowSystemBarProperties({
-      statusBarColor: '#00000000',
-      statusBarContentColor: '#000000',
-      navigationBarColor: '#00000000',
-      navigationBarContentColor: '#000000'
-    })
+    SystemBarUtils.setWindowSystemBarTransparent()
     this.saveHistoryInfo()
     this.playerManager.destroy()
   }
@@ -129,12 +144,7 @@ struct VideoDetailPage {
       this.pausedOnHide = false
     }
     promptAction.showToast({message: 'onPageHide'})
-    SystemBarUtils.setWindowSystemBarProperties({
-      statusBarColor: '#00000000',
-      statusBarContentColor: '#000000',
-      navigationBarColor: '#00000000',
-      navigationBarContentColor: '#000000'
-    })
+    SystemBarUtils.setWindowSystemBarTransparent()
   }
 
   onBackPress() {
@@ -184,8 +194,9 @@ struct VideoDetailPage {
 
   @Builder Content() {
     Column() {
-//      ImmersionBarSpace().backgroundColor(Color.Black)
-      VideoPlayer({ playerManager: this.playerManager, immersionStatusBar: true })
+//      VideoPlayer({ playerManager: this.playerManager, immersionStatusBar: true })
+      SystemVideoPlayer({ playerManager: this.playerManager, immersionStatusBar: true })
+
       if (this.videoDetailInfo) {
         Stack() {
           Image(this.videoDetailInfo.coverUrl)
@@ -660,16 +671,18 @@ struct VideoDetailPage {
           navigationBarContentColor: '#000000'
         })
 
-        this.playerManager.addListener((status) => {
-          if (status == PlayerStatus.DONE) {
-            if (Settings.isAutoPlayNextEpisode()) {
-              let episodeList = this.videoDetailInfo.episodes[this.episodeListIndex]
-              if (this.episodeIndex < episodeList.episodes.length - 1) {
-                this.playVideo(this.episodeListIndex, this.episodeIndex + 1)
-              }
-            }
-          }
-        })
+//        this.playerManager.addListener((status) => {
+//          if (status == PlayerStatus.DONE) {
+//            if (Settings.isAutoPlayNextEpisode()) {
+//              let episodeList = this.videoDetailInfo.episodes[this.episodeListIndex]
+//              if (this.episodeIndex < episodeList.episodes.length - 1) {
+//                this.playVideo(this.episodeListIndex, this.episodeIndex + 1)
+//              }
+//            }
+//          }
+//        })
+
+        this.playerManager.addListener(this.playerListener)
 
         this.playerManager.addProgressListener((totalTime, currentTime) => {
           Logger.e(this, 'totalTime=' + totalTime + ' currentTime=' + currentTime)

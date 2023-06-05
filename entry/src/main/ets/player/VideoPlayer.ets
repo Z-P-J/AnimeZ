@@ -14,8 +14,7 @@ const DEFAULT_ASPECT = 1.9
 export struct VideoPlayer {
   @State videoAspRatio: number = DEFAULT_ASPECT
   @State aspRatio: number = DEFAULT_ASPECT
-  @State playStatus: number = PlayerStatus.INIT;
-  @State videoUrl: string = ''
+  @State playStatus: number = PlayerStatus.INIT
   @State playerStatus: PlayerStatus = PlayerStatus.INIT
   @State isFullScreen: boolean = false
 

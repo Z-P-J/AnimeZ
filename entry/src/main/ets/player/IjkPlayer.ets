@@ -1,3 +1,4 @@
+import IPlayer from './IPlayer';
 import Logger from '../utils/Logger';
 /*
  * Copyright (C) 2022 Huawei Device Co., Ltd.
@@ -29,7 +30,7 @@ import window from '@ohos.window';
 /**
  * 将@ohos/ijkplayer中IjkMediaPlayer源码copy过来并去除原始代码中的单例
  */
-export class IjkMediaPlayer {
+export class IjkMediaPlayer implements IPlayer {
 
   public static OPT_CATEGORY_FORMAT: string = "1";
   public static OPT_CATEGORY_CODEC: string = "2";
@@ -114,9 +115,9 @@ export class IjkMediaPlayer {
     }
   }
 
-  seekTo(msec: string) {
+  seekTo(msec: number) {
     if (this.ijkplayer_napi) {
-      this.ijkplayer_napi._seekTo(msec);
+      this.ijkplayer_napi._seekTo('' + msec);
     }
   }
 

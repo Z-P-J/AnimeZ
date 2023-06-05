@@ -18,6 +18,8 @@ struct TestPage {
   @State rightPanelScale: number = 0
   @State progressRatio: number = 0
 
+  controller: VideoController = new VideoController()
+
   aboutToAppear() {
     Logger.e(this, 'TestPage aboutToAppear playStatus=' + this.playStatus)
     let that = this;
@@ -132,8 +134,8 @@ struct TestPage {
       .width('100%')
       .aspectRatio(1.9)
 
-      VideoPlayer({ playerManager: this.playerManager })
-        .width('100%')
+//      VideoPlayer({ playerManager: this.playerManager })
+//        .width('100%')
       //        .height('28%')
 
 
@@ -252,6 +254,39 @@ struct TestPage {
       .justifyContent(FlexAlign.End)
       .padding({left: 16, right: 16})
       .width('100%')
+
+      Video({
+        src: 'https://vip.ffzy-play3.com/20221102/1430_09bc7ca2/index.m3u8',
+        controller: this.controller
+      }).width('100%')
+        .aspectRatio(1.8)
+        .autoPlay(true)
+        .controls(true)
+        .objectFit(ImageFit.Contain)
+        .onStart(() => {
+          Logger.e(this, 'Video onStart')
+        })
+        .onPause(() => {
+          Logger.e(this, 'Video onPause')
+        })
+        .onFinish(() => {
+          Logger.e(this, 'Video onFinish')
+        })
+        .onError(() => {
+          Logger.e(this, 'Video onError')
+        })
+        .onPrepared((e) => {
+          Logger.e(this, 'Video onPrepared is ' + e.duration)
+        })
+        .onSeeking((e) => {
+          Logger.e(this, 'Video onSeeking is ' + e.time)
+        })
+        .onSeeked((e) => {
+          Logger.e(this, 'Video onSeeked is ' + e.time)
+        })
+        .onUpdate((e) => {
+          Logger.e(this, 'Video onUpdate is ' + e.time)
+        })
 
       //      Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start, wrap: FlexWrap.Wrap }) {
       //        Button('重置').margin(8)

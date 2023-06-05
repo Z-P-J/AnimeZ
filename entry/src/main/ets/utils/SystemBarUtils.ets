@@ -23,4 +23,14 @@ export default class SystemBarUtils {
       }
     })
   }
+
+  static setWindowSystemBarTransparent(isDarkContent: boolean = true) {
+    SystemBarUtils.setWindowSystemBarProperties({
+      statusBarColor: '#00000000',
+      statusBarContentColor: isDarkContent ? '#000000' : '#FFFFFF',
+      navigationBarColor: '#00000000',
+      navigationBarContentColor: isDarkContent ? '#000000' : '#FFFFFF'
+    })
+  }
+
 }
