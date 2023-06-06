@@ -1,11 +1,30 @@
-import PlayerListener from './SystemPlayerManager';
+import { VideoFit } from './SystemPlayerManager';
+import SystemPlayerManager, { PlayerListener } from './SystemPlayerManager';
 import EpisodeInfo from '../entity/EpisodeInfo';
-import { SystemPlayerManager } from './SystemPlayerManager';
 import VideoTimeUtils from './VideoTimeUtils';
 import { PlayerStatus } from './PlayerStatus';
 import Logger from '../utils/Logger';
 import promptAction from '@ohos.promptAction';
 import router from '@ohos.router';
+
+interface KeyValue {
+  name: string,
+  value: number
+}
+
+const VIDEO_SPEED_LIST: KeyValue[] = [
+  { name: '0.75', value: PlaybackSpeed.Speed_Forward_0_75_X },
+  { name: '1.00', value: PlaybackSpeed.Speed_Forward_1_00_X },
+  { name: '1.25', value: PlaybackSpeed.Speed_Forward_1_25_X },
+  { name: '1.75', value: PlaybackSpeed.Speed_Forward_1_75_X },
+  { name: '2.00', value: PlaybackSpeed.Speed_Forward_2_00_X },
+]
+
+const VIDEO_FIT_LIST: KeyValue[] = [
+  { name: '适应', value: VideoFit.Contain }, { name: '拉伸', value: VideoFit.Cover },
+  { name: '填充', value: VideoFit.Fill }, { name: '16:9', value: VideoFit.Fit_16_9 },
+  { name: '4:3', value: VideoFit.Fit_4_3 }, { name: '1:1', value: VideoFit.Fit_1_1 },
+]
 
 enum PanelType {
 
@@ -32,12 +51,11 @@ export struct SystemPlayerController {
   @State showPanel: boolean = false
   @State rightPanelScale: number = 0
   @State rightPanelType: number = PanelType.NONE
-  @State currentSpeed: string = '1.0'
-  @State videoSpeed: PlaybackSpeed = PlaybackSpeed.Speed_Forward_1_00_X
+  @State currentSpeed: string = '1.00'
   @State isLocked: boolean = false
+  @State videoFit: number = VideoFit.Contain
   private playerManager: SystemPlayerManager = null;
   private showControllerTimer: number = -1;
-
   private readonly playerListener: PlayerListener = {
     onStatusChanged: (status: number) => {
       this.playerStatus = status
@@ -48,6 +66,9 @@ export struct SystemPlayerController {
     },
     onVideoSpeedChanged: (videoSpeed: number) => {
 
+    },
+    onVideoFitChanged: (videoFit: VideoFit) => {
+      this.videoFit = videoFit
     },
     onFullScreenChanged: (isFullScreen: boolean) => {
       this.isFullScreen = isFullScreen
@@ -69,7 +90,7 @@ export struct SystemPlayerController {
   }
 
   aboutToDisappear() {
-//    this.playerManager.destroy()
+    //    this.playerManager.destroy()
     if (this.showControllerTimer >= 0) {
       clearTimeout(this.showControllerTimer)
       this.showControllerTimer = -1;
@@ -137,10 +158,14 @@ export struct SystemPlayerController {
     Stack({ alignContent: Alignment.Center }) {
       LoadingProgress().width(48).height(48).color(Color.White)
         .visibility(
-            this.playerStatus === PlayerStatus.INIT || this.playerStatus === PlayerStatus.BUFFERING ? Visibility.Visible : Visibility.None
+            this.playerStatus === PlayerStatus.INIT || this.playerStatus === PlayerStatus.BUFFERING
+            ? Visibility.Visible : Visibility.None
         )
     }
-    .visibility(this.playerStatus === PlayerStatus.INIT || this.playerStatus === PlayerStatus.BUFFERING ? Visibility.Visible : Visibility.None)
+    .visibility(
+        this.playerStatus === PlayerStatus.INIT || this.playerStatus === PlayerStatus.BUFFERING
+        ? Visibility.Visible : Visibility.None
+    )
     .backgroundColor('#80000000')
     .borderRadius(16)
     .width('100%')
@@ -155,7 +180,7 @@ export struct SystemPlayerController {
             .width(24)
             .height(24)
             .fillColor(Color.White)
-            .margin({ left: this.isFullScreen? 20 : 14 })
+            .margin({ left: this.isFullScreen ? 20 : 14 })
             .objectFit(ImageFit.Contain)
             .onClick(() => {
               if (this.playerManager.isFullScreen()) {
@@ -182,7 +207,7 @@ export struct SystemPlayerController {
               .margin({ left: 24 })
               .objectFit(ImageFit.Contain)
               .onClick(() => {
-                promptAction.showToast({message: 'TODO 投屏'})
+                promptAction.showToast({ message: 'TODO 投屏' })
               })
           }
           Image($r("app.media.ic_float_window"))
@@ -192,7 +217,7 @@ export struct SystemPlayerController {
             .margin({ left: this.isFullScreen ? 24 : 16 })
             .objectFit(ImageFit.Contain)
             .onClick(() => {
-              promptAction.showToast({message: 'TODO 小窗播放'})
+              promptAction.showToast({ message: 'TODO 小窗播放' })
             })
           Image($r("app.media.ic_setting"))
             .width(24)
@@ -216,7 +241,7 @@ export struct SystemPlayerController {
             .width(44)
             .height(44)
             .padding(12)
-            .margin({left: 16})
+            .margin({ left: 16 })
             .backgroundColor('#80000000')
             .fillColor(Color.White)
             .borderRadius(28)
@@ -231,7 +256,7 @@ export struct SystemPlayerController {
             .width(24)
             .height(24)
             .fillColor(Color.White)
-            .margin({ left: this.isFullScreen? 16 : 12 })
+            .margin({ left: this.isFullScreen ? 16 : 12 })
             .objectFit(ImageFit.Contain)
             .onClick(() => {
               promptAction.showToast({ message: 'status=' + this.playerStatus })
@@ -274,7 +299,7 @@ export struct SystemPlayerController {
             })
           Text(this.totalTime).fontSize(12).margin({ left: 6, right: 12 }).fontColor(Color.White)
 
-          Text(this.currentSpeed + 'X')
+          Text(`${this.currentSpeed}X`)
             .padding({ left: 8, right: 8, top: 4, bottom: 4 })
             .borderWidth(1)
             .borderColor(Color.White)
@@ -343,71 +368,8 @@ export struct SystemPlayerController {
   }
 
   @Builder RightPanel() {
-    //    Column() {
-    //      Scroll() {
-    //        Column() {
-    //
-    //          if (this.rightPanelType == PanelType.SPEED) {
-    //            this.ChangeSpeedPanel()
-    //          }
-    //
-    //        }
-    //          .width('100%')
-    //          .constraintSize({
-    //            minHeight: '100%'
-    //          })
-    //      }
-    //      .width('100%')
-    //      .height('100%')
-    //    }
-    //    .scale({ x: this.rightPanelScale, centerX: '100%' })
-    //    .backgroundColor('#80000000')
-    //    .width('30%')
-    //    .height('100%')
-
-
-    //    Scroll() {
-    //      Column({ space: this.isFullScreen ? 16 : 8 }) {
-    //
-    //        if (this.rightPanelType == PanelType.SPEED) {
-    //          this.ChangeSpeedPanel()
-    //        }
-    //
-    //      }
-    //      .padding(this.isFullScreen ? 16 : 8)
-    //      .width('100%')
-    //      .constraintSize({
-    //        minHeight: '100%'
-    //      })
-    //    }
-    //    .edgeEffect(EdgeEffect.Spring)
-    //    .scale({ x: this.rightPanelScale, centerX: '100%' })
-    //    .backgroundColor('#80000000')
-    //    .width('30%')
-    //    .height('100%')
-
-
     Row() {
-      //        if (this.isFullScreen) {
-      //          Column() {
-      //            Text('1111111')
-      //          }
-      //          .backgroundColor(Color.White)
-      //          .scale({ x: this.rightPanelScale, centerX: '100%' })
-      //          .width('30%')
-      //          .height('100%')
-      //        }
-
       if (this.showPanel) {
-
-//        Row() {
-//
-//        }
-//        .scale({ x: this.rightPanelScale, centerX: '100%' })
-//        .backgroundColor('#80000000')
-//        .height('100%')
-//        .width(this.isFullScreen ? '30%' : '50%')
-
         if (this.rightPanelType == PanelType.SPEED) {
           this.ChangeSpeedPanel()
         } else if (this.rightPanelType == PanelType.EPISODES) {
@@ -415,11 +377,6 @@ export struct SystemPlayerController {
         } else if (this.rightPanelType == PanelType.PLAYER_SETTINGS) {
           this.PlayerSettings()
         }
-
-
-
-
-        //          this.RightPanel()
       }
     }
     .justifyContent(FlexAlign.End)
@@ -429,28 +386,25 @@ export struct SystemPlayerController {
     .onClick(() => {
       this.hideRightPanel()
     })
-
   }
 
   @Builder ChangeSpeedPanel() {
     Scroll() {
       Column({ space: this.isFullScreen ? 16 : 8 }) {
 
-        ForEach(['0.5', '0.75', '1.0', '1.25', '1.5', '1.75', '2.0', '2.5', '3.0'], (speed) => {
-          Text(speed + 'X')
+        ForEach(VIDEO_SPEED_LIST, (item: KeyValue) => {
+          Text(`${item.name}X`)
             .padding(8)
             .fontSize(this.isFullScreen ? 14 : 12)
             .fontColor(Color.White)
             .width('100%')
-            .backgroundColor(this.currentSpeed == speed ? $r('app.color.primary_color_accent') : Color.Transparent)
+            .backgroundColor(this.currentSpeed == item.name ? $r('app.color.primary_color_accent') : Color.Transparent)
             .borderRadius(6)
             .borderColor(Color.White)
-            .borderWidth(this.currentSpeed == speed ? 0 : 1)
+            .borderWidth(this.currentSpeed == item.name ? 0 : 1)
             .onClick(() => {
-              let currentSpeed = this.playerManager.getSpeed()
-              Logger.e(this, 'currentSpeed=' + currentSpeed)
-              this.currentSpeed = speed
-              this.playerManager.setSpeed(speed)
+              this.currentSpeed = item.name
+              this.playerManager.setSpeed(item.value)
             })
         })
 
@@ -525,7 +479,7 @@ export struct SystemPlayerController {
           .fontColor(Color.White)
 
         Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.SpaceAround, wrap: FlexWrap.Wrap }) {
-          ForEach(['IjkPlayer', '系统内置'], (item, i) => {
+          ForEach(['系统内置', 'IjkPlayer'], (item, i) => {
             Text(item)
               .textAlign(TextAlign.Center)
               .fontColor(Color.White)
@@ -539,7 +493,7 @@ export struct SystemPlayerController {
               })
               .maxLines(1)
               .onClick(() => {
-                promptAction.showToast({message: 'TODO 播放器'})
+                promptAction.showToast({ message: 'TODO 播放器' })
               })
           })
         }
@@ -551,22 +505,22 @@ export struct SystemPlayerController {
           .fontColor(Color.White)
 
         Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.SpaceAround, wrap: FlexWrap.Wrap }) {
-          ForEach(['适应', '拉伸', '填充', '16:9', '4:3', '1:1'], (item, i) => {
-            Text(item)
+          ForEach(VIDEO_FIT_LIST, (item: KeyValue) => {
+            Text(item.name)
               .textAlign(TextAlign.Center)
               .fontColor(Color.White)
               .fontSize(this.isFullScreen ? 14 : 11)
               .padding(6)
-              .backgroundColor(i == 0 ? $r('app.color.primary_color_accent') : Color.Transparent)
+              .backgroundColor((this.videoFit == item.value) ? $r('app.color.primary_color_accent') : Color.Transparent)
               .borderRadius(4)
               .margin({ bottom: 8 })
               .width('33%')
-//              .constraintSize({
-//                minWidth: '33%'
-//              })
+                //              .constraintSize({
+                //                minWidth: '33%'
+                //              })
               .maxLines(1)
               .onClick(() => {
-                promptAction.showToast({message: 'TODO 更改画面尺寸'})
+                this.playerManager.setVideoFit(item.value)
               })
           })
         }
@@ -637,10 +591,10 @@ export struct SystemPlayerController {
       this.progress = pos;
     }
     Logger.e(this, "setProgress position:" + position + ",duration:" + duration + ",progressValue:" + pos);
-    this.totalTime = VideoTimeUtils.stringForTime(duration);
+    this.totalTime = VideoTimeUtils.stringForTime(duration * 1000);
     if (position > duration) {
       position = duration;
     }
-    this.currentTime = VideoTimeUtils.stringForTime(position);
+    this.currentTime = VideoTimeUtils.stringForTime(position * 1000);
   }
 }

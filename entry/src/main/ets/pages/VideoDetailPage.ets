@@ -1,11 +1,9 @@
-import PlayerListener from '../player/SystemPlayerManager';
-import { SystemPlayerManager } from '../player/SystemPlayerManager';
+import SystemPlayerManager, { PlayerListener, VideoFit } from '../player/SystemPlayerManager';
 import { SystemVideoPlayer } from '../player/SystemVideoPlayer';
 import { VideoCacheList } from '../components/VideoCacheList';
 import Settings from '../utils/Settings';
-import { PanelController } from '../components/CustomPanel';
+import CustomPanel, { PanelController } from '../components/CustomPanel';
 import { ShareDialog } from '../components/dialog/ShareDialog';
-import CustomPanel from '../components/CustomPanel';
 import { getTheme } from '../utils/Themes';
 import { VideoCollectionTable } from '../db/impl/VideoCollectionDao';
 import VideoCollectionInfo from '../entity/VideoCollectionInfo';
@@ -13,8 +11,7 @@ import SystemBarUtils from '../utils/SystemBarUtils';
 import { PlayerStatus } from '../player/PlayerStatus';
 import { VideoHistoryTable } from '../db/impl/VideoHistoryDao';
 import SQLite from '../db/SQLite';
-import StateView from '../components/StateView';
-import { ViewState } from '../components/StateView';
+import StateView, { ViewState } from '../components/StateView';
 import TransitionHelper from '../utils/TransitionHelper';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
 import { VideoHistoryInfo } from '../entity/VideoHistoryInfo';
@@ -74,6 +71,7 @@ struct VideoDetailPage {
     },
     onEpisodeChanged: (episode: EpisodeInfo) => {},
     onVideoSpeedChanged: (videoSpeed: number) => {},
+    onVideoFitChanged: (videoFit: VideoFit) => {},
     onFullScreenChanged: (isFullScreen: boolean) => {}
   }
 
@@ -199,15 +197,15 @@ struct VideoDetailPage {
 
       if (this.videoDetailInfo) {
         Stack() {
-          Image(this.videoDetailInfo.coverUrl)
-            .objectFit(ImageFit.Cover)
-            .height('100%')
-            .width('100%')
-            .onComplete(() => {
-              // TODO 背景加载完成
-              this.isBackgroundLoaded = true;
-            })
-            .blur(16)
+//          Image(this.videoDetailInfo.coverUrl)
+//            .objectFit(ImageFit.Cover)
+//            .height('100%')
+//            .width('100%')
+//            .onComplete(() => {
+//              // TODO 背景加载完成
+//              this.isBackgroundLoaded = true;
+//            })
+//            .blur(16)
           this.RootContent()
           CustomPanel(
             {

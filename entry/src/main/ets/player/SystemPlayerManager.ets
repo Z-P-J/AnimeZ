@@ -4,9 +4,29 @@ import EpisodeInfo from '../entity/EpisodeInfo';
 import { IJKMediaInfo } from './IjkMediaInfo';
 import { PlayerStatus } from './PlayerStatus';
 import Logger from '../utils/Logger';
-import promptAction from '@ohos.promptAction';
 
-export default interface PlayerListener {
+export enum VideoFit {
+  /**
+   * Keep the aspect ratio to zoom out or zoom in so that the image is completely displayed within the display boundary.
+   * @since 7
+   */
+  Contain,
+  /**
+   * Keep the aspect ratio to zoom out or zoom in so that both sides of the image are greater than or equal to the display boundary.
+   * @since 7
+   */
+  Cover,
+  /**
+   * Zoom in or out without maintaining the aspect ratio so that the image fills the display boundary.
+   * @since 7
+   */
+  Fill,
+  Fit_16_9,
+  Fit_4_3,
+  Fit_1_1,
+}
+
+export interface PlayerListener {
 
   //    onStatusChanged(status: number): void;
 
@@ -14,9 +34,11 @@ export default interface PlayerListener {
 
   onEpisodeChanged(episode: EpisodeInfo)
 
-  onVideoSpeedChanged(videoSpeed: number)
+  onVideoSpeedChanged(videoSpeed: PlaybackSpeed)
 
   onFullScreenChanged(isFullScreen: boolean)
+
+  onVideoFitChanged(videoFit: VideoFit)
 
 //  onProgressChanged(totalTime: number, currentTime: number): void
 
@@ -37,7 +59,7 @@ export interface FullScreenChangeListener {
 /**
  * 播放器管理
  */
-export class SystemPlayerManager {
+export default class SystemPlayerManager {
 
   private url: string
   private episode: EpisodeInfo
@@ -45,11 +67,11 @@ export class SystemPlayerManager {
   private status: number = PlayerStatus.INIT
   private fullScreenMode: boolean = false
   private readonly progressListeners: ProgressListener[] = []
-  private readonly fullScreenChangeListeners: FullScreenChangeListener[] = []
+//  private readonly fullScreenChangeListeners: FullScreenChangeListener[] = []
 
   private totalTime: number = 0
   private currentTime: number = 0
-  private videoSpeed: number = 1
+  private videoSpeed: number = PlaybackSpeed.Speed_Forward_1_00_X
 
   readonly controller: VideoController = new VideoController()
 
@@ -106,11 +128,11 @@ export class SystemPlayerManager {
 
   seekTo(value: number) {
     this.setStatus(PlayerStatus.BUFFERING)
-    this.controller.setCurrentTime(value)
+    this.controller.setCurrentTime(value, SeekMode.ClosestKeyframe)
     this.notifyCurrentTime(value)
   }
 
-  setSpeed(speed: number) {
+  setSpeed(speed: PlaybackSpeed) {
     if (this.videoSpeed == speed) {
       return
     }
@@ -120,12 +142,18 @@ export class SystemPlayerManager {
     })
   }
 
-  getSpeed(): number {
+  getSpeed(): PlaybackSpeed {
     return this.videoSpeed
   }
 
   isPlaying(): boolean {
     return this.status == PlayerStatus.PLAY
+  }
+
+  setVideoFit(videoFit: VideoFit) {
+    this.listeners.forEach((l) => {
+      l.onVideoFitChanged(videoFit)
+    })
   }
 
   setStatus(status: PlayerStatus) {
@@ -186,9 +214,9 @@ export class SystemPlayerManager {
     // TODO
   }
 
-  addFullScreenChangeListener(fullScreenChangeListener: FullScreenChangeListener) {
-    this.fullScreenChangeListeners.push(fullScreenChangeListener)
-  }
+//  addFullScreenChangeListener(fullScreenChangeListener: FullScreenChangeListener) {
+//    this.fullScreenChangeListeners.push(fullScreenChangeListener)
+//  }
 
   destroy() {
     this.stop()
@@ -207,8 +235,8 @@ export class SystemPlayerManager {
       win.setWindowSystemBarEnable([])
       win.setPreferredOrientation(window.Orientation.LANDSCAPE)
       this.fullScreenMode = true
-      this.fullScreenChangeListeners.forEach((listener) => {
-        listener(true)
+      this.listeners.forEach((listener) => {
+        listener.onFullScreenChanged(true)
       })
     })
   }
@@ -222,10 +250,8 @@ export class SystemPlayerManager {
       win.setWindowSystemBarEnable(['status', 'navigation'])
       win.setPreferredOrientation(window.Orientation.PORTRAIT)
       this.fullScreenMode = false
-
-
-      this.fullScreenChangeListeners.forEach((listener) => {
-        listener(false)
+      this.listeners.forEach((listener) => {
+        listener.onFullScreenChanged(false)
       })
     })
   }

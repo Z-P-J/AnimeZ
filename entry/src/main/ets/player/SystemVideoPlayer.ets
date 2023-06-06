@@ -1,7 +1,7 @@
+import { VideoFit } from './SystemPlayerManager';
+import SystemPlayerManager, { PlayerListener } from './SystemPlayerManager';
 import { SystemPlayerController } from './SystemPlayerController';
 import EpisodeInfo from '../entity/EpisodeInfo';
-import PlayerListener from './SystemPlayerManager';
-import { SystemPlayerManager } from './SystemPlayerManager';
 import DisplayUtils from '../utils/DisplayUtils';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
 import { PlayerStatus } from './PlayerStatus';
@@ -17,15 +17,13 @@ const DEFAULT_ASPECT = 1.9
 export struct SystemVideoPlayer {
   @State videoAspRatio: number = DEFAULT_ASPECT
   @State aspRatio: number = DEFAULT_ASPECT
-  @State playStatus: number = PlayerStatus.INIT;
   @State playerStatus: number = PlayerStatus.INIT
   @State isFullScreen: boolean = false
-  @State videoUrl: string = null
-
-
+  @State videoUrl: string = ''
+  @State videoSpeed: PlaybackSpeed = PlaybackSpeed.Speed_Forward_1_00_X
+  @State videoFit: ImageFit = ImageFit.Contain
   private playerManager: SystemPlayerManager = null
   private immersionStatusBar: boolean = false
-
   private readonly playerListener: PlayerListener = {
     onStatusChanged: (status: number) => {
       this.playerStatus = status
@@ -33,8 +31,40 @@ export struct SystemVideoPlayer {
     onEpisodeChanged: (episode: EpisodeInfo) => {
       this.videoUrl = episode.videoUrl
     },
-    onVideoSpeedChanged: (videoSpeed: number) => {
-
+    onVideoSpeedChanged: (videoSpeed: PlaybackSpeed) => {
+      this.videoSpeed = videoSpeed
+    },
+    onVideoFitChanged: (videoFit: VideoFit) => {
+      switch (videoFit) {
+        case VideoFit.Contain:
+          this.videoAspRatio = DEFAULT_ASPECT
+          this.videoFit = ImageFit.Contain
+          break
+        case VideoFit.Cover:
+          this.videoAspRatio = DEFAULT_ASPECT
+          this.videoFit = ImageFit.Cover
+          break
+        case VideoFit.Fill:
+          this.videoAspRatio = DEFAULT_ASPECT
+          this.videoFit = ImageFit.Fill
+          break
+        case VideoFit.Fit_16_9:
+          this.videoAspRatio = 16 / 9
+          this.videoFit = ImageFit.Fill
+          break
+        case VideoFit.Fit_4_3:
+          this.videoAspRatio = 4/ 3
+          this.videoFit = ImageFit.Fill
+          break
+        case VideoFit.Fit_1_1:
+          this.videoAspRatio = 1
+          this.videoFit = ImageFit.Fill
+          break
+        default:
+          this.videoAspRatio = DEFAULT_ASPECT
+          this.videoFit = ImageFit.Contain
+          break
+      }
     },
     onFullScreenChanged: (isFullScreen: boolean) => {
       this.isFullScreen = isFullScreen
@@ -72,32 +102,45 @@ export struct SystemVideoPlayer {
       }
       Stack({ alignContent: Alignment.Center }) {
 
-        Video({ src: this.videoUrl, controller: this.playerManager.controller })
+        Video({ src: this.videoUrl, currentProgressRate: this.videoSpeed, controller: this.playerManager.controller })
           .width('100%')
           .controls(false)
-          .objectFit(ImageFit.Cover)
+          .autoPlay(true)
+          .objectFit(this.videoFit)
           .aspectRatio(this.videoAspRatio)
           .onStart(() => {
+            Logger.e(this, 'onStart')
             this.playerManager.setStatus(PlayerStatus.PLAY)
           })
           .onError(() => {
+            Logger.e(this, 'onError')
             this.playerManager.setStatus(PlayerStatus.ERROR)
           })
           .onPrepared((e) => {
+            Logger.e(this, 'onPrepared')
             this.playerManager.notifyDuration(e.duration)
           })
           .onPause(() => {
-//            this.playStatus = PlayerStatus.PAUSE
+            Logger.e(this, 'onPause')
             if (!this.playerManager.isPrepared()) {
               this.playerManager.setStatus(PlayerStatus.BUFFERING)
             } else {
               this.playerManager.setStatus(PlayerStatus.PAUSE)
             }
           })
+          .onSeeking((e) => {
+            Logger.e(this, 'onSeeking time=' + e.time)
+            this.playerManager.setStatus(PlayerStatus.BUFFERING)
+          })
+          .onSeeked((e) => {
+            Logger.e(this, 'onSeeked time=' + e.time)
+          })
           .onFinish(() => {
+            Logger.e(this, 'onFinish')
             this.playerManager.setStatus(PlayerStatus.DONE)
           })
           .onUpdate((e) => {
+            Logger.e(this, 'onUpdate')
             this.playerManager.notifyCurrentTime(e.time)
           })
         SystemPlayerController({ playerManager: this.playerManager })
