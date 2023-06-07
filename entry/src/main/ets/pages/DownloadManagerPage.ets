@@ -1,3 +1,4 @@
+import EpisodeInfo from '../entity/EpisodeInfo';
 import { OnSelectChangeObserver } from '../utils/SelectionManager';
 import { SelectionManager } from '../utils/SelectionManager';
 import { TaskStatus, TaskStatusObserver } from '../download/core/Task';
@@ -265,7 +266,13 @@ struct DownloadManagerList {
               return
             }
             if (task.isComplete()) {
-              router.pushUrl({ url: 'pages/LocalVideoPlayerPage', params: { video_path: task.getLocalM3U8Path() } })
+              let episode: EpisodeInfo = {
+                title: task.getTaskName(),
+                desc: task.getTaskName(),
+                link: task.getOriginalUrl(),
+                videoUrl: task.getLocalM3U8Path()
+              }
+              router.pushUrl({ url: 'pages/LocalVideoPlayerPage', params: { episode: episode } })
             }
           })
           .gesture(LongPressGesture({ repeat: false })
@@ -343,7 +350,7 @@ struct DownloadManagerPage {
   ]
   private readonly observer: TaskManagerObserver<M3U8DownloadTask> = {
     onTaskLoaded: (tasks: M3U8DownloadTask[]) => {
-      this.tasks = this.tasks.concat(tasks)
+      this.tasks = this.tasks.concat(tasks).reverse()
       Logger.e(this, 'onMissionLoaded tasks len=' + tasks.length)
       this.onTasksChanged()
     },
@@ -464,29 +471,29 @@ struct DownloadManagerPage {
         .width('100%')
       }
 
-//      Row() {
-//        Button('添加任务')
-//          .onClick(() => {
-//            if (this.testData.length > 0) {
-//              let data = this.testData.splice(0, 1)[0]
-//              Logger.e(this, 'add task data=' + JSON.stringify(data))
-//              let url = data['url']
-//              let downloadTask = DOWNLOADER.with(url)
-//                .setTaskName(data['name'])
-//                .setFileName("index.m3u8")
-//                .setDownloadDir(getContext(this).filesDir + "/download/")
-//                .build()
-//              downloadTask.start()
-//            }
-//          })
-//        Button('移除任务')
-//          .onClick(() => {
-//            Logger.e(this, 'delete task len=' + this.tasks.length)
-//            if (this.tasks.length > 0) {
-//              this.tasks[0].delete()
-//            }
-//          })
-//      }
+      //      Row() {
+      //        Button('添加任务')
+      //          .onClick(() => {
+      //            if (this.testData.length > 0) {
+      //              let data = this.testData.splice(0, 1)[0]
+      //              Logger.e(this, 'add task data=' + JSON.stringify(data))
+      //              let url = data['url']
+      //              let downloadTask = DOWNLOADER.with(url)
+      //                .setTaskName(data['name'])
+      //                .setFileName("index.m3u8")
+      //                .setDownloadDir(getContext(this).filesDir + "/download/")
+      //                .build()
+      //              downloadTask.start()
+      //            }
+      //          })
+      //        Button('移除任务')
+      //          .onClick(() => {
+      //            Logger.e(this, 'delete task len=' + this.tasks.length)
+      //            if (this.tasks.length > 0) {
+      //              this.tasks[0].delete()
+      //            }
+      //          })
+      //      }
 
       if (this.state == ViewState.CONTENT) {
         Row() {
@@ -497,17 +504,19 @@ struct DownloadManagerPage {
               Span(`${this.taskCount}`)
                 .fontColor(getTheme(this.theme).primary_color)
             }
-              .height(32)
+            .height(32)
           } else {
             Row() {
               Text(this.canPauseAll ? '全部暂停' : '全部开始')
                 .margin({ right: 4 })
                 .fontSize(12)
-                .fontColor(this.selectMode ? getTheme(this.theme).color_text_minor : getTheme(this.theme).color_text_major)
+                .fontColor(this.selectMode ? getTheme(this.theme).color_text_minor : getTheme(this.theme)
+                                                                                       .color_text_major)
               Image(this.canPauseAll ? $r('app.media.ic_pause') : $r('app.media.ic_download2'))
                 .width(16)
                 .height(16)
-                .fillColor(this.selectMode ? getTheme(this.theme).color_text_minor : getTheme(this.theme).color_text_major)
+                .fillColor(this.selectMode ? getTheme(this.theme).color_text_minor : getTheme(this.theme)
+                                                                                       .color_text_major)
             }
             .padding({ top: 8, bottom: 8 })
             .onClick(() => {

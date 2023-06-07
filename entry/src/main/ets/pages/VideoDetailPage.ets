@@ -81,8 +81,8 @@ struct VideoDetailPage {
     //    this.historyInfo = VideoHistoryInfo.createByLink(this.url)
     //    this.getDetailInfo()
 
-    this.url = 'http://www.bimiacg4.net/bangumi/bi/8117/'
-//    this.url = router.getParams()['url']
+//    this.url = 'http://www.bimiacg4.net/bangumi/bi/8117/'
+    this.url = router.getParams()['url']
     SQLite.with(VideoHistoryTable)
       .queryByLink(this.url)
       .then((info) => {

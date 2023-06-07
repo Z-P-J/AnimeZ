@@ -24,6 +24,12 @@ export struct SystemVideoPlayer {
   @State videoFit: ImageFit = ImageFit.Contain
   private playerManager: SystemPlayerManager = null
   private immersionStatusBar: boolean = false
+
+  private timer: number = -1;
+
+  /**
+   * 播放器监听回调
+   */
   private readonly playerListener: PlayerListener = {
     onStatusChanged: (status: number) => {
       this.playerStatus = status
@@ -93,6 +99,10 @@ export struct SystemVideoPlayer {
 
   aboutToDisappear() {
     this.playerManager.removeListener(this.playerListener)
+    if (this.timer >= 0) {
+      clearTimeout(this.timer)
+      this.timer = -1
+    }
   }
 
   build() {
@@ -121,18 +131,27 @@ export struct SystemVideoPlayer {
             this.playerManager.notifyDuration(e.duration)
           })
           .onPause(() => {
-            Logger.e(this, 'onPause')
+            let status = this.playerManager.getStatus()
+            Logger.e(this, 'onPause currentStatus=' + status)
+            if (status == PlayerStatus.ERROR || status == PlayerStatus.STOP) {
+              return
+            }
             if (!this.playerManager.isPrepared()) {
               this.playerManager.setStatus(PlayerStatus.BUFFERING)
             } else {
-              this.playerManager.setStatus(PlayerStatus.PAUSE)
+              if (status == PlayerStatus.PLAY || status == PlayerStatus.BUFFERING) {
+                // 播放或缓冲时可以暂停视频
+                this.playerManager.setStatus(PlayerStatus.PAUSE)
+              }
             }
           })
           .onSeeking((e) => {
+            // TODO seek时没有回调该函数？
             Logger.e(this, 'onSeeking time=' + e.time)
             this.playerManager.setStatus(PlayerStatus.BUFFERING)
           })
           .onSeeked((e) => {
+            // TODO seek时没有回调该函数？
             Logger.e(this, 'onSeeked time=' + e.time)
           })
           .onFinish(() => {
@@ -140,7 +159,8 @@ export struct SystemVideoPlayer {
             this.playerManager.setStatus(PlayerStatus.DONE)
           })
           .onUpdate((e) => {
-            Logger.e(this, 'onUpdate')
+            Logger.e(this, 'onUpdate time=' + e.time + ' status=' + this.playerManager.getStatus())
+            this.checkPlayingStatus()
             this.playerManager.notifyCurrentTime(e.time)
           })
         SystemPlayerController({ playerManager: this.playerManager })
@@ -153,4 +173,27 @@ export struct SystemVideoPlayer {
     }
     .width('100%')
   }
+
+  /**
+   * Video每隔一秒会更新播放进度，如果超过一秒（暂时设为1100ms）没有更新播放进度，则判断为此时可能是在缓冲视频
+   */
+  private checkPlayingStatus() {
+    // 清除已存在的timer
+    if (this.timer >= 0) {
+      clearTimeout(this.timer)
+      this.timer = -1
+    }
+
+    this.timer = setTimeout(() => {
+      if (this.timer < 0) {
+        return
+      }
+      this.timer = -1
+      if (this.playerManager.isPlaying()) {
+        this.playerManager.setStatus(PlayerStatus.BUFFERING)
+      }
+    }, 1200)
+  }
+
+
 }

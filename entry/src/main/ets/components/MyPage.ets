@@ -54,7 +54,7 @@ export struct MyPage {
 
   aboutToAppear() {
     SQLite.with(VideoHistoryTable)
-      .queryAll()
+      .queryAllByAsc()
       .then((items) => {
         this.items = items
       })

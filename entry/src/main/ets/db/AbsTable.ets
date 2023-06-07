@@ -139,8 +139,11 @@ export default abstract class AbsTable<T> implements ITable {
   /**
    * 查询所有数据
    */
-  async queryAll(): Promise<T[]> {
-    return this.query(this.getPredicates(), this.getTableColumns())
+  async queryAll(predicates?: rdb.RdbPredicates): Promise<T[]> {
+    if (!predicates) {
+      predicates = this.getPredicates()
+    }
+    return this.query(predicates, this.getTableColumns())
   }
 
   /**

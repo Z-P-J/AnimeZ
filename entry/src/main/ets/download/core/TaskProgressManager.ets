@@ -54,6 +54,8 @@ export default class TaskProgressManager {
         }
     }
 
+    private progressTimer: number = -1;
+
     /**
      * 当完成一定的任务量
      * @param size
@@ -65,34 +67,59 @@ export default class TaskProgressManager {
             this.task.taskInfo.taskProgress = this.task.getCompleteWorkload() / this.task.getTotalWorkload() * this.maxProgress
         }
         let currentTime = new Date().getTime()
-        if (this.lastTime - currentTime > 500) {
-            this.task.manager.onProgressChanged(this.task)
+        if (this.lastTime - currentTime >= this.progressDuration) {
             this.lastTime = currentTime
+            this.task.manager.onProgressChanged(this.task)
+            this.task.observerDispatcher.notifyProgress()
+            if (this.progressTimer >= 0) {
+                clearTimeout(this.progressTimer)
+            }
+            this.notifyProgressChangedDelay()
+        } else {
+            if (this.progressTimer < 0) {
+                this.lastTime = currentTime
+                this.task.manager.onProgressChanged(this.task)
+                this.task.observerDispatcher.notifyProgress()
+                this.notifyProgressChangedDelay()
+            }
         }
+
+//        if (this.lastTime - currentTime >= 500) {
+//            this.task.manager.onProgressChanged(this.task)
+//            this.lastTime = currentTime
+//        }
         let parentTask = this.task.getParentTask()
         if (parentTask) {
             parentTask.observerDispatcher.progressManager.onReceived(size)
         }
     }
 
+    private notifyProgressChangedDelay() {
+        this.progressTimer = setTimeout(() => {
+            this.progressTimer = -1
+            this.task.manager.onProgressChanged(this.task)
+            this.task.observerDispatcher.notifyProgress()
+        }, this.progressDuration)
+    }
+
     /**
      * 循环更新任务进度
      */
     loopForProgress() {
-        if (this.progressHandler) {
-            return
-        }
-        if (this.canLoopForProgress()) {
-            this.progressHandler = () => {
-                if (this.canLoopForProgress()) {
-                    this.task.observerDispatcher.notifyProgress()
-                    setTimeout(this.progressHandler, this.progressDuration)
-                } else {
-                    this.progressHandler = null
-                }
-            }
-            setTimeout(this.progressHandler, this.progressDuration)
-        }
+//        if (this.progressHandler) {
+//            return
+//        }
+//        if (this.canLoopForProgress()) {
+//            this.progressHandler = () => {
+//                if (this.canLoopForProgress()) {
+//                    this.task.observerDispatcher.notifyProgress()
+//                    setTimeout(this.progressHandler, this.progressDuration)
+//                } else {
+//                    this.progressHandler = null
+//                }
+//            }
+//            setTimeout(this.progressHandler, this.progressDuration)
+//        }
     }
 
     stop() {

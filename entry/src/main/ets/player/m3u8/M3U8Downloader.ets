@@ -118,10 +118,25 @@ export class M3U8DownloadTask extends GroupDownloadTask {
       })
   }
 
+  private async saveVideoInfo(): Promise<number> {
+    let file = await fs.open(this.taskDir + 'video.info', fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
+    // 保存m3u8信息
+    return fs.write(file.fd, JSON.stringify(this.videoInfo), { encoding: 'utf-8' })
+  }
+
   /**
    * 初始化任务
    */
   private async initTask(): Promise<number> {
+
+    Logger.e(this, 'initTask taskDir=' + this.taskDir + ' exists=' + fio.pathExistsSync(this.taskDir))
+    if (!fio.pathExistsSync(this.taskDir)) {
+      fio.mkdirsSync(this.taskDir)
+    }
+
+    let result = await this.saveVideoInfo()
+    Logger.e(this, 'initTask saveVideoInfo result=' + result)
+
     let source = new BimiAcgDataSource()
     // 解析真实的m3u8链接
     this.taskInfo.url = await source.parseVideoUrl(this.taskInfo.originalUrl)
@@ -148,15 +163,9 @@ export class M3U8DownloadTask extends GroupDownloadTask {
       throw new Error('m3u8 parse failed!')
     }
 
-    Logger.e(this, 'initM3u8 taskDir=' + this.taskDir + ' exists=' + fio.pathExistsSync(this.taskDir))
-    if (!fio.pathExistsSync(this.taskDir)) {
-      fio.mkdirsSync(this.taskDir)
-    }
     Logger.e(this, 'initM3u8 taskDir exists=' + fio.pathExistsSync(this.taskDir))
-    let file = await fs.open(this.taskDir + 'video.info', fs.OpenMode.CREATE | fs.OpenMode.WRITE_ONLY);
     // 保存m3u8信息
-    // TODO
-    let result = await fs.write(file.fd, JSON.stringify(this.videoInfo), { encoding: 'utf-8' })
+    let result = await this.saveVideoInfo()
 
     Logger.e(this, 'save m3u8 result=' + result)
 

@@ -14,8 +14,8 @@ export default class HttpUtils {
      * 获取网页内容，转换为Document对象
      * @param url
      */
-    static async getHtml(url: string): Promise<Document> {
-        let str = await this.getString(url)
+    static async getHtml(url: string, headers?: object): Promise<Document> {
+        let str = await this.getString(url, headers)
         if (str) {
             return parseDocument(str)
         } else {
@@ -27,17 +27,26 @@ export default class HttpUtils {
      * 获取网页内容
      * @param url
      */
-    static async getString(url: string): Promise<string> {
+    static async getString(url: string, headers?: object): Promise<string> {
         let httpRequest = http.createHttp()
+        Logger.e(this, 'getString createHttp')
+
+        let header = {
+            'user-agent': USER_AGENT
+        }
+        if (headers) {
+            header = Object.assign(header, headers)
+        }
+        Logger.e(this, 'getString header=' + JSON.stringify(header))
+
         let resp: http.HttpResponse = await httpRequest.request(url, {
             method: http.RequestMethod.GET,
             readTimeout: 20000,
             connectTimeout: 20000,
             expectDataType: http.HttpDataType.STRING,
-            header: {
-                'user-agent': USER_AGENT
-            }
+            header: header
         })
+        Logger.e(this, 'getString resp=' + JSON.stringify(resp))
         if (resp.result) {
             return resp.result as string
         } else {

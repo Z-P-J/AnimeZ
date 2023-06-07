@@ -145,12 +145,7 @@ export struct SystemPlayerController {
     .width('100%')
     .height('100%')
     .onClick(() => {
-      if (this.playerStatus != PlayerStatus.INIT && this.playerStatus != PlayerStatus.ERROR) {
-        this.showController = !this.showController;
-        promptAction.showToast({ message: 'showController=' + this.showController })
-      } else {
-        promptAction.showToast({ message: 'playerStatus=' + this.playerStatus })
-      }
+      this.showController = !this.showController;
     })
   }
 
@@ -230,6 +225,7 @@ export struct SystemPlayerController {
             })
         }
         .width('100%')
+        .margin({top: this.isFullScreen ? 16 : 4})
         .visibility(this.isLocked ? Visibility.Hidden : Visibility.Visible)
         .linearGradient({
           angle: 180,
@@ -252,7 +248,7 @@ export struct SystemPlayerController {
         }
 
         Row() {
-          Image(this.playerStatus == PlayerStatus.PLAY ? $r("app.media.ic_pause") : $r("app.media.ic_play"))
+          Image((this.playerStatus == PlayerStatus.PLAY || this.playerStatus == PlayerStatus.BUFFERING) ? $r("app.media.ic_pause") : $r("app.media.ic_play"))
             .width(24)
             .height(24)
             .fillColor(Color.White)
@@ -260,9 +256,9 @@ export struct SystemPlayerController {
             .objectFit(ImageFit.Contain)
             .onClick(() => {
               promptAction.showToast({ message: 'status=' + this.playerStatus })
-              if (this.playerStatus == PlayerStatus.PLAY) {
+              if (this.playerStatus == PlayerStatus.PLAY || this.playerStatus == PlayerStatus.BUFFERING) {
                 this.playerManager.pause()
-              } else if (this.playerStatus == PlayerStatus.PAUSE) {
+              } else {
                 this.playerManager.start()
               }
             })

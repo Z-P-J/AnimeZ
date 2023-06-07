@@ -17,12 +17,42 @@ struct VideoHistoryPage {
   @State state: number = ViewState.CONTENT
   @State errorMessage: string = ''
   @State items: VideoHistoryInfo[] = [
-    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
-    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
-    {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-      episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0}
+    {
+      link: 'link',
+      title: 'title',
+      currentTime: 10000,
+      totalTime: 200000,
+      coverUrl: '',
+      episodeListIndex: 0,
+      episodeIndex: 0,
+      episodeName: '第一集',
+      videoUrl: '',
+      videoProgress: 0
+    },
+    {
+      link: 'link',
+      title: 'title',
+      currentTime: 10000,
+      totalTime: 200000,
+      coverUrl: '',
+      episodeListIndex: 0,
+      episodeIndex: 0,
+      episodeName: '第一集',
+      videoUrl: '',
+      videoProgress: 0
+    },
+    {
+      link: 'link',
+      title: 'title',
+      currentTime: 10000,
+      totalTime: 200000,
+      coverUrl: '',
+      episodeListIndex: 0,
+      episodeIndex: 0,
+      episodeName: '第一集',
+      videoUrl: '',
+      videoProgress: 0
+    }
   ]
 
   aboutToAppear() {
@@ -106,7 +136,7 @@ struct VideoHistoryPage {
         Blank()
         Text(item.episodeName)
           .alignSelf(ItemAlign.Start)
-          .margin({bottom: 4})
+          .margin({ bottom: 4 })
           .fontSize(12)
           .fontColor(getTheme(this.theme).color_text_minor)
         Text(VideoTimeUtils.stringForTime(item.currentTime) + ' / ' + VideoTimeUtils.stringForTime(item.totalTime))
@@ -120,19 +150,19 @@ struct VideoHistoryPage {
     }
     .width('100%')
     .height(80)
-    .margin({top: 8, bottom: 8})
+    .margin({ top: 8, bottom: 8 })
     .onClick(() => {
-      router.pushUrl({url: 'pages/VideoDetailPage', params: {
+      router.pushUrl({ url: 'pages/VideoDetailPage', params: {
         url: item.link,
         title: item.title,
         cover: item.coverUrl
-      }})
+      } })
     })
   }
 
   private loadHistoryList() {
     SQLite.with(VideoHistoryTable)
-      .queryAll()
+      .queryAllByAsc()
       .then((items) => {
         this.items = items
         if (this.items.length == 0) {
