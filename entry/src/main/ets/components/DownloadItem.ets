@@ -1,3 +1,4 @@
+import { getTheme } from '../utils/Themes';
 import { M3U8DownloadTask } from '../player/m3u8/M3U8Downloader';
 import { TaskStatusObserver } from '../download/core/Task';
 import { TaskStatus } from '../download/core/Task';
@@ -7,6 +8,7 @@ import { FileDownloadTask } from '../download/FileDownloadTask';
 
 @Component
 export struct DownloadItem {
+  @StorageLink('theme') theme: number = 0
   private task: M3U8DownloadTask
   @State taskName: string = '';
   @State info: string = '已创建';
@@ -83,7 +85,7 @@ export struct DownloadItem {
     Stack() {
       if (this.status != TaskStatus.COMPLETE) {
         Row()
-          .backgroundColor($r('app.color.background_color_accent'))
+          .backgroundColor(getTheme(this.theme).background_color_accent)
           .width('100%')
           .height('100%')
           .scale({x: this.progressScale, centerX: 0})
@@ -99,15 +101,16 @@ export struct DownloadItem {
           .borderRadius(4)
           .margin({left: 16, right: 16})
           .objectFit(ImageFit.Cover)
-
         Column() {
           Text(this.taskName)
             .fontSize(14)
             .fontWeight(FontWeight.Bold)
+            .fontColor(getTheme(this.theme).color_text_major)
             .align(Alignment.Start)
             .width('100%')
           Text(this.info)
             .fontSize(10)
+            .fontColor(getTheme(this.theme).color_text_minor)
             .align(Alignment.Start)
             .width('100%')
         }

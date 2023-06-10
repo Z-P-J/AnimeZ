@@ -25,6 +25,10 @@ struct VideoCollectionPage {
     this.loadCollectionList()
   }
 
+  onPageShow() {
+    getTheme(this.theme).initBar()
+  }
+
   pageTransition() {
     PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_PUSH)
       .slide(SlideEffect.Right)

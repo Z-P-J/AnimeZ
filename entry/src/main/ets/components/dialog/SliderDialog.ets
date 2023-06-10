@@ -13,7 +13,7 @@ export struct SliderDialog {
   onClose: () => void;
 
   aboutToAppear() {
-    this.value = DataStore.get(KEY, 3)
+    this.value = DataStore.getInt(KEY, 3)
   }
 
   build() {
@@ -55,8 +55,8 @@ export struct SliderDialog {
 //            this.controller.close(); // 关闭弹窗
             this.onClose()
           })
-        Blank()
-          .size({ width: 1.5, height: "30%" })
+        Row()
+          .size({ width: 1.5, height: 14 })
           .backgroundColor("#80cccccc")
         Text("确定")
           .textAlign(TextAlign.Center)
@@ -77,7 +77,7 @@ export struct SliderDialog {
       .width('100%')
     }
     .backgroundColor(getTheme(this.theme).background_color)
-    .borderRadius(12)
+    .borderRadius(16)
     .width('80%')
   }
 }

@@ -121,7 +121,7 @@ struct DownloadItem {
     Stack() {
       if (this.status != TaskStatus.COMPLETE) {
         Row()
-          .backgroundColor($r('app.color.background_color_accent'))
+          .backgroundColor(getTheme(this.theme).background_color_accent)
           .width('100%')
           .height('100%')
           .scale({ x: this.progressScale, centerX: 0 })
@@ -135,7 +135,7 @@ struct DownloadItem {
             .width(24)
             .height(24)
             .margin({ left: 16 })
-            .fillColor(this.isSelected ? $r('app.color.primary_color_accent') : getTheme(this.theme).color_text_minor)
+            .fillColor(this.isSelected ? getTheme(this.theme).primary_color : getTheme(this.theme).color_text_minor)
         }
         Image(this.task.videoInfo.coverUrl)
           .alt($r('app.media.pic_load_failed'))
@@ -148,11 +148,13 @@ struct DownloadItem {
         Column() {
           Text(this.taskName)
             .fontSize(14)
+            .fontColor(getTheme(this.theme).color_text_major)
             .fontWeight(FontWeight.Bold)
             .align(Alignment.Start)
             .width('100%')
           Text(this.info)
             .fontSize(10)
+            .fontColor(getTheme(this.theme).color_text_minor)
             .align(Alignment.Start)
             .width('100%')
         }
@@ -284,14 +286,6 @@ struct DownloadManagerList {
               }
               this.selectionManager.toggleSelectItem(this.tasks[i])
             })
-            //            .onActionEnd(() => {
-            //              Logger.e(this, 'onLongPress')
-            //              // 长按多选
-            //              if (!this.selectionManager.isSelectionMode()) {
-            //                this.selectionManager.toggleSelectionMode()
-            //              }
-            //              this.selectionManager.toggleSelectItem(this.tasks[i])
-            //            })
           )
         })
 
@@ -390,6 +384,7 @@ struct DownloadManagerPage {
   }
 
   aboutToAppear() {
+    getTheme(this.theme).initBar()
 
     DOWNLOADER.addObserver(this.observer)
 

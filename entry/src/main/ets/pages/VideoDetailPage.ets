@@ -1,3 +1,4 @@
+import DataSourceManager from '../api/DataSourceManager';
 import SystemPlayerManager, { PlayerListener, VideoFit } from '../player/SystemPlayerManager';
 import { SystemVideoPlayer } from '../player/SystemVideoPlayer';
 import { VideoCacheList } from '../components/VideoCacheList';
@@ -15,26 +16,19 @@ import StateView, { ViewState } from '../components/StateView';
 import TransitionHelper from '../utils/TransitionHelper';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
 import { VideoHistoryInfo } from '../entity/VideoHistoryInfo';
-import { PlayerManager } from '../player/PlayerManager';
-import { VideoPlayer } from '../player/VideoPlayer';
 import { VideoList } from '../components/VideoList';
 import EpisodeInfo from '../entity/EpisodeInfo';
 import EpisodeList from '../entity/EpisodeList';
 import VideoDetailInfo from '../entity/VideoDetailInfo';
 import Logger from '../utils/Logger';
-import HttpUtils from '../utils/HttpUtils';
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
-import BimiAcgDataSource from '../api/impl/BimiAcgDataSource';
-import DataSource from '../api/DataSource';
-import window from '@ohos.window';
 
 @Entry
 @Component
 struct VideoDetailPage {
   @StorageLink('theme') theme: number = 0
   @State videoDetailInfo: VideoDetailInfo = null
-  @StorageLink('data_source_bimiacg') dataSource: DataSource = new BimiAcgDataSource()
   @State episodeListIndex: number = 0;
   @State episodeIndex: number = 0;
   @State state: number = ViewState.LOADING
@@ -110,7 +104,6 @@ struct VideoDetailPage {
   }
 
   aboutToDisappear() {
-    SystemBarUtils.setWindowSystemBarTransparent()
     this.saveHistoryInfo()
     this.playerManager.destroy()
   }
@@ -118,19 +111,15 @@ struct VideoDetailPage {
   onPageShow() {
     promptAction.showToast({message: 'onPageShow'})
     if (this.videoDetailInfo) {
-      SystemBarUtils.setWindowSystemBarProperties({
-        statusBarColor: '#00000000',
-        statusBarContentColor: '#ffffff',
-        navigationBarColor: '#ddffffff',
-        navigationBarContentColor: '#000000'
-      })
-
+      this.initBar()
       if (this.pausedOnHide) {
         if (!this.playerManager.isPlaying()) {
           this.playerManager.start()
         }
         this.pausedOnHide = false
       }
+    } else {
+      getTheme(this.theme).initBar()
     }
   }
 
@@ -142,7 +131,6 @@ struct VideoDetailPage {
       this.pausedOnHide = false
     }
     promptAction.showToast({message: 'onPageHide'})
-    SystemBarUtils.setWindowSystemBarTransparent()
   }
 
   onBackPress() {
@@ -658,16 +646,12 @@ struct VideoDetailPage {
   }
 
   private getDetailInfo() {
-    this.dataSource.getVideoDetailInfo(this.url)
+    // TODO 根据key获取数据源
+    DataSourceManager.getCurrentSource().getVideoDetailInfo(this.url)
       .then(async (info) => {
         Logger.e(this, 'videoDetailInfo=' + JSON.stringify(info))
 
-        SystemBarUtils.setWindowSystemBarProperties({
-          statusBarColor: '#00000000',
-          statusBarContentColor: '#ffffff',
-          navigationBarColor: '#ddffffff',
-          navigationBarContentColor: '#000000'
-        })
+        this.initBar()
 
 //        this.playerManager.addListener((status) => {
 //          if (status == PlayerStatus.DONE) {
@@ -714,20 +698,17 @@ struct VideoDetailPage {
     this.historyInfo.episodeIndex = episodeIndex
     this.historyInfo.episodeName = episode.title
     this.historyInfo.videoUrl = episode.videoUrl
-    //    this.historyInfo.videoProgress = 0
-    //    this.historyInfo.currentTime = 0
-    //    this.historyInfo.totalTime = 0
-
     if (episode.videoUrl) {
       this.play(episode)
     } else {
-      this.dataSource.parseVideoUrl(episode.link)
+      DataSourceManager.getCurrentSource().parseVideoUrl(episode.link)
         .then((url) => {
           episode.videoUrl = url
           this.historyInfo.videoUrl = episode.videoUrl
           this.play(episode)
         })
         .catch((e) => {
+          this.playerManager.setStatus(PlayerStatus.ERROR)
           Logger.e(this, 'parseVideoUrl failed! e=' + JSON.stringify(e))
         })
     }
@@ -778,5 +759,15 @@ struct VideoDetailPage {
       .catch((e) => {
         Logger.e(this, 'insert collection info failed! e=' + JSON.stringify(e))
       })
+  }
+
+  private initBar() {
+    let theme = getTheme(this.theme)
+    SystemBarUtils.setWindowSystemBarProperties({
+      statusBarColor: theme.statusBarColor,
+      statusBarContentColor: theme.statusBarContentColor,
+      navigationBarColor: theme.isDarkTheme ? '#80000000' : '#ddffffff',
+      navigationBarContentColor: theme.navigationBarContentColor
+    })
   }
 }

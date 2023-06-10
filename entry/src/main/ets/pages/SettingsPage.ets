@@ -1,5 +1,6 @@
+import { getTheme, KEY_THEME_ID, setTheme } from '../utils/Themes';
+import DataSourceManager from '../api/DataSourceManager';
 import Settings from '../utils/Settings';
-import { getTheme } from '../utils/Themes';
 import { RadioDialog } from '../components/dialog/RadioDialog';
 import DataStore from '../utils/DataStore';
 import { SliderDialog } from '../components/dialog/SliderDialog';
@@ -14,9 +15,7 @@ import TransitionHelper from '../utils/TransitionHelper'
 @Entry
 @Component
 struct SettingsPage {
-
   @StorageLink('theme') theme: number = 0
-
   private settings: SettingGroup[] = [
     {
       title: '界面',
@@ -26,20 +25,21 @@ struct SettingsPage {
             key: Settings.KEY_HOMEPAGE_SOURCE,
             type: 'radio',
             defaultValue: 0,
-            values: ['数据源一', '数据源二', '数据源三'],
+            values: ['Bimi动漫'],
             onValueChange: (key, value) => {
-              promptAction.showToast({ message: 'TODO key=' + key + ' value=' + value })
+              DataSourceManager.setCurrentSourceIndex(value)
             }
           }
         },
         { title: '主题', info: '纯白',
           preference: {
-            key: Settings.KEY_THEME_ID,
+            key: KEY_THEME_ID,
             type: 'radio',
             defaultValue: 0,
             values: ['白天', '夜晚'],
             onValueChange: (key, value) => {
-              promptAction.showToast({ message: 'TODO key=' + key + ' value=' + value })
+              this.theme = value
+              setTheme(value)
             }
           }
         }
@@ -54,10 +54,7 @@ struct SettingsPage {
           preference: {
             key: Settings.KEY_AUTO_PLAY_NEXT_EPISODE,
             type: 'switch',
-            defaultValue: true,
-            onValueChange: (key, value) => {
-              promptAction.showToast({ message: 'TODO key=' + key + ' value=' + value })
-            }
+            defaultValue: true
           }
         },
         {
@@ -66,10 +63,7 @@ struct SettingsPage {
           preference: {
             key: Settings.KEY_AUTO_PLAY_ON_NO_WIFI,
             type: 'switch',
-            defaultValue: true,
-            onValueChange: (key, value) => {
-              promptAction.showToast({ message: 'TODO key=' + key + ' value=' + value })
-            }
+            defaultValue: true
           }
         }
       ]
@@ -83,10 +77,7 @@ struct SettingsPage {
           preference: {
             key: Settings.KEY_AUTO_RESUME_DOWNLOAD_ON_WIFI,
             type: 'switch',
-            defaultValue: false,
-            onValueChange: (key, value) => {
-              promptAction.showToast({ message: 'TODO key=' + key + ' value=' + value })
-            }
+            defaultValue: false
           }
         },
         { title: '最大同时下载任务数', info: '' + Settings.getMaxDownloadingCount(),
@@ -146,6 +137,10 @@ struct SettingsPage {
     }
   ]
 
+  onPageShow() {
+    getTheme(this.theme).initBar()
+  }
+
   pageTransition() {
     PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_PUSH)
       .slide(SlideEffect.Right)
@@ -169,6 +164,7 @@ struct SettingsPage {
 
       Text('本应用仅供学习交流！')
         .fontSize(10)
+        .fontColor(getTheme(this.theme).color_text_major)
         .padding(8)
 
       ImmersionBarSpace()

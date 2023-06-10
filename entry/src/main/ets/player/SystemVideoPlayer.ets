@@ -175,7 +175,7 @@ export struct SystemVideoPlayer {
   }
 
   /**
-   * Video每隔一秒会更新播放进度，如果超过一秒（暂时设为1100ms）没有更新播放进度，则判断为此时可能是在缓冲视频
+   * Video每隔一秒会更新播放进度，如果超过一秒（暂时设为1200ms）没有更新播放进度，则判断为此时可能是在缓冲视频
    */
   private checkPlayingStatus() {
     // 清除已存在的timer
@@ -192,7 +192,7 @@ export struct SystemVideoPlayer {
       if (this.playerManager.isPlaying()) {
         this.playerManager.setStatus(PlayerStatus.BUFFERING)
       }
-    }, 1200)
+    }, 1100)
   }
 
 

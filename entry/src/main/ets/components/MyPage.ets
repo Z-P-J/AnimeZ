@@ -1,12 +1,10 @@
-import { getTheme } from '../utils/Themes';
-import { SettingsContainer } from './Settings';
-import { SettingGroup } from './Settings';
+import { getTheme, setTheme } from '../utils/Themes';
+import { SettingGroup, SettingsContainer } from './Settings';
 import { VideoHistoryTable } from '../db/impl/VideoHistoryDao';
 import SQLite from '../db/SQLite';
 import Logger from '../utils/Logger';
 import { VideoHistoryInfo } from '../entity/VideoHistoryInfo';
 import ImmersionBarSpace from './ImmersionBarSpace';
-import { Recommend } from './home/Recommend';
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
 
@@ -17,30 +15,59 @@ import promptAction from '@ohos.promptAction';
 export struct MyPage {
   @StorageLink('theme') theme: number = 0
   @State items: VideoHistoryInfo[] = [
-      {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-        episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
-      {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-        episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0},
-      {link: 'link', title: 'title', currentTime: 10000, totalTime: 200000, coverUrl: '', episodeListIndex: 0,
-        episodeIndex: 0, episodeName: '第一集', videoUrl: '', videoProgress: 0}
+    {
+      link: 'link',
+      title: 'title',
+      currentTime: 10000,
+      totalTime: 200000,
+      coverUrl: '',
+      episodeListIndex: 0,
+      episodeIndex: 0,
+      episodeName: '第一集',
+      videoUrl: '',
+      videoProgress: 0
+    },
+    {
+      link: 'link',
+      title: 'title',
+      currentTime: 10000,
+      totalTime: 200000,
+      coverUrl: '',
+      episodeListIndex: 0,
+      episodeIndex: 0,
+      episodeName: '第一集',
+      videoUrl: '',
+      videoProgress: 0
+    },
+    {
+      link: 'link',
+      title: 'title',
+      currentTime: 10000,
+      totalTime: 200000,
+      coverUrl: '',
+      episodeListIndex: 0,
+      episodeIndex: 0,
+      episodeName: '第一集',
+      videoUrl: '',
+      videoProgress: 0
+    }
   ]
   //  @State yOffset: number = 0
   //  @State bgScale: number = 1
   @State bgHeight: number = 0
   private readonly scroller = new Scroller()
-
   private settings: SettingGroup[] = [
     {
       title: '更多',
       settings: [
         { title: 'Github主页', info: 'https://github.com/Z-P-J', icon: $r('app.media.ic_github'),
           onClick: () => {
-            promptAction.showToast({message: 'TODO 打开Github主页'})
+            promptAction.showToast({ message: 'TODO 打开Github主页' })
           }
         },
         { title: '免责声明', icon: $r('app.media.ic_gitee'),
           onClick: () => {
-            promptAction.showToast({message: 'TODO 免责声明'})
+            promptAction.showToast({ message: 'TODO 免责声明' })
           }
         },
         { title: '设置', icon: $r('app.media.ic_settings'),
@@ -67,7 +94,7 @@ export struct MyPage {
     Stack({ alignContent: Alignment.Top }) {
       Image($r('app.media.bg_main_nav'))
         .width('100%')
-        .brightness(this.theme == 0 ? 0.7 : 0.5)
+        .brightness(getTheme(this.theme).isDarkTheme ? 0.5 : 0.8)
         .height(this.bgHeight)
           //        .translate({ y: -this.yOffset })
           //        .scale({x: this.bgScale, y: this.bgScale, centerY: 0})
@@ -92,7 +119,7 @@ export struct MyPage {
 
           Flex({ justifyContent: FlexAlign.SpaceAround }) {
             this.IconWithText($r('app.media.ic_star'), '我的收藏', () => {
-              router.pushUrl({url: 'pages/VideoCollectionPage'})
+              router.pushUrl({ url: 'pages/VideoCollectionPage' })
             })
             this.IconWithText($r('app.media.ic_download'), '离线缓存', () => {
               router.pushUrl({ url: 'pages/DownloadManagerPage' })
@@ -113,7 +140,8 @@ export struct MyPage {
 
           Text('本应用仅供学习交流！')
             .fontSize(10)
-            .margin({bottom: 16})
+            .fontColor(getTheme(this.theme).color_text_major)
+            .margin({ bottom: 16 })
 
         }
         .width('100%')
@@ -173,13 +201,13 @@ export struct MyPage {
       Image(this.theme == 0 ? $r("app.media.ic_theme_day") : $r("app.media.ic_theme_night"))
         .width(48)
         .height(36)
-        .padding({left: 12, top: 6, right: 12, bottom: 6})
+        .padding({ left: 12, top: 6, right: 12, bottom: 6 })
         .backgroundColor('#eeffffff')
         .borderRadius(10)
         .objectFit(ImageFit.Contain)
         .onClick(() => {
           this.theme = this.theme == 0 ? 1 : 0
-//          router.pushUrl({ url: 'pages/SettingsPage' })
+          setTheme(this.theme)
         })
     }
     .margin({ left: 16, right: 16, top: 56, bottom: 16 })
@@ -248,10 +276,10 @@ export struct MyPage {
             .height(56)
             .width(56)
           Text('暂无记录').fontSize(14)
-            .margin({top: 8})
+            .margin({ top: 8 })
             .fontColor(getTheme(this.theme).color_text_normal)
         }
-        .padding({top: 16, bottom: 32})
+        .padding({ top: 16, bottom: 32 })
         .width('100%')
       }
     }
@@ -281,13 +309,13 @@ export struct MyPage {
     }
     .width('100%')
     .height('100%')
-    .padding({top: 8, bottom: 8})
+    .padding({ top: 8, bottom: 8 })
     .onClick(() => {
-      router.pushUrl({url: 'pages/VideoDetailPage', params: {
+      router.pushUrl({ url: 'pages/VideoDetailPage', params: {
         url: item.link,
         title: item.title,
         cover: item.coverUrl
-      }})
+      } })
     })
   }
 
@@ -300,7 +328,6 @@ export struct MyPage {
         }
       })
     }
-    .margin({left: 16, right: 16})
+    .margin({ left: 16, right: 16 })
   }
-
 }

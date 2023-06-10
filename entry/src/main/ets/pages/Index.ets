@@ -1,8 +1,4 @@
-import { ZDownloader } from '../download/ZDownloader';
-import Logger from '../utils/Logger';
-import M3U8Utils from '../player/m3u8/M3U8Utils';
-import M3U8Downloader from '../player/m3u8/M3U8Downloader';
-import { getTheme } from '../utils/Themes';
+import { getCurrentTheme, getTheme } from '../utils/Themes';
 import TransitionHelper from '../utils/TransitionHelper';
 import { MyPage } from '../components/MyPage';
 import { Homepage } from '../components/Homepage';
@@ -16,23 +12,8 @@ struct Index {
   private controller: TabsController = new TabsController()
 
   aboutToAppear() {
-//    M3U8Utils.parse(null, "https://ukzy.ukubf4.com/20230402/ilm8IR50/index.m3u8")
-//      .then((value) => {
-//        Logger.e(this, 'M3U8Utils value=' + JSON.stringify(value))
-//      })
-//      .catch((e) => {
-//        Logger.e(this, 'M3U8Utils e=' + JSON.stringify(e))
-//      })
-
-//    Logger.e(this, 'filesDir=' + getContext(this).filesDir)
-//
-//    let downloader = ZDownloader.get(M3U8Downloader)
-//    downloader.with("https://ukzy.ukubf4.com/20230402/ilm8IR50/index.m3u8")
-//      .setName("index.m3u8")
-//      .setDownloadDir(getContext(this).filesDir + "/download/")
-//      .build()
-//      .start()
-
+    this.theme = getCurrentTheme()
+    getTheme(this.theme).initBar()
   }
 
   pageTransition() {

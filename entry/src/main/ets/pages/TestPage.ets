@@ -1,10 +1,8 @@
-import BimiAcgDataSource from '../api/impl/BimiAcgDataSource';
-import { VideoPlayer } from '../player/VideoPlayer';
+import DataSourceManager from '../api/DataSourceManager';
 import { PlayerStatus } from '../player/PlayerStatus';
 import Logger from '../utils/Logger';
 import { PlayerManager } from '../player/PlayerManager';
 import promptAction from '@ohos.promptAction';
-import { PlayerController } from '../player/PlayerController'
 
 @Entry
 @Component
@@ -36,7 +34,7 @@ struct TestPage {
     //    this.playerManager.play('https://ukzy.ukubf4.com/20230101/lQvUZ46s/index.m3u8')
     this.loading()
 
-    new BimiAcgDataSource().parseVideoUrl('http://www.bimiacg4.net/bangumi/8552/play/1/1/')
+    DataSourceManager.getCurrentSource().parseVideoUrl('http://www.bimiacg4.net/bangumi/8552/play/1/1/')
       .then((url) => {
         this.message = url
         this.playerManager.setPlayerUrl(url)

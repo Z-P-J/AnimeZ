@@ -1,8 +1,7 @@
+import DataSourceManager from '../../api/DataSourceManager';
 import M3U8VideoInfo from './M3U8VideoInfo';
 import DownloadTaskBuilder from '../../download/DownloadTaskBuilder';
-import BimiAcgDataSource from '../../api/impl/BimiAcgDataSource';
 import DownloadTaskInfoRepository from '../../download/DownloadTaskInfoRepository';
-import M3u8 from './M3U8';
 import M3U8Utils from './M3U8Utils';
 import DownloadTaskInfo from '../../download/DownloadTaskInfo';
 import { FileDownloadTask, GroupDownloadTask } from '../../download/FileDownloadTask';
@@ -137,9 +136,9 @@ export class M3U8DownloadTask extends GroupDownloadTask {
     let result = await this.saveVideoInfo()
     Logger.e(this, 'initTask saveVideoInfo result=' + result)
 
-    let source = new BimiAcgDataSource()
+    // TODO 创建任务时设置数据源
     // 解析真实的m3u8链接
-    this.taskInfo.url = await source.parseVideoUrl(this.taskInfo.originalUrl)
+    this.taskInfo.url = await DataSourceManager.getCurrentSource().parseVideoUrl(this.taskInfo.originalUrl)
     Logger.e(this, 'initTask url=' + this.taskInfo.url)
     if (this.taskInfo.url) {
       // 初始化m3u8信息

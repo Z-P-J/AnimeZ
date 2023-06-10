@@ -33,6 +33,10 @@ struct AboutMePage {
     }
   ]
 
+  aboutToAppear() {
+    getTheme(this.theme).initBar()
+  }
+
   pageTransition() {
     PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_PUSH)
       .slide(SlideEffect.Right)
@@ -57,6 +61,7 @@ struct AboutMePage {
             .width(64)
             .margin({top: 56})
             .borderWidth(1)
+            .borderRadius(32)
             .borderColor('#cccccc')
           Text('Z-P-J')
             .fontSize(18)

@@ -1,4 +1,7 @@
 
+/**
+ * 剧集信息
+ */
 export default interface EpisodeInfo {
 
     title: string

@@ -1,3 +1,4 @@
+import DataSourceManager from '../api/DataSourceManager';
 import { getTheme } from '../utils/Themes';
 import TransitionHelper from '../utils/TransitionHelper';
 import Logger from '../utils/Logger';
@@ -11,7 +12,6 @@ import { ViewState } from '../components/StateView';
 import { VideoList } from '../components/VideoList';
 import VideoInfo from '../entity/VideoInfo';
 import StateView from '../components/StateView';
-import BimiAcgDataSource from '../api/impl/BimiAcgDataSource';
 import promptAction from '@ohos.promptAction';
 
 @Entry
@@ -28,7 +28,6 @@ struct SearchPage {
   @State state: number = ViewState.CUSTOM
   @State errorMessage: string = ''
   @State keyword: string = ''
-  @StorageLink('data_source_bimiacg') dataSource: DataSource = new BimiAcgDataSource()
 
   aboutToAppear() {
     SQLite.with(SearchHistoryTable)
@@ -36,6 +35,10 @@ struct SearchPage {
       .then((list) => {
         this.searchHistoryList = list
       })
+  }
+
+  onPageShow() {
+    getTheme(this.theme).initBar()
   }
 
   pageTransition() {
@@ -181,7 +184,7 @@ struct SearchPage {
             ForEach(this.searchHistoryList, (item: SearchHistoryInfo) => {
               Text(item.keyword)
                 .textAlign(TextAlign.Center)
-                .backgroundColor('#f5f5f5')
+                .backgroundColor(getTheme(this.theme).background_color)
                 .fontColor(getTheme(this.theme).color_text_major)
                 .fontWeight(300)
                 .fontSize(14)
@@ -248,7 +251,8 @@ struct SearchPage {
       .catch((e) => {
         promptAction.showToast({ message: 'e=' + e['message'] })
       })
-    this.dataSource.search(keyword, 1)
+    // TODO 支持更多数据源
+    DataSourceManager.getCurrentSource().search(keyword, 1)
       .then((videoList) => {
         this.videoList = videoList
         if (this.videoList.length == 0) {

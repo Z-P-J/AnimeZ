@@ -4,7 +4,7 @@ import DataStore from '../../utils/DataStore';
 @CustomDialog
 export struct RadioDialog {
   @StorageLink('theme') theme: number = 0
-  @State checkIndex: number = 1
+  @State checkIndex: number = 0
   private controller: CustomDialogController
   private title: string
   private prefKey: string
@@ -12,7 +12,7 @@ export struct RadioDialog {
   private onSelect: (index) => void
 
   aboutToAppear() {
-    this.checkIndex = DataStore.get(this.prefKey, 0)
+    this.checkIndex = DataStore.getInt(this.prefKey, 0)
   }
 
   build() {
@@ -42,40 +42,13 @@ export struct RadioDialog {
               .fontColor(getTheme(this.theme).color_text_major)
           }
           .width('100%')
+          .padding({ top: 8, bottom: 8 })
           .onClick(() => {
             this.checkIndex = i
           })
         })
-
-        //        Radio({ value: 'Radio1', group: 'radioGroup' }).checked(true)
-        //          .height(50)
-        //          .width(50)
-        //          .onChange((isChecked: boolean) => {
-        //            console.log('Radio1 status is ' + isChecked)
-        //          })
-
       }
       .margin(16)
-
-//      Row() {
-//        Slider({
-//          value: this.value,
-//          min: 1,
-//          max: 5,
-//          step: 1,
-//          style: SliderStyle.OutSet
-//        })
-//          .showSteps(true)
-//          .layoutWeight(1)
-//          .onChange((value: number, mode: SliderChangeMode) => {
-//            this.value = value
-//          })
-//        Text(this.value.toFixed(0))
-//          .fontSize(14)
-//          .fontColor($r('app.color.color_text_minor'))
-//          .margin({ right: 6 })
-//      }
-//      .margin(16)
 
       Row() {
         Text("取消")
@@ -85,10 +58,10 @@ export struct RadioDialog {
           .fontSize(14)
           .fontColor(getTheme(this.theme).color_text_normal)
           .onClick(() => {
-            this.controller.close(); // 关闭弹窗
+            this.controller.close();
           })
-        Blank()
-          .size({ width: 1.5, height: "30%" })
+        Row()
+          .size({ width: 1.5, height: 14 })
           .backgroundColor("#80cccccc")
         Text("确定")
           .textAlign(TextAlign.Center)
@@ -97,18 +70,17 @@ export struct RadioDialog {
           .height("100%")
           .layoutWeight(1)
           .onClick(() => {
-            DataStore.set(this.prefKey, this.checkIndex)
             if (this.onSelect) {
               this.onSelect(this.checkIndex)
             }
-            this.controller.close(); // 关闭弹窗
+            this.controller.close();
           })
       }
       .height(46)
       .width('100%')
     }
     .backgroundColor(getTheme(this.theme).background_color)
-    .borderRadius(12)
+    .borderRadius(16)
     .width('80%')
   }
 }

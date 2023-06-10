@@ -1,3 +1,4 @@
+import DataSourceManager from '../api/DataSourceManager';
 import { PanelController } from '../components/CustomPanel';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
 import router from '@ohos.router';
@@ -9,8 +10,6 @@ import VideoCollectionInfo from '../entity/VideoCollectionInfo';
 import CustomPanel from '../components/CustomPanel';
 import Logger from '../utils/Logger';
 import { VideoList } from '../components/VideoList';
-import DataSource from '../api/DataSource';
-import BimiAcgDataSource from '../api/impl/BimiAcgDataSource';
 import EpisodeInfo from '../entity/EpisodeInfo';
 import EpisodeList from '../entity/EpisodeList';
 import VideoDetailInfo from '../entity/VideoDetailInfo';
@@ -27,7 +26,6 @@ struct TestDetail {
   @StorageLink('theme') theme: number = 0
   @State message: string = 'Hello World'
   @State videoDetailInfo: VideoDetailInfo = null
-  @StorageLink('data_source_bimiacg') dataSource: DataSource = new BimiAcgDataSource()
   @State episodeListIndex: number = 0;
   @State episodeIndex: number = 0;
   private url: string
@@ -483,7 +481,7 @@ struct TestDetail {
   }
 
   private getDetailInfo() {
-    this.dataSource.getVideoDetailInfo(this.url)
+    DataSourceManager.getCurrentSource().getVideoDetailInfo(this.url)
       .then(async (info) => {
         Logger.e(this, 'videoDetailInfo=' + JSON.stringify(info))
 

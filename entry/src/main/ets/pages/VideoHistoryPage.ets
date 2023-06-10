@@ -59,6 +59,10 @@ struct VideoHistoryPage {
     this.loadHistoryList()
   }
 
+  onPageShow() {
+    getTheme(this.theme).initBar()
+  }
+
   pageTransition() {
     PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_PUSH)
       .slide(SlideEffect.Right)

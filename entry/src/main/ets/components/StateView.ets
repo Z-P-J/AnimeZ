@@ -56,6 +56,8 @@ export default struct StateView {
     Column() {
       Image(src)
         .width(120)
+          // TODO 暗色模式下变暗
+//        .brightness(getTheme(this.theme).isDarkTheme ? 0.8 : 1)
         .aspectRatio(1)
         .objectFit(ImageFit.Contain)
       if (message) {
@@ -77,6 +79,7 @@ export default struct StateView {
     }
     .onClick(() => {
       if (this.onRetry) {
+        this.state = ViewState.LOADING
         this.onRetry()
       }
     })

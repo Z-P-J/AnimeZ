@@ -1,9 +1,8 @@
+import DataSourceManager from '../../api/DataSourceManager';
 import Logger from '../../utils/Logger';
 import promptAction from '@ohos.promptAction';
 import VideoInfo from '../../entity/VideoInfo';
 import StateView, { ViewState } from '../StateView';
-import BimiAcgDataSource from '../../api/impl/BimiAcgDataSource';
-import DataSource from '../../api/DataSource';
 import { VideoList } from '../VideoList';
 
 @Component
@@ -14,8 +13,6 @@ export struct More {
   private currentPage: number = 1
   @State state: number = ViewState.CONTENT
   @State errorMessage: string = ''
-
-  @StorageLink('data_source_bimiacg') dataSource: DataSource = new BimiAcgDataSource()
 
   aboutToAppear() {
     this.loadNextPage()
@@ -46,7 +43,9 @@ export struct More {
 
   private loadNextPage() {
     this.state = ViewState.LOADING
-    this.dataSource.getVideoList(this.currentPage)
+    // TODO 根据key获取数据源
+    DataSourceManager.getCurrentSource()
+      .getVideoList(this.currentPage)
       .then((list) => {
         this.currentPage++
         this.videoList = list

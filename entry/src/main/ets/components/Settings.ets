@@ -118,7 +118,7 @@ struct ToggleSettingRow {
 
   aboutToAppear() {
     this.preference = this.setting.preference
-    this.isOn = DataStore.get(this.preference.key, this.preference.defaultValue)
+    this.isOn = DataStore.getBoolean(this.preference.key, this.preference.defaultValue)
   }
 
   build() {
@@ -159,7 +159,11 @@ struct ToggleSettingRow {
           height: '100%'
         })
         .onChange((isOn) => {
+          if (this.isOn == isOn) {
+            return
+          }
           this.isOn = isOn
+          DataStore.set(this.preference.key, isOn)
           if (this.preference.onValueChange) {
             this.preference.onValueChange(this.preference.key, isOn)
           }
@@ -194,7 +198,7 @@ struct RadioSettingRow {
 
   aboutToAppear() {
     this.preference = this.setting.preference
-    this.index = DataStore.get(this.preference.key, this.preference.defaultValue)
+    this.index = DataStore.getInt(this.preference.key, this.preference.defaultValue)
     if (this.preference.values) {
       this.info = this.preference.values[this.index]
     } else {
@@ -206,9 +210,16 @@ struct RadioSettingRow {
         prefKey: this.preference.key,
         values: this.preference.values,
         onSelect: (index) => {
+          if (this.index == index) {
+            return
+          }
           this.index = index
+          DataStore.set(this.preference.key, index)
           if (this.preference.values) {
             this.info = this.preference.values[this.index]
+          }
+          if (this.preference.onValueChange) {
+            this.preference.onValueChange(this.preference.key, this.index)
           }
         }
       }),
