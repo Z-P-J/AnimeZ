@@ -690,14 +690,16 @@ struct VideoDetailPage {
   }
 
   private playVideo(episodeListIndex, episodeIndex) {
+    Logger.e(this, 'playVideo episodeListIndex=' + episodeListIndex + " episodeIndex=" + episodeIndex)
     this.episodeListIndex = episodeListIndex
     this.episodeIndex = episodeIndex
     let episode = this.videoDetailInfo.episodes[this.episodeListIndex].episodes[this.episodeIndex];
-
+    Logger.e(this, 'playVideo episode=' + JSON.stringify(episode))
     this.historyInfo.episodeListIndex = episodeListIndex
     this.historyInfo.episodeIndex = episodeIndex
     this.historyInfo.episodeName = episode.title
     this.historyInfo.videoUrl = episode.videoUrl
+    Logger.e(this, 'playVideo historyInfo=' + JSON.stringify(this.historyInfo))
     if (episode.videoUrl) {
       this.play(episode)
     } else {
@@ -714,7 +716,8 @@ struct VideoDetailPage {
     }
   }
 
-  private play(episode) {
+  private play(episode: EpisodeInfo) {
+    Logger.e(this, 'play episode=' + JSON.stringify(episode))
     this.saveHistoryInfo()
     this.playerManager.setEpisode(episode)
     this.playerManager.start()

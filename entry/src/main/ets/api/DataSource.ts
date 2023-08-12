@@ -31,15 +31,15 @@ export default interface DataSource {
      */
     getVideoDetailInfo(url: string): Promise<VideoDetailInfo>
 
-    /**
-     * 获取播放列表
-     */
-    getEpisodes(doc: Document): Promise<EpisodeList[]>
-
-    /**
-     * 获取推荐视频
-     */
-    getRecommends(doc: Document): Promise<VideoInfo[]>
+//    /**
+//     * 获取播放列表
+//     */
+//    getEpisodes(doc: Document): Promise<EpisodeList[]>
+//
+//    /**
+//     * 获取推荐视频
+//     */
+//    getRecommends(doc: Document): Promise<VideoInfo[]>
 
     /**
      * 解析视频链接

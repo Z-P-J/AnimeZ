@@ -1,3 +1,4 @@
+import YingHuaDataSource from './impl/YingHuaDataSource';
 import DataStore from '../utils/DataStore';
 import BimiAcgDataSource from './impl/BimiAcgDataSource';
 import Globals from '../utils/Globals';
@@ -5,17 +6,17 @@ import DataSource from './DataSource';
 
 const KEY_CURRENT_SOURCE = 'key_current_source'
 const SOURCE_BIMI_ACG = 'source_bimi_acg'
+const SOURCE_YING_HUA = 'source_yinghuavideo'
 
 /**
  * 视频数据源管理
  */
 export default class DataSourceManager {
-
   /**
    * 获取当前视频数据源
    */
   static getCurrentSource(): DataSource {
-    let currentSource = DataStore.get(KEY_CURRENT_SOURCE, SOURCE_BIMI_ACG)
+    let currentSource = DataStore.get(KEY_CURRENT_SOURCE, SOURCE_YING_HUA)
     return this.getSource(currentSource)
   }
 
@@ -46,10 +47,14 @@ export default class DataSourceManager {
 
     switch (key) {
     // TODO 其它数据源
+      case SOURCE_YING_HUA:
+        sourceClass = YingHuaDataSource
+        break;
       case SOURCE_BIMI_ACG:
       default:
         sourceClass = BimiAcgDataSource
         break;
+
     }
     return Globals.get<DataSource>(key, () => {
       return new sourceClass()

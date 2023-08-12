@@ -6,7 +6,9 @@ import { TagNodeFinder } from './NodeFinder';
 import { ClassNodeFinder } from './NodeFinder';
 import { IdNodeFinder } from './NodeFinder';
 import { NodeFinder, RootNodeFinder, NthChildNodeFinder } from './NodeFinder';
-import { AnyNode } from "domhandler";
+import { AnyNode, Element } from "domhandler";
+import * as DomUtils from 'domutils'
+import { DomSerializerOptions } from "dom-serializer";
 
 /**
  * 通过css选择器查找html中的dom元素
@@ -138,6 +140,7 @@ export class CssSelector {
                 isOnlyChild = false;
             }
         }
+        Logger.e(this, 'parse finish! selector=' + this.selector)
     }
 
     /**
@@ -194,5 +197,48 @@ export class CssSelector {
     public static findFirst(node: AnyNode, selector: string): AnyNode {
         let css = new CssSelector(selector);
         return css.rootFinder.findFirst(node);
+    }
+
+    public static selectTextContent(root: AnyNode, selector: string): string {
+        const node = this.findFirst(root, selector)
+        if (node) {
+            return DomUtils.textContent(node)
+        } else {
+            return null
+        }
+    }
+
+    public static selectAttributeValue(root: AnyNode, selector: string, name: string): string | undefined {
+        const node = this.findFirst(root, selector)
+        return this.getAttributeValue(node, name)
+    }
+
+    public static textContent(node: AnyNode | AnyNode[]): string {
+        if (node) {
+            return DomUtils.textContent(node)
+        } else {
+            return null
+        }
+    }
+
+    public static getAttributeValue(node: AnyNode, name: string): string | undefined {
+        if (node && DomUtils.isTag(node)) {
+            return DomUtils.getAttributeValue(node, name)
+        }
+        return null
+    }
+
+    public static getInnerHTML(node: AnyNode, options?: DomSerializerOptions): string {
+        if (node) {
+            return DomUtils.getInnerHTML(node)
+        }
+        return null
+    }
+
+    public static getOuterHTML(node: AnyNode, options?: DomSerializerOptions): string {
+        if (node) {
+            return DomUtils.getOuterHTML(node)
+        }
+        return null
     }
 }
