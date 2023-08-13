@@ -1,17 +1,18 @@
-import { VideoFit } from './SystemPlayerManager';
-import SystemPlayerManager, { PlayerListener } from './SystemPlayerManager';
+import { PlayerStatus } from './IPlayerManager';
+import { VideoFit } from './IPlayerManager';
+import { PlayerListener } from './IPlayerManager';
+import SystemPlayerManager from './SystemPlayerManager';
 import { SystemPlayerController } from './SystemPlayerController';
 import EpisodeInfo from '../entity/EpisodeInfo';
 import DisplayUtils from '../utils/DisplayUtils';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
-import { PlayerStatus } from './PlayerStatus';
-import { PlayerController } from './PlayerController';
 import Logger from '../utils/Logger';
 
 const DEFAULT_ASPECT = 1.9
 
 /**
  * 视频播放器，封装系统Video
+ * TODO 重构
  */
 @Component
 export struct SystemVideoPlayer {
@@ -86,6 +87,25 @@ export struct SystemVideoPlayer {
           this.aspRatio = Math.min(DEFAULT_ASPECT, this.videoAspRatio);
         }
       })
+    },
+    onVideoSizeChange: (w: number, h: number) => {
+      animateTo({
+        duration: 360,
+        curve: Curve.Smooth,
+        iterations: 1,
+        playMode: PlayMode.Normal
+      }, () => {
+        this.videoAspRatio = w / h
+        if (this.isFullScreen) {
+          this.aspRatio = DisplayUtils.getRealScreenHWRatio()
+        } else {
+          this.aspRatio = Math.min(DEFAULT_ASPECT, this.videoAspRatio);
+        }
+        Logger.e(this, 'VideoSizeChange w=' + w + ' h=' + h + ' videoAspRatio=' + this.videoAspRatio + ' aspRatio=' + this.aspRatio)
+      })
+    },
+    onProgressChange: (totalTime: number, currentTime: number) => {
+
     }
   }
 

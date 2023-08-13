@@ -1,5 +1,8 @@
+import { VideoFit } from '../player/IPlayerManager';
+import { PlayerStatus } from '../player/IPlayerManager';
+import { PlayerListener } from '../player/IPlayerManager';
 import DataSourceManager from '../api/DataSourceManager';
-import SystemPlayerManager, { PlayerListener, VideoFit } from '../player/SystemPlayerManager';
+import SystemPlayerManager from '../player/SystemPlayerManager';
 import { SystemVideoPlayer } from '../player/SystemVideoPlayer';
 import { VideoCacheList } from '../components/VideoCacheList';
 import Settings from '../utils/Settings';
@@ -9,7 +12,6 @@ import { getTheme } from '../utils/Themes';
 import { VideoCollectionTable } from '../db/impl/VideoCollectionDao';
 import VideoCollectionInfo from '../entity/VideoCollectionInfo';
 import SystemBarUtils from '../utils/SystemBarUtils';
-import { PlayerStatus } from '../player/PlayerStatus';
 import { VideoHistoryTable } from '../db/impl/VideoHistoryDao';
 import SQLite from '../db/SQLite';
 import StateView, { ViewState } from '../components/StateView';
@@ -66,7 +68,16 @@ struct VideoDetailPage {
     onEpisodeChanged: (episode: EpisodeInfo) => {},
     onVideoSpeedChanged: (videoSpeed: number) => {},
     onVideoFitChanged: (videoFit: VideoFit) => {},
-    onFullScreenChanged: (isFullScreen: boolean) => {}
+    onFullScreenChanged: (isFullScreen: boolean) => {},
+    onVideoSizeChange: (w: number, h: number) => {},
+    onProgressChange: (totalTime: number, currentTime: number) => {
+      Logger.e(this, 'totalTime=' + totalTime + ' currentTime=' + currentTime)
+      if (this.historyInfo) {
+        this.historyInfo.totalTime = totalTime
+        this.historyInfo.currentTime = currentTime
+        this.saveHistoryInfo()
+      }
+    }
   }
 
   aboutToAppear() {
@@ -665,15 +676,6 @@ struct VideoDetailPage {
 //        })
 
         this.playerManager.addListener(this.playerListener)
-
-        this.playerManager.addProgressListener((totalTime, currentTime) => {
-          Logger.e(this, 'totalTime=' + totalTime + ' currentTime=' + currentTime)
-          if (this.historyInfo) {
-            this.historyInfo.totalTime = totalTime
-            this.historyInfo.currentTime = currentTime
-            this.saveHistoryInfo()
-          }
-        })
 
         this.videoDetailInfo = info
         this.state = ViewState.CONTENT

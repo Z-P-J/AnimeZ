@@ -1,62 +1,28 @@
+import { PlayerStatus } from './IPlayerManager';
+import IPlayerManager, {VideoFit, PlayerListener} from './IPlayerManager';
 import window from '@ohos.window';
 import { IjkMediaPlayer } from './IjkPlayer';
 import EpisodeInfo from '../entity/EpisodeInfo';
 import { IJKMediaInfo } from './IjkMediaInfo';
-import { PlayerStatus } from './PlayerStatus';
 import Logger from '../utils/Logger';
-import promptAction from '@ohos.promptAction';
-
-export default interface PlayerListener {
-
-  //    onStatusChanged(status: number): void;
-
-  (status: number): void
-
-}
-
-export interface ProgressListener {
-
-  (totalTime: number, currentTime: number): void
-
-}
-
-export interface VideoSizeChangeListener {
-
-  (width: number, height: number, sar_num: number, sar_den: number): void
-
-}
-
-export interface EpisodeChangeListener {
-
-  (episode: EpisodeInfo): void
-
-}
-
-export interface FullScreenChangeListener {
-
-  (isFullScreen: boolean): void
-
-}
 
 /**
  * 播放器管理
  */
-export class PlayerManager {
+export class IjkPlayerManager implements IPlayerManager {
   private readonly mIjkMediaPlayer = new IjkMediaPlayer()
   private url: string
   private episode: EpisodeInfo
   private readonly listeners: PlayerListener[] = []
   private status: number = PlayerStatus.INIT
-  private videoSizeChangeListener: VideoSizeChangeListener
-  private episodeChangeListener: EpisodeChangeListener
   private fullScreenMode: boolean = false
   private updateProgressTimer: number = -1
-  private readonly progressListeners: ProgressListener[] = []
-  private readonly fullScreenChangeListeners: FullScreenChangeListener[] = []
+  private prepared: boolean = false;
 
   init(context: object) {
 
     Logger.e(this, 'init context=' + context)
+    this.prepared = false;
 
     //设置XComponent回调的context
     this.mIjkMediaPlayer.setContext(context);
@@ -209,14 +175,19 @@ export class PlayerManager {
       return
     }
     this.episode = episode;
-    if (this.episodeChangeListener) {
-      this.episodeChangeListener(episode)
-    }
+    this.listeners.forEach((l) => {
+      l.onEpisodeChanged(episode)
+    })
     this.setPlayerUrl(episode.videoUrl)
   }
 
   getEpisode(): EpisodeInfo {
     return this.episode
+  }
+
+  getEpisodeList(): EpisodeInfo[] {
+    // TODO 获取播放列表
+    return []
   }
 
   setPlayerUrl(url: string) {
@@ -268,20 +239,20 @@ export class PlayerManager {
     this.setStatus(PlayerStatus.INIT)
   }
 
-  seekTo(value: string) {
+  seekTo(value: number) {
 //    if (this.mIjkMediaPlayer.isPlaying()) {
 //      this.mIjkMediaPlayer.pause()
 //    }
     this.setStatus(PlayerStatus.BUFFERING)
-    this.mIjkMediaPlayer.seekTo(parseInt(value));
+    this.mIjkMediaPlayer.seekTo(value);
   }
 
-  setSpeed(speed: string) {
-    this.mIjkMediaPlayer.setSpeed(speed)
+  setSpeed(speed: number) {
+    this.mIjkMediaPlayer.setSpeed("" + speed)
   }
 
-  getSpeed(): string {
-    return '' + this.mIjkMediaPlayer.getSpeed()
+  getSpeed(): number {
+    return this.mIjkMediaPlayer.getSpeed()
   }
 
   setDataSource(url: string) {
@@ -292,7 +263,15 @@ export class PlayerManager {
     return this.mIjkMediaPlayer.isPlaying();
   }
 
-  private setStatus(status: PlayerStatus) {
+  isPrepared() {
+    return this.prepared
+  }
+
+  setVideoFit(videoFit: VideoFit) {
+
+  }
+
+  setStatus(status: PlayerStatus) {
     if (this.status === status) {
       return
     }
@@ -305,7 +284,7 @@ export class PlayerManager {
     }
 
     for (let listener of this.listeners) {
-      listener(status)
+      listener.onStatusChanged(status)
     }
 
 //    setTimeout(() => {
@@ -343,30 +322,11 @@ export class PlayerManager {
     // TODO
   }
 
-  addProgressListener(listener: ProgressListener) {
-    this.progressListeners.push(listener)
-  }
-
-  removeProgressListener(listener: ProgressListener) {
-    // TODO
-  }
-
-  setVideoSizeChangedListener(videoSizeChangeListener: VideoSizeChangeListener) {
-    this.videoSizeChangeListener = videoSizeChangeListener
-  }
-
-  setEpisodeChangeListener(episodeChangeListener: EpisodeChangeListener) {
-    this.episodeChangeListener = episodeChangeListener
-  }
-
-  addFullScreenChangeListener(fullScreenChangeListener: FullScreenChangeListener) {
-    this.fullScreenChangeListeners.push(fullScreenChangeListener)
-  }
-
   destroy() {
     this.stopProgress()
     this.stop()
     this.mIjkMediaPlayer.release()
+    this.prepared = false;
   }
 
   isFullScreen() {
@@ -382,8 +342,8 @@ export class PlayerManager {
       win.setWindowSystemBarEnable([])
       win.setPreferredOrientation(window.Orientation.LANDSCAPE)
       this.fullScreenMode = true
-      this.fullScreenChangeListeners.forEach((listener) => {
-        listener(true)
+      this.listeners.forEach((listener) => {
+        listener.onFullScreenChanged(true)
       })
     })
   }
@@ -397,16 +357,15 @@ export class PlayerManager {
       win.setWindowSystemBarEnable(['status', 'navigation'])
       win.setPreferredOrientation(window.Orientation.PORTRAIT)
       this.fullScreenMode = false
-
-
-      this.fullScreenChangeListeners.forEach((listener) => {
-        listener(false)
+      this.listeners.forEach((listener) => {
+        listener.onFullScreenChanged(false)
       })
     })
   }
 
   protected onPrepared() {
     Logger.e(this, 'onPrepared')
+    this.prepared = true;
     this.start()
   }
 
@@ -431,9 +390,9 @@ export class PlayerManager {
   }
 
   protected onVideoSizeChanged(width: number, height: number, sar_num: number, sar_den: number) {
-    if (this.videoSizeChangeListener) {
-      this.videoSizeChangeListener(width, height, sar_num, sar_den)
-    }
+    this.listeners.forEach((l) => {
+      l.onVideoSizeChange(width, height)
+    })
   }
 
   private lastTime: number;
@@ -450,8 +409,8 @@ export class PlayerManager {
         return
       }
       this.lastTime = currentTime
-      this.progressListeners.forEach((listener) => {
-        listener(totalTime, currentTime)
+      this.listeners.forEach((listener) => {
+        listener.onProgressChange(totalTime, currentTime)
       })
     }, 1000);
     Logger.e(this, 'startProgress updateProgressTimer=' + this.updateProgressTimer)

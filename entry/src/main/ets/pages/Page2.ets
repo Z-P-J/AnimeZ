@@ -1,8 +1,6 @@
 import TransitionHelper from '../utils/TransitionHelper';
 import router from '@ohos.router';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
-import { PlayerStatus } from '../player/PlayerStatus';
-import Logger from '../utils/Logger';
 
 @Entry
 @Component

@@ -1,8 +1,7 @@
-import { VideoFit } from './SystemPlayerManager';
-import SystemPlayerManager, { PlayerListener } from './SystemPlayerManager';
+import { PlayerStatus } from './IPlayerManager';
+import IPlayerManager, { VideoFit, PlayerListener } from './IPlayerManager';
 import EpisodeInfo from '../entity/EpisodeInfo';
 import VideoTimeUtils from './VideoTimeUtils';
-import { PlayerStatus } from './PlayerStatus';
 import Logger from '../utils/Logger';
 import promptAction from '@ohos.promptAction';
 import router from '@ohos.router';
@@ -37,6 +36,7 @@ enum PanelType {
 
 /**
  * 播放器控制界面
+ * TODO 重构
  */
 @Component
 export struct SystemPlayerController {
@@ -54,7 +54,7 @@ export struct SystemPlayerController {
   @State currentSpeed: string = '1.00'
   @State isLocked: boolean = false
   @State videoFit: number = VideoFit.Contain
-  private playerManager: SystemPlayerManager = null;
+  private playerManager: IPlayerManager = null;
   private showControllerTimer: number = -1;
   private readonly playerListener: PlayerListener = {
     onStatusChanged: (status: number) => {
@@ -72,6 +72,12 @@ export struct SystemPlayerController {
     },
     onFullScreenChanged: (isFullScreen: boolean) => {
       this.isFullScreen = isFullScreen
+    },
+    onVideoSizeChange: (w: number, h: number) => {
+
+    },
+    onProgressChange: (totalTime: number, currentTime: number) => {
+      this.setProgress(totalTime, currentTime)
     }
   }
 
@@ -81,9 +87,6 @@ export struct SystemPlayerController {
     if (this.playerManager) {
       this.playerStatus = this.playerManager.getStatus()
       this.playerManager.addListener(this.playerListener)
-      this.playerManager.addProgressListener((totalTime, currentTime) => {
-        this.setProgress(totalTime, currentTime)
-      })
     } else {
       throw new Error('You must set playerManager firstly!')
     }
@@ -91,6 +94,7 @@ export struct SystemPlayerController {
 
   aboutToDisappear() {
     //    this.playerManager.destroy()
+    this.playerManager.removeListener(this.playerListener)
     if (this.showControllerTimer >= 0) {
       clearTimeout(this.showControllerTimer)
       this.showControllerTimer = -1;
@@ -225,7 +229,7 @@ export struct SystemPlayerController {
             })
         }
         .width('100%')
-        .margin({top: this.isFullScreen ? 16 : 4})
+        .padding({ top: this.isFullScreen ? 16 : 4 })
         .visibility(this.isLocked ? Visibility.Hidden : Visibility.Visible)
         .linearGradient({
           angle: 180,
@@ -587,10 +591,10 @@ export struct SystemPlayerController {
       this.progress = pos;
     }
     Logger.e(this, "setProgress position:" + position + ",duration:" + duration + ",progressValue:" + pos);
-    this.totalTime = VideoTimeUtils.stringForTime(duration * 1000);
+    this.totalTime = VideoTimeUtils.stringForTime(duration);
     if (position > duration) {
       position = duration;
     }
-    this.currentTime = VideoTimeUtils.stringForTime(position * 1000);
+    this.currentTime = VideoTimeUtils.stringForTime(position);
   }
 }
