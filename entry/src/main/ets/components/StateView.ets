@@ -27,7 +27,7 @@ export default struct StateView {
           // 加载中
           LoadingProgress().width(80).aspectRatio(1).color('#817977')
           Text('加载中...')
-            .fontSize(16)
+            .fontSize(14)
             .fontColor('#817977')
             .textAlign(TextAlign.Center)
             .constraintSize({ maxWidth: '80%' })
@@ -70,7 +70,7 @@ export default struct StateView {
       }
 
       Text(tips)
-        .fontSize(16)
+        .fontSize(14)
         .fontColor('#817977')
         .textAlign(TextAlign.Center)
         .constraintSize({ maxWidth: '80%' })

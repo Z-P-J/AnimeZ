@@ -94,6 +94,7 @@ struct VideoCollectionPage {
         .aspectRatio(1.5)
         .borderRadius(8)
         .borderColor('#cccccc')
+        .shadow({ radius: 12, color: getTheme(this.theme).isDarkTheme ? '#333333' : '#aaaaaa', offsetX: 6, offsetY: 6 })
       Column() {
         Text(item.title)
           .alignSelf(ItemAlign.Start)

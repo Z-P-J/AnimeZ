@@ -124,7 +124,7 @@ export default class SystemPlayerManager implements IPlayerManager {
   notifyDuration(duration: number) {
     this.totalTime = duration * 1000
     this.listeners.forEach((l) => {
-      l.onProgressChange(duration, this.currentTime)
+      l.onProgressChange(this.totalTime, this.currentTime)
     })
   }
 
@@ -132,7 +132,7 @@ export default class SystemPlayerManager implements IPlayerManager {
     this.setStatus(PlayerStatus.PLAY)
     this.currentTime = currentTime * 1000
     this.listeners.forEach((l) => {
-      l.onProgressChange(this.totalTime, currentTime)
+      l.onProgressChange(this.totalTime, this.currentTime)
     })
   }
 

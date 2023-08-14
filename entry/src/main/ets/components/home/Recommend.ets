@@ -1,3 +1,4 @@
+import { SOURCE_CHANGED_EVENT } from '../../utils/EventBus';
 import DataSourceManager from '../../api/DataSourceManager';
 import { getTheme } from '../../utils/Themes';
 import { DramaList } from '../../entity/HomepageData';
@@ -5,6 +6,7 @@ import Logger from '../../utils/Logger';
 import VideoInfo from '../../entity/VideoInfo';
 import StateView, { ViewState } from '../StateView';
 import { VideoList } from '../VideoList';
+import emitter from '@ohos.events.emitter';
 
 /**
  * 首页推荐
@@ -19,6 +21,13 @@ export struct Recommend {
 
   aboutToAppear() {
     this.loadNextPage()
+    SOURCE_CHANGED_EVENT.on(() => {
+      this.loadNextPage()
+    })
+  }
+
+  aboutToDisappear() {
+    SOURCE_CHANGED_EVENT.off()
   }
 
   build() {
@@ -84,10 +93,15 @@ export struct Recommend {
       Image(item.imgUrl)
         .alt($r('app.media.pic_load_failed'))
         .objectFit(ImageFit.Cover)
-        .borderWidth(2)
-        .borderColor(getTheme(this.theme).background_color_dark)
-        .brightness(0.7)
-        .borderRadius(12)
+        .layoutWeight(1)
+        .borderRadius(16)
+        .shadow({ radius: 16, color: getTheme(this.theme).isDarkTheme ? '#000000' : '#aaaaaa', offsetX: 6, offsetY: 6 })
+
+      Row()
+        .width('100%')
+        .height('100%')
+        .backgroundColor(getTheme(this.theme).isDarkTheme ? '#80000000' : '#40000000')
+        .borderRadius(16)
 
       Text(item.title)
         .fontColor(Color.White)
@@ -99,7 +113,7 @@ export struct Recommend {
     }
     //    .width('80%')
     //    .translate({x: '-50%'})
-    .padding(12)
+    .padding(16)
   }
 
   @Builder Category(category: DramaList) {

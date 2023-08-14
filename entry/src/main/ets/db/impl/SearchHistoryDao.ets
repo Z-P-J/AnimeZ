@@ -9,6 +9,7 @@ import rdb from '@ohos.data.relationalStore';
 /**
  * 视频搜索记录
  */
+//TODO 通过装饰器配置数据库表信息
 //@MyTable({
 //  dbName: 'video_manager',
 //  columns: [

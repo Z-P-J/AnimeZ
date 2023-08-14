@@ -9,6 +9,7 @@ import router from '@ohos.router';
 
 /**
  * 本地视频播放页面
+ * TODO 暂时只能用IjkPlayer播放本地m3u8视频，Video控件目前播放不了本地缓存的m3u8
  */
 @Entry
 @Component
@@ -58,48 +59,4 @@ struct LocalVideoPlayerPage {
     .height('100%')
     .width('100%')
   }
-
-
-  //  private playerManager: SystemPlayerManager = new SystemPlayerManager()
-  //  private readonly playerListener: PlayerListener = {
-  //    onStatusChanged: (status: number) => {
-  //    },
-  //    onEpisodeChanged: (episode: EpisodeInfo) => {
-  //    },
-  //    onVideoSpeedChanged: (videoSpeed: number) => {
-  //    },
-  //    onVideoFitChanged: (videoFit: VideoFit) => {
-  //    },
-  //    onFullScreenChanged: (isFullScreen: boolean) => {
-  //      if (!isFullScreen) {
-  //        // 退出全屏模式时关闭当前页面
-  //        router.back()
-  //      }
-  //    }
-  //  }
-  //
-  //  aboutToAppear() {
-  //    let episode: EpisodeInfo = router.getParams()['episode']
-  //    Logger.e(this, 'aboutToAppear episode=' + JSON.stringify(episode))
-  //    this.playerManager.addListener(this.playerListener)
-  //    this.playerManager.setEpisode(episode)
-  //    // 直接进入全屏模式
-  //    this.playerManager.enterFullScreen()
-  //    this.playerManager.start()
-  //  }
-  //
-  //  aboutToDisappear() {
-  //    this.playerManager.removeListener(this.playerListener)
-  //    this.playerManager.exitFullScreen()
-  //    this.playerManager.destroy()
-  //  }
-  //
-  //  build() {
-  //    Stack() {
-  //      SystemVideoPlayer({ playerManager: this.playerManager, immersionStatusBar: false })
-  //    }
-  //    .backgroundColor(getTheme(this.theme).background_color_accent)
-  //    .height('100%')
-  //    .width('100%')
-  //  }
 }

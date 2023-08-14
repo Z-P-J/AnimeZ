@@ -20,9 +20,9 @@ struct SearchPage {
   @StorageLink('theme') theme: number = 0
   @State videoList: VideoInfo[] = []
   @State searchHistoryList: SearchHistoryInfo[] = [
-//    { id: 0, keyword: '1' }, { id: 0, keyword: '122222' }, { id: 0, keyword: '156' },
-//    { id: 0, keyword: '14656' }, { id: 0, keyword: '12354' }, { id: 0, keyword: '1' },
-//    { id: 0, keyword: '1' }, { id: 0, keyword: '1111111112' }, { id: 0, keyword: '222222' }
+  //    { id: 0, keyword: '1' }, { id: 0, keyword: '122222' }, { id: 0, keyword: '156' },
+  //    { id: 0, keyword: '14656' }, { id: 0, keyword: '12354' }, { id: 0, keyword: '1' },
+  //    { id: 0, keyword: '1' }, { id: 0, keyword: '1111111112' }, { id: 0, keyword: '222222' }
   ]
   @State searchRecommends: string[] = ['进击的巨人', '电锯人', '鲁路修', '命运石之门', '回复术士', '天降之物']
   @State state: number = ViewState.CUSTOM
@@ -99,39 +99,20 @@ struct SearchPage {
         .onClick(() => {
           router.back()
         })
-      //      TextInput({ placeholder: "Plach" })
-      //        .placeholderFont({
-      //          size: 14,
-      //          weight: 300
-      //        })
-      //        .onChange((value) => {
-      //          this.keyword = value
-      //        })
-      //        .onSubmit(() => {
-      //          if (this.keyword.length !== 0) {
-      //            this.doSearch(this.keyword)
-      //          }
-      //        })
-      //        .height(36)
-      //        .margin({ left: 12, right: 12 })
-      //        .backgroundColor('#f5f5f5')
-      //        .layoutWeight(1)
-
-      Search({ value: this.keyword, placeholder: '输入关键字...' })
-        .height(32)
-        .layoutWeight(1)
+      TextInput({ placeholder: '输入关键字...' })
         .placeholderFont({ size: 14, weight: 300 })
         .placeholderColor('#817977')
-        .textFont({ size: 14, weight: 400 })
-        .margin(12)
-        .backgroundColor(getTheme(this.theme).background_color_dark)
-          //        .onChange((value: string) => {
-          //          this.keyword = value
-          //        })
-        .onSubmit((value) => {
-          this.doSearch(value)
+        .fontColor(getTheme(this.theme).color_text_major)
+        .onChange((value) => {
+          this.keyword = value
         })
-
+        .onSubmit(() => {
+          this.doSearch(this.keyword)
+        })
+        .height(36)
+        .margin({ left: 12, right: 12 })
+        .backgroundColor(getTheme(this.theme).background_color)
+        .layoutWeight(1)
       Text('搜索')
         .fontSize(16)
         .fontColor(getTheme(this.theme).primary_color)
@@ -246,10 +227,10 @@ struct SearchPage {
     this.state = ViewState.LOADING
     SQLite.with(SearchHistoryTable).saveOrUpdate(keyword)
       .then((result) => {
-        promptAction.showToast({ message: 'result=' + result })
+        Logger.e(this,  'saveOrUpdate result=' + result)
       })
       .catch((e) => {
-        promptAction.showToast({ message: 'e=' + e['message'] })
+        Logger.e(this,  'saveOrUpdate e=' + JSON.stringify(e))
       })
     // TODO 支持更多数据源
     DataSourceManager.getCurrentSource().search(keyword, 1)

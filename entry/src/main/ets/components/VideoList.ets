@@ -21,17 +21,17 @@ export struct VideoList {
         }
         .hitTestBehavior(this.scrollable ? HitTestMode.Default : HitTestMode.None)
         .columnsTemplate("1fr 1fr 1fr")
-        .columnsGap(4)
-        .rowsGap(4)
+        .columnsGap(8)
+        .rowsGap(8)
         .width('100%')
         .height('100%')
       } else {
-        Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.SpaceBetween, wrap: FlexWrap.Wrap }) {
+        Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start, wrap: FlexWrap.Wrap }) {
           ForEach(this.videoList, (item: VideoInfo) => {
             Column() {
               this.VideoItem(item)
             }
-            .padding({ bottom: 4, right: 4 })
+            .padding({ bottom: 8, right: 8 })
             .width('33.3%')
           })
         }
@@ -64,13 +64,13 @@ export struct VideoList {
         .textAlign(TextAlign.Center)
         .fontWeight(500)
     }
-    .borderRadius(8)
-    .borderWidth(2)
-    .borderColor(getTheme(this.theme).background_color_dark)
+    .borderRadius(12)
+//    .borderWidth(2)
+//    .borderColor(getTheme(this.theme).background_color_dark)
     .backgroundColor(getTheme(this.theme).background_color)
     .aspectRatio(0.618)
+    .shadow({ radius: 12, color: getTheme(this.theme).isDarkTheme ? '#000000' : '#eeeeee', offsetX: 6, offsetY: 6 })
     .onClick(() => {
-      promptAction.showToast({ message: item.url })
       router.pushUrl({
         url: 'pages/VideoDetailPage',
         params: {

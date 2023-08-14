@@ -21,14 +21,14 @@ struct AppInfoPage {
             router.pushUrl({url: 'pages/AboutMePage'})
           }
         },
-        { title: '开源仓库', info: 'https://gitee.com/ohos-dev/mi-note', icon: $r('app.media.ic_gitee'),
+        { title: '开源仓库', info: 'https://github.com/Z-P-J/AnimeZ', icon: $r('app.media.ic_gitee'),
           onClick: () => {
-            promptAction.showToast({message: 'TODO 跳转浏览器打开仓库地址'})
+            router.pushUrl({url: 'pages/WebPage', params: {url: 'https://github.com/Z-P-J/AnimeZ'}})
           }
         },
         { title: '开源社区', info: 'https://gitee.com/ohos-dev', icon: $r('app.media.ic_community'),
           onClick: () => {
-            promptAction.showToast({message: 'TODO 跳转开源社区'})
+            router.pushUrl({url: 'pages/WebPage', params: {url: 'https://gitee.com/ohos-dev'}})
           }
         },
         { title: '开源社区交流群', info: '752399947', icon: $r('app.media.ic_qq'),

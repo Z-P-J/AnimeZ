@@ -60,19 +60,19 @@ export struct MyPage {
     {
       title: '更多',
       settings: [
-        { title: 'Github主页', info: 'https://github.com/Z-P-J', icon: $r('app.media.ic_github'),
+        { title: '设置', icon: $r('app.media.ic_settings'),
           onClick: () => {
-            promptAction.showToast({ message: 'TODO 打开Github主页' })
+            router.pushUrl({ url: 'pages/SettingsPage' })
           }
         },
         { title: '免责声明', icon: $r('app.media.ic_gitee'),
           onClick: () => {
-            promptAction.showToast({ message: 'TODO 免责声明' })
+            router.pushUrl({ url: 'pages/WebPage', params: { url: 'disclaimer.html' } })
           }
         },
-        { title: '设置', icon: $r('app.media.ic_settings'),
+        { title: '开源地址', info: 'https://github.com/Z-P-J/AnimeZ', icon: $r('app.media.ic_github'),
           onClick: () => {
-            router.pushUrl({ url: 'pages/SettingsPage' })
+            router.pushUrl({ url: 'pages/WebPage', params: { url: 'https://github.com/Z-P-J/AnimeZ' } })
           }
         }
       ]
@@ -92,13 +92,27 @@ export struct MyPage {
 
   build() {
     Stack({ alignContent: Alignment.Top }) {
-      Image($r('app.media.bg_main_nav'))
-        .width('100%')
-        .brightness(getTheme(this.theme).isDarkTheme ? 0.5 : 0.8)
-        .height(this.bgHeight)
-          //        .translate({ y: -this.yOffset })
-          //        .scale({x: this.bgScale, y: this.bgScale, centerY: 0})
-        .objectFit(ImageFit.Cover)
+      //      Image($r('app.media.bg_main_nav'))
+      //        .width('100%')
+      //        .brightness(getTheme(this.theme).isDarkTheme ? 0.5 : 0.8)
+      //        .colorFilter(ColorFilter.)
+      //        .height(this.bgHeight)
+      //          //        .translate({ y: -this.yOffset })
+      //          //        .scale({x: this.bgScale, y: this.bgScale, centerY: 0})
+      //        .objectFit(ImageFit.Cover)
+      Stack() {
+        Image($r('app.media.bg_main_nav'))
+          .width('100%')
+          .height('100%')
+          .objectFit(ImageFit.Cover)
+        Row()
+          .width('100%')
+          .height('100%')
+          .backgroundColor(getTheme(this.theme).isDarkTheme ? '#80000000' : '#20000000')
+      }
+      .width('100%')
+      .height(this.bgHeight)
+
       Scroll(this.scroller) {
         Column({ space: 16 }) {
           ImmersionBarSpace()
@@ -125,7 +139,7 @@ export struct MyPage {
               router.pushUrl({ url: 'pages/DownloadManagerPage' })
             })
           }
-          .padding(16)
+          .padding(8)
           .backgroundColor(getTheme(this.theme).background_color)
           .borderRadius(16)
           .margin({ left: 16, right: 16 })
@@ -208,6 +222,7 @@ export struct MyPage {
         .onClick(() => {
           this.theme = this.theme == 0 ? 1 : 0
           setTheme(this.theme)
+          getTheme(this.theme).initBar()
         })
     }
     .margin({ left: 16, right: 16, top: 56, bottom: 16 })
@@ -219,7 +234,7 @@ export struct MyPage {
         .width(20)
         .height(20)
       Text(title)
-        .fontSize(16)
+        .fontSize(14)
         .fontColor(getTheme(this.theme).color_text_major)
         .margin({ left: 8 })
     }
@@ -256,7 +271,7 @@ export struct MyPage {
       })
 
       if (this.items && this.items.length > 0) {
-        List({ space: 8 }) {
+        List() {
           ForEach(this.items, (item) => {
             ListItem() {
               this.HistoryItem(item)
@@ -266,9 +281,9 @@ export struct MyPage {
           })
         }
         .listDirection(Axis.Horizontal)
-        .padding({ left: 16, right: 16 })
+        .margin({ left: 16, right: 16 })
         .width('100%')
-        .aspectRatio(2.8)
+        .aspectRatio(2.2)
       } else {
         Column() {
           Image($r('app.media.ic_empty'))
@@ -293,23 +308,24 @@ export struct MyPage {
       Image(item.coverUrl)
         .alt($r('app.media.pic_load_failed'))
         .borderRadius(8)
-        .borderWidth(1)
         .width('100%')
         .layoutWeight(1)
         .objectFit(ImageFit.Cover)
-        .borderColor(getTheme(this.theme).background_color_dark)
+        .shadow({ radius: 12, color: getTheme(this.theme).isDarkTheme ? '#333333' : '#aaaaaa', offsetX: 6, offsetY: 6 })
 
       Text(item.title)
         .alignSelf(ItemAlign.Start)
         .margin({ top: 8, bottom: 8 })
-        .maxLines(1)
+        .maxLines(2)
+        .lineHeight(14)
+        .height(28)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .fontColor(getTheme(this.theme).color_text_minor)
         .fontSize(12)
     }
     .width('100%')
     .height('100%')
-    .padding({ top: 8, bottom: 8 })
+    .padding({ top: 8, bottom: 8, left: 4, right: 4 })
     .onClick(() => {
       router.pushUrl({ url: 'pages/VideoDetailPage', params: {
         url: item.link,

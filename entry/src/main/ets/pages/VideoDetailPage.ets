@@ -35,7 +35,6 @@ struct VideoDetailPage {
   @State episodeIndex: number = 0;
   @State state: number = ViewState.LOADING
   @State errorMessage: string = ''
-//  private playerManager: PlayerManager = new PlayerManager()
   private readonly playerManager: SystemPlayerManager = new SystemPlayerManager()
   private url: string
   private historyInfo: VideoHistoryInfo
@@ -50,10 +49,8 @@ struct VideoDetailPage {
    * 二级面板内容类型
    */
   @State panelContentType: number = 0
-
   private readonly panelController: PanelController = new PanelController()
   private pausedOnHide = false
-
   private readonly playerListener: PlayerListener = {
     onStatusChanged: (status: number) => {
       if (status == PlayerStatus.DONE) {
@@ -65,11 +62,16 @@ struct VideoDetailPage {
         }
       }
     },
-    onEpisodeChanged: (episode: EpisodeInfo) => {},
-    onVideoSpeedChanged: (videoSpeed: number) => {},
-    onVideoFitChanged: (videoFit: VideoFit) => {},
-    onFullScreenChanged: (isFullScreen: boolean) => {},
-    onVideoSizeChange: (w: number, h: number) => {},
+    onEpisodeChanged: (episode: EpisodeInfo) => {
+    },
+    onVideoSpeedChanged: (videoSpeed: number) => {
+    },
+    onVideoFitChanged: (videoFit: VideoFit) => {
+    },
+    onFullScreenChanged: (isFullScreen: boolean) => {
+    },
+    onVideoSizeChange: (w: number, h: number) => {
+    },
     onProgressChange: (totalTime: number, currentTime: number) => {
       Logger.e(this, 'totalTime=' + totalTime + ' currentTime=' + currentTime)
       if (this.historyInfo) {
@@ -86,7 +88,7 @@ struct VideoDetailPage {
     //    this.historyInfo = VideoHistoryInfo.createByLink(this.url)
     //    this.getDetailInfo()
 
-//    this.url = 'http://www.bimiacg4.net/bangumi/bi/8117/'
+    //    this.url = 'http://www.bimiacg4.net/bangumi/bi/8117/'
     this.url = router.getParams()['url']
     SQLite.with(VideoHistoryTable)
       .queryByLink(this.url)
@@ -120,7 +122,6 @@ struct VideoDetailPage {
   }
 
   onPageShow() {
-    promptAction.showToast({message: 'onPageShow'})
     if (this.videoDetailInfo) {
       this.initBar()
       if (this.pausedOnHide) {
@@ -141,7 +142,6 @@ struct VideoDetailPage {
     } else {
       this.pausedOnHide = false
     }
-    promptAction.showToast({message: 'onPageHide'})
   }
 
   onBackPress() {
@@ -191,20 +191,19 @@ struct VideoDetailPage {
 
   @Builder Content() {
     Column() {
-//      VideoPlayer({ playerManager: this.playerManager, immersionStatusBar: true })
       SystemVideoPlayer({ playerManager: this.playerManager, immersionStatusBar: true })
 
       if (this.videoDetailInfo) {
         Stack() {
-//          Image(this.videoDetailInfo.coverUrl)
-//            .objectFit(ImageFit.Cover)
-//            .height('100%')
-//            .width('100%')
-//            .onComplete(() => {
-//              // TODO 背景加载完成
-//              this.isBackgroundLoaded = true;
-//            })
-//            .blur(16)
+          //          Image(this.videoDetailInfo.coverUrl)
+          //            .objectFit(ImageFit.Cover)
+          //            .height('100%')
+          //            .width('100%')
+          //            .onComplete(() => {
+          //              // TODO 背景加载完成
+          //              this.isBackgroundLoaded = true;
+          //            })
+          //            .blur(16)
           this.RootContent()
           CustomPanel(
             {
@@ -242,34 +241,61 @@ struct VideoDetailPage {
                 .fontSize(18)
               Column() {
                 if (this.videoDetailInfo.updateTime) {
-                  Text(this.videoDetailInfo.updateTime).fontSize(12)
+                  Text(this.videoDetailInfo.updateTime)
+                    .fontColor(getTheme(this.theme).color_text_normal)
+                    .fontSize(12)
                 }
                 if (this.videoDetailInfo.category) {
-                  Text(`分类：${this.videoDetailInfo.category}`).fontSize(12)
+                  Text(`分类：${this.videoDetailInfo.category}`)
+                    .fontColor(getTheme(this.theme).color_text_normal)
+                    .fontSize(12)
+                }
+                if (this.videoDetailInfo.desc) {
+                  Row() {
+                    Text(this.videoDetailInfo.desc)
+                      .fontColor(getTheme(this.theme).color_text_normal)
+                      .maxLines(2)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      .fontSize(12)
+                      .layoutWeight(1)
+                    Image($r('app.media.ic_enter'))
+                      .width(18)
+                      .height(24)
+                      .objectFit(ImageFit.Contain)
+                  }
+                  .onClick(() => {
+                    this.panelContentType = 0
+                    this.panelController.show()
+                  })
                 }
               }
+              .margin({ top: 8 })
               .alignItems(HorizontalAlign.Start)
             }
             .height('100%')
-            .margin(8)
+            .layoutWeight(1)
+            .margin({ right: 16 })
             .justifyContent(FlexAlign.SpaceBetween)
-
-            Blank()
 
             Image(this.videoDetailInfo.coverUrl)
               .alt($r('app.media.pic_load_failed'))
               .objectFit(ImageFit.Cover)
+              .aspectRatio(0.7)
               .height('100%')
-              .aspectRatio(1.4)
-              .borderRadius(6)
-              .borderColor('#cccccc')
+              .borderRadius(8)
+              .shadow({
+                radius: 12,
+                color: getTheme(this.theme).isDarkTheme ? '#333333' : '#aaaaaa',
+                offsetX: 6,
+                offsetY: 6
+              })
               .onClick(() => {
                 this.panelContentType = 0
                 this.panelController.show()
               })
           }
           .width('100%')
-          .height(100)
+          .height(140)
           .padding(16)
 
           this.ButtonGroup()
@@ -286,10 +312,12 @@ struct VideoDetailPage {
         })
       }
       .edgeEffect(EdgeEffect.Spring)
+      .scrollBar(BarState.Off)
       .layoutWeight(1)
       .height('100%')
     }
-    .backgroundColor('#80ffffff')
+//    .backgroundColor('#80ffffff')
+    .backgroundColor(getTheme(this.theme).background_color)
     .width('100%')
     .height('100%')
   }
@@ -334,9 +362,9 @@ struct VideoDetailPage {
         .width('100%')
         .height('100%')
       } else {
-//        this.DownloadPage()
+        //        this.DownloadPage()
 
-        VideoCacheList({videoDetailInfo: this.videoDetailInfo})
+        VideoCacheList({ videoDetailInfo: this.videoDetailInfo })
 
       }
     }
@@ -370,6 +398,7 @@ struct VideoDetailPage {
                   Blank()
                   Text('缓存全部')
                     .fontSize(12)
+                    .fontColor(getTheme(this.theme).color_text_normal)
                     .padding(8)
                     .borderRadius(6)
                     .onClick(() => {
@@ -415,32 +444,32 @@ struct VideoDetailPage {
       .width('100%')
       .layoutWeight(1)
 
-//      Row() {
-//        Text("缓存全部")
-//          .height('100%')
-//          .layoutWeight(1)
-//          .textAlign(TextAlign.Center)
-//          .fontSize(14)
-//          .fontColor(getTheme(this.theme).color_text_normal)
-//          .onClick(() => {
-//          })
-//        Stack()
-//          .size({ width: 1.5, height: '30%' })
-//          .backgroundColor("#80cccccc")
-//        Text("下载列表")
-//          .textAlign(TextAlign.Center)
-//          .fontSize(14)
-//          .fontColor("#317ef5")
-//          .height('100%')
-//          .layoutWeight(1)
-//          .onClick(() => {
-//            router.pushUrl({ url: 'pages/DownloadManagerPage' })
-//          })
-//          .height(46)
-//          .width('100%')
-//      }
-//      .height(46)
-//      .width('100%')
+      //      Row() {
+      //        Text("缓存全部")
+      //          .height('100%')
+      //          .layoutWeight(1)
+      //          .textAlign(TextAlign.Center)
+      //          .fontSize(14)
+      //          .fontColor(getTheme(this.theme).color_text_normal)
+      //          .onClick(() => {
+      //          })
+      //        Stack()
+      //          .size({ width: 1.5, height: '30%' })
+      //          .backgroundColor("#80cccccc")
+      //        Text("下载列表")
+      //          .textAlign(TextAlign.Center)
+      //          .fontSize(14)
+      //          .fontColor("#317ef5")
+      //          .height('100%')
+      //          .layoutWeight(1)
+      //          .onClick(() => {
+      //            router.pushUrl({ url: 'pages/DownloadManagerPage' })
+      //          })
+      //          .height(46)
+      //          .width('100%')
+      //      }
+      //      .height(46)
+      //      .width('100%')
 
 
       Row() {
@@ -478,6 +507,12 @@ struct VideoDetailPage {
           .aspectRatio(0.7)
           .borderRadius(8)
           .borderColor('#cccccc')
+          .shadow({
+            radius: 12,
+            color: getTheme(this.theme).isDarkTheme ? '#333333' : '#aaaaaa',
+            offsetX: 6,
+            offsetY: 6
+          })
           .onClick(() => {
             this.panelController.show()
           })
@@ -497,6 +532,7 @@ struct VideoDetailPage {
           .alignItems(HorizontalAlign.Start)
         }
         .height('100%')
+        .layoutWeight(1)
         .margin(8)
         .justifyContent(FlexAlign.SpaceBetween)
       }
@@ -506,15 +542,21 @@ struct VideoDetailPage {
 
       if (this.videoDetailInfo.desc) {
         this.Header('简介')
-        Text(this.videoDetailInfo.desc).fontSize(12).padding(16)
+        Text(this.videoDetailInfo.desc)
+          .fontColor(getTheme(this.theme).color_text_normal)
+          .fontSize(12).padding(16)
       }
       if (this.videoDetailInfo.protagonist) {
         this.Header('角色声优')
-        Text(this.videoDetailInfo.protagonist).fontSize(12).padding(16)
+        Text(this.videoDetailInfo.protagonist)
+          .fontColor(getTheme(this.theme).color_text_normal)
+          .fontSize(12).padding(16)
       }
       if (this.videoDetailInfo.director) {
         this.Header('制作信息')
-        Text(this.videoDetailInfo.director).fontSize(12).padding(16)
+        Text(this.videoDetailInfo.director)
+          .fontColor(getTheme(this.theme).color_text_normal)
+          .fontSize(12).padding(16)
       }
     }
     .alignItems(HorizontalAlign.Start)
@@ -530,13 +572,21 @@ struct VideoDetailPage {
           ForEach(episodeList.episodes, (item: EpisodeInfo, episodeIndex: number) => {
             Text(item.title)
               .textAlign(TextAlign.Center)
+//              .backgroundColor(
+//                  (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
+//                  ? '#bb3366ff' : '#aaf5f5f5'
+//              )
+//              .fontColor(
+//                  (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
+//                  ? Color.White : $r('app.color.color_text_major')
+//              )
               .backgroundColor(
                   (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
-                  ? '#bb3366ff' : '#aaf5f5f5'
+                  ? '#bb3366ff' : getTheme(this.theme).background_color_accent
               )
               .fontColor(
                   (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
-                  ? Color.White : $r('app.color.color_text_major')
+                  ? Color.White : getTheme(this.theme).color_text_major
               )
               .fontSize(12)
               .padding({ top: 8, bottom: 8 })
@@ -621,11 +671,13 @@ struct VideoDetailPage {
   @Builder IconWithText(src: string | PixelMap | Resource, text: string | Resource, onClick?: (event?: ClickEvent) => void) {
     Column() {
       Image(src)
+        .fillColor(getTheme(this.theme).color_text_normal)
         .width(20)
         .height(20)
       Text(text)
         .fontSize(10)
         .width(40)
+        .fontColor(getTheme(this.theme).color_text_normal)
         .textAlign(TextAlign.Center)
         .margin({ top: 4 })
     }
@@ -663,18 +715,6 @@ struct VideoDetailPage {
         Logger.e(this, 'videoDetailInfo=' + JSON.stringify(info))
 
         this.initBar()
-
-//        this.playerManager.addListener((status) => {
-//          if (status == PlayerStatus.DONE) {
-//            if (Settings.isAutoPlayNextEpisode()) {
-//              let episodeList = this.videoDetailInfo.episodes[this.episodeListIndex]
-//              if (this.episodeIndex < episodeList.episodes.length - 1) {
-//                this.playVideo(this.episodeListIndex, this.episodeIndex + 1)
-//              }
-//            }
-//          }
-//        })
-
         this.playerManager.addListener(this.playerListener)
 
         this.videoDetailInfo = info
@@ -770,7 +810,7 @@ struct VideoDetailPage {
     let theme = getTheme(this.theme)
     SystemBarUtils.setWindowSystemBarProperties({
       statusBarColor: theme.statusBarColor,
-      statusBarContentColor: theme.statusBarContentColor,
+      statusBarContentColor: '#ffffff',
       navigationBarColor: theme.isDarkTheme ? '#80000000' : '#ddffffff',
       navigationBarContentColor: theme.navigationBarContentColor
     })

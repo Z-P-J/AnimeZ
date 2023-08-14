@@ -141,9 +141,10 @@ struct DownloadItem {
           .alt($r('app.media.pic_load_failed'))
           .height('100%')
           .aspectRatio(1.6)
-          .borderRadius(4)
+          .borderRadius(8)
           .margin({ left: 16, right: 16 })
           .objectFit(ImageFit.Cover)
+          .shadow({ radius: 12, color: getTheme(this.theme).isDarkTheme ? '#333333' : '#aaaaaa', offsetX: 6, offsetY: 6 })
 
         Column() {
           Text(this.taskName)
@@ -240,6 +241,9 @@ struct DownloadItem {
   }
 }
 
+/**
+ * 下载列表
+ */
 @Component
 struct DownloadManagerList {
   private selectionManager: SelectionManager<M3U8DownloadTask>
@@ -319,7 +323,9 @@ struct DownloadManagerList {
   }
 }
 
-
+/**
+ * 下载管理页
+ */
 @Entry
 @Component
 struct DownloadManagerPage {
@@ -335,13 +341,6 @@ struct DownloadManagerPage {
   @State canPauseAll: boolean = false
   private readonly selectionManager: SelectionManager<M3U8DownloadTask> = new SelectionManager<M3U8DownloadTask>()
 
-  // TODO 测试数据
-  private testData = [
-    { name: '最强主宰 动态漫画 第41集', url: 'https://ukzy.ukubf4.com/20230514/n77WsZgB/index.m3u8' },
-    { name: '最强主宰 动态漫画 第40集', url: 'https://ukzy.ukubf4.com/20230509/esQzkKyr/index.m3u8' },
-    { name: '最强主宰 动态漫画 第39集', url: 'https://ukzy.ukubf4.com/20230507/T3yYyWxB/index.m3u8' },
-    { name: '最强主宰 动态漫画 第29集', url: 'https://ukzy.ukubf4.com/20230402/ilm8IR50/index.m3u8' }
-  ]
   private readonly observer: TaskManagerObserver<M3U8DownloadTask> = {
     onTaskLoaded: (tasks: M3U8DownloadTask[]) => {
       this.tasks = this.tasks.concat(tasks).reverse()
@@ -466,38 +465,16 @@ struct DownloadManagerPage {
         .width('100%')
       }
 
-      //      Row() {
-      //        Button('添加任务')
-      //          .onClick(() => {
-      //            if (this.testData.length > 0) {
-      //              let data = this.testData.splice(0, 1)[0]
-      //              Logger.e(this, 'add task data=' + JSON.stringify(data))
-      //              let url = data['url']
-      //              let downloadTask = DOWNLOADER.with(url)
-      //                .setTaskName(data['name'])
-      //                .setFileName("index.m3u8")
-      //                .setDownloadDir(getContext(this).filesDir + "/download/")
-      //                .build()
-      //              downloadTask.start()
-      //            }
-      //          })
-      //        Button('移除任务')
-      //          .onClick(() => {
-      //            Logger.e(this, 'delete task len=' + this.tasks.length)
-      //            if (this.tasks.length > 0) {
-      //              this.tasks[0].delete()
-      //            }
-      //          })
-      //      }
-
       if (this.state == ViewState.CONTENT) {
         Row() {
           if (this.isAllComplete) {
             Text() {
-              Span('已缓存 ')
-                .fontColor(getTheme(this.theme).color_text_major)
-              Span(`${this.taskCount}`)
+              Span(`${this.taskCount} `)
+                .fontSize(14)
                 .fontColor(getTheme(this.theme).primary_color)
+              Span('已缓存')
+                .fontSize(14)
+                .fontColor(getTheme(this.theme).color_text_major)
             }
             .height(32)
           } else {

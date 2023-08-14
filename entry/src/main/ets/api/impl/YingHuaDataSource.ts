@@ -144,7 +144,7 @@ export default class YingHuaDataSource implements DataSource {
             title: "路线0",
             episodes: []
         }
-        lis.forEach((li) => {
+        lis.reverse().forEach((li) => {
             const a = CssSelector.findFirst(li, 'a')
             let info: EpisodeInfo = {
                 link: 'http://www.yinghuavideo.com' + CssSelector.getAttributeValue(a, 'href'),
@@ -159,7 +159,7 @@ export default class YingHuaDataSource implements DataSource {
         let info: VideoDetailInfo = {
             title: title,
             url: url,
-            desc: CssSelector.selectTextContent(doc, "div.fire > div.info"),
+            desc: CssSelector.selectTextContent(doc, "div.fire > div.info").trim(),
             coverUrl: CssSelector.selectAttributeValue(doc, "div.fire > div.thumb > img", 'src'),
             category: CssSelector.selectTextContent(doc, 'div.fire > div.rate > div.sinfo > span:nth-child(3) > a'),
             director: '',

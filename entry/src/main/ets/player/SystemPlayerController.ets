@@ -83,7 +83,6 @@ export struct SystemPlayerController {
 
   aboutToAppear() {
     this.playerStatus = PlayerStatus.INIT
-    promptAction.showToast({ message: "PlayerController statusTest=" + this.playerStatus })
     if (this.playerManager) {
       this.playerStatus = this.playerManager.getStatus()
       this.playerManager.addListener(this.playerListener)
@@ -259,7 +258,6 @@ export struct SystemPlayerController {
             .margin({ left: this.isFullScreen ? 16 : 12 })
             .objectFit(ImageFit.Contain)
             .onClick(() => {
-              promptAction.showToast({ message: 'status=' + this.playerStatus })
               if (this.playerStatus == PlayerStatus.PLAY || this.playerStatus == PlayerStatus.BUFFERING) {
                 this.playerManager.pause()
               } else {

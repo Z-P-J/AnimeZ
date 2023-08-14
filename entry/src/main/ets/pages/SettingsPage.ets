@@ -1,3 +1,4 @@
+import { SOURCE_CHANGED_EVENT } from '../utils/EventBus';
 import { getTheme, KEY_THEME_ID, setTheme } from '../utils/Themes';
 import DataSourceManager from '../api/DataSourceManager';
 import Settings from '../utils/Settings';
@@ -25,9 +26,10 @@ struct SettingsPage {
             key: Settings.KEY_HOMEPAGE_SOURCE,
             type: 'radio',
             defaultValue: 0,
-            values: ['Bimi动漫'],
+            values: DataSourceManager.getAllSources(),
             onValueChange: (key, value) => {
               DataSourceManager.setCurrentSourceIndex(value)
+              SOURCE_CHANGED_EVENT.emit()
             }
           }
         },
@@ -40,6 +42,7 @@ struct SettingsPage {
             onValueChange: (key, value) => {
               this.theme = value
               setTheme(value)
+              getTheme(this.theme).initBar()
             }
           }
         }

@@ -7,6 +7,7 @@ import rdb from '@ohos.data.relationalStore';
 
 /**
  * 视频播放历史记录
+ * TODO 通过装饰器配置数据库表信息
  */
 @Table({ db: 'video_manager', name: 'video_history' })
 export class VideoHistoryTable extends AbsTable<VideoHistoryInfo> {

@@ -1,3 +1,4 @@
+import router from '@ohos.router';
 import { getTheme } from '../utils/Themes';
 import promptAction from '@ohos.promptAction'
 import { SettingGroup, SettingsContainer } from '../components/Settings'
@@ -16,17 +17,17 @@ struct AboutMePage {
       settings: [
         { title: 'Github主页', info: 'https://github.com/Z-P-J', icon: $r('app.media.ic_github'),
           onClick: () => {
-            promptAction.showToast({message: 'TODO 打开Github主页'})
+            router.pushUrl({url: 'pages/WebPage', params: {url: 'https://github.com/Z-P-J'}})
           }
         },
         { title: 'Gitee主页', info: 'https://gitee.com/z-p-j', icon: $r('app.media.ic_gitee'),
           onClick: () => {
-            promptAction.showToast({message: 'TODO 打开Gitee主页'})
+            router.pushUrl({url: 'pages/WebPage', params: {url: 'https://gitee.com/z-p-j'}})
           }
         },
-        { title: '赞助作者', info: '赞助一杯咖啡，让作者继续熬夜写代码', icon: $r('app.media.ic_java'),
+        { title: '赞助作者', info: '赞助作者一杯咖啡', icon: $r('app.media.ic_java'),
           onClick: () => {
-            promptAction.showToast({message: '该功能暂未实现，感谢您的赞助！'})
+            promptAction.showToast({message: '该功能暂未实现，感谢您的支持！'})
           }
         }
       ]
@@ -60,9 +61,8 @@ struct AboutMePage {
             .height(64)
             .width(64)
             .margin({top: 56})
-            .borderWidth(1)
             .borderRadius(32)
-            .borderColor('#cccccc')
+            .shadow({ radius: 12, color: getTheme(this.theme).isDarkTheme ? '#333333' : '#aaaaaa', offsetX: 6, offsetY: 6 })
           Text('Z-P-J')
             .fontSize(18)
             .fontColor(getTheme(this.theme).color_text_major)
