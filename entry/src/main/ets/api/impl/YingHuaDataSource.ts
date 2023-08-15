@@ -15,6 +15,11 @@ const BASE_URL = 'http://www.yinghuavideo.com/'
  * 樱花动漫 (http://www.yinghuavideo.com) 视频源
  */
 export default class YingHuaDataSource implements DataSource {
+
+    getKey(): string {
+        return 'key_yinghuavideo'
+    }
+
     async search(keyword: string, page: number): Promise<VideoInfo[]> {
         let url = BASE_URL + "search/" + encodeURIComponent(keyword) + "/?page=" + page
 
@@ -25,6 +30,7 @@ export default class YingHuaDataSource implements DataSource {
             let a = CssSelector.findFirst(li, "a")
             let img = CssSelector.findFirst(li, 'img')
             videos.push({
+                sourceKey: this.getKey(),
                 url: 'http://www.yinghuavideo.com' + CssSelector.getAttributeValue(a, 'href'),
                 imgUrl: CssSelector.getAttributeValue(img, 'src'),
                 title: CssSelector.getAttributeValue(img, 'alt'),
@@ -46,6 +52,7 @@ export default class YingHuaDataSource implements DataSource {
             let a = CssSelector.findFirst(li, "a")
             let img = CssSelector.findFirst(li, 'img')
             bannerList.push({
+                sourceKey: this.getKey(),
                 url: 'http://www.yinghuavideo.com' + CssSelector.getAttributeValue(a, 'href'),
                 imgUrl: CssSelector.getAttributeValue(img, 'src'),
                 title: CssSelector.getAttributeValue(a, 'title'),
@@ -60,12 +67,13 @@ export default class YingHuaDataSource implements DataSource {
         for (let i = 0; i < count; i++) {
             const title = titles[i]
             const list = videoList[i]
-            let videos = []
+            let videos: VideoInfo[] = []
             let lis = CssSelector.find(list, 'ul > li')
             lis.forEach((li) => {
                 let a = CssSelector.findFirst(li, "a")
                 let img = CssSelector.findFirst(li, 'img')
                 videos.push({
+                    sourceKey: this.getKey(),
                     url: 'http://www.yinghuavideo.com' + CssSelector.getAttributeValue(a, 'href'),
                     imgUrl: CssSelector.getAttributeValue(img, 'src'),
                     title: CssSelector.selectTextContent(li, 'p.tname > a'),
@@ -106,6 +114,7 @@ export default class YingHuaDataSource implements DataSource {
             Logger.e(this, "parseHtml el=" + el)
             let a = CssSelector.findFirst(el, "div.info > a")
             videoList.push({
+                sourceKey: this.getKey(),
                 url: "http://www.bimiacg4.net" + CssSelector.getAttributeValue(a, 'href'),
                 imgUrl: CssSelector.selectAttributeValue(el, 'img', 'src'),
                 title: CssSelector.textContent(a),
@@ -124,12 +133,13 @@ export default class YingHuaDataSource implements DataSource {
 
         Logger.e(this, 'getVideoDetailInfo title=' + title)
 
-        let recommends = []
+        let recommends: VideoInfo[] = []
         let list = CssSelector.find(doc, 'div.sido > div.pics > ul > li')
         list.forEach((li) => {
             let a = CssSelector.findFirst(li, "a")
             let img = CssSelector.findFirst(li, 'img')
             recommends.push({
+                sourceKey: this.getKey(),
                 url: 'http://www.yinghuavideo.com' + CssSelector.getAttributeValue(a, 'href'),
                 imgUrl: CssSelector.getAttributeValue(img, 'src'),
                 title: CssSelector.getAttributeValue(img, 'alt'),
@@ -157,6 +167,7 @@ export default class YingHuaDataSource implements DataSource {
         episodes.push(episodeList)
 
         let info: VideoDetailInfo = {
+            sourceKey: this.getKey(),
             title: title,
             url: url,
             desc: CssSelector.selectTextContent(doc, "div.fire > div.info").trim(),

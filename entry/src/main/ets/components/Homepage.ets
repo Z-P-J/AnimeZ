@@ -6,7 +6,7 @@ import { Recommend } from './home/Recommend';
 import router from '@ohos.router';
 
 @Component
-export struct Homepage {
+export struct HomepageTabContent {
   @StorageLink('theme') theme: number = 0
 
   build() {

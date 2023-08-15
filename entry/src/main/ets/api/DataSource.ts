@@ -10,6 +10,11 @@ import { Document } from "domhandler"
 export default interface DataSource {
 
     /**
+     * 获取key
+     */
+    getKey(): string
+
+    /**
      * 搜索视频
      */
     search(keyword: string, page: number): Promise<VideoInfo[]>

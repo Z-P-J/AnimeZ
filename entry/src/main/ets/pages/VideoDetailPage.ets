@@ -1,6 +1,5 @@
-import { VideoFit } from '../player/IPlayerManager';
-import { PlayerStatus } from '../player/IPlayerManager';
-import { PlayerListener } from '../player/IPlayerManager';
+import { HISTORY_CHANGED_EVENT } from '../utils/EventBus';
+import { PlayerListener, PlayerStatus, VideoFit } from '../player/IPlayerManager';
 import DataSourceManager from '../api/DataSourceManager';
 import SystemPlayerManager from '../player/SystemPlayerManager';
 import { SystemVideoPlayer } from '../player/SystemVideoPlayer';
@@ -37,6 +36,7 @@ struct VideoDetailPage {
   @State errorMessage: string = ''
   private readonly playerManager: SystemPlayerManager = new SystemPlayerManager()
   private url: string
+  private sourceKey: string
   private historyInfo: VideoHistoryInfo
   @State collectionInfo: VideoCollectionInfo = null
 
@@ -90,25 +90,28 @@ struct VideoDetailPage {
 
     //    this.url = 'http://www.bimiacg4.net/bangumi/bi/8117/'
     this.url = router.getParams()['url']
+    this.sourceKey = router.getParams()['sourceKey']
+    Logger.e(this, 'aboutToAppear url=' + this.url + ' sourceKey=' + this.sourceKey + ' params=' + JSON.stringify(router.getParams()))
     SQLite.with(VideoHistoryTable)
       .queryByLink(this.url)
       .then((info) => {
         if (info) {
           this.historyInfo = info
         } else {
-          this.historyInfo = VideoHistoryInfo.createByLink(this.url)
+          this.historyInfo = VideoHistoryInfo.createByLink(this.sourceKey, this.url)
         }
         this.getDetailInfo()
       })
       .catch((e) => {
         Logger.e(this, 'query info by link error! e=' + JSON.stringify(e))
-        this.historyInfo = VideoHistoryInfo.createByLink(this.url)
+        this.historyInfo = VideoHistoryInfo.createByLink(this.sourceKey, this.url)
         this.getDetailInfo()
       })
 
     SQLite.with(VideoCollectionTable)
       .queryBySrc(this.url)
       .then((info) => {
+        Logger.e(this, 'VideoCollectionTable queryBySrc info=' + JSON.stringify(info))
         this.collectionInfo = info
       })
       .catch((e) => {
@@ -710,7 +713,7 @@ struct VideoDetailPage {
 
   private getDetailInfo() {
     // TODO 根据key获取数据源
-    DataSourceManager.getCurrentSource().getVideoDetailInfo(this.url)
+    DataSourceManager.getSource(this.sourceKey).getVideoDetailInfo(this.url)
       .then(async (info) => {
         Logger.e(this, 'videoDetailInfo=' + JSON.stringify(info))
 
@@ -721,6 +724,7 @@ struct VideoDetailPage {
         this.state = ViewState.CONTENT
         this.historyInfo.title = this.videoDetailInfo.title
         this.historyInfo.coverUrl = this.videoDetailInfo.coverUrl
+        this.historyInfo.sourceKey = this.sourceKey
 
         this.playVideo(this.episodeListIndex, this.episodeIndex)
       })
@@ -745,7 +749,7 @@ struct VideoDetailPage {
     if (episode.videoUrl) {
       this.play(episode)
     } else {
-      DataSourceManager.getCurrentSource().parseVideoUrl(episode.link)
+      DataSourceManager.getSource(this.videoDetailInfo.sourceKey).parseVideoUrl(episode.link)
         .then((url) => {
           episode.videoUrl = url
           this.historyInfo.videoUrl = episode.videoUrl
@@ -770,6 +774,9 @@ struct VideoDetailPage {
       this.historyInfo.accessTime = new Date().getTime()
       SQLite.with(VideoHistoryTable)
         .save(this.historyInfo)
+        .then(() => {
+          HISTORY_CHANGED_EVENT.emit()
+        })
         .catch((e) => {
           Logger.e(this, 'saveHistoryInfo error=' + JSON.stringify(e))
         })
@@ -789,11 +796,12 @@ struct VideoDetailPage {
   }
 
   private collect() {
-    let collectionInfo = {
+    let collectionInfo: VideoCollectionInfo = {
       src: this.url,
       title: this.videoDetailInfo.title,
       coverUrl: this.videoDetailInfo.coverUrl,
-      accessTime: new Date().getTime()
+      accessTime: new Date().getTime(),
+      sourceKey: this.sourceKey,
     }
     SQLite.with(VideoCollectionTable)
       .insert(collectionInfo)

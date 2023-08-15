@@ -12,7 +12,7 @@ export interface Event {
 
 }
 
-class EventImpl implements Event {
+export class EventImpl implements Event {
   private readonly eventId: number;
 
   constructor(eventId: number) {
@@ -40,4 +40,12 @@ class EventImpl implements Event {
   }
 }
 
+/**
+ * 首页数据源改变
+ */
 export const SOURCE_CHANGED_EVENT: Event = new EventImpl(1)
+
+/**
+ * 历史记录改变
+ */
+export const HISTORY_CHANGED_EVENT: Event = new EventImpl(2)

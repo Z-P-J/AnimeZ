@@ -18,11 +18,11 @@ export class VideoCollectionTable extends AbsTable<VideoCollectionInfo> {
   }
 
   getTableColumns(): string[] {
-    return ['src', 'title', 'coverUrl', 'accessTime']
+    return ['src', 'title', 'coverUrl', 'sourceKey', 'accessTime']
   }
 
   getCreateTableSql(): string {
-    return "CREATE TABLE IF NOT EXISTS video_collection(src TEXT, title TEXT, coverUrl TEXT, accessTime INTEGER, PRIMARY KEY(src))"
+    return "CREATE TABLE IF NOT EXISTS video_collection(src TEXT, title TEXT, coverUrl TEXT, sourceKey TEXT, accessTime INTEGER, PRIMARY KEY(src))"
   }
 
   getEntityId(item: VideoCollectionInfo): ValueType {
@@ -34,6 +34,7 @@ export class VideoCollectionTable extends AbsTable<VideoCollectionInfo> {
     info['src'] = cursor.getString(cursor.getColumnIndex('src'))
     info['title'] = cursor.getString(cursor.getColumnIndex('title'))
     info['coverUrl'] = cursor.getString(cursor.getColumnIndex('coverUrl'))
+    info['sourceKey'] = cursor.getString(cursor.getColumnIndex('sourceKey'))
     info['accessTime'] = cursor.getLong(cursor.getColumnIndex('accessTime'))
     return info
   }

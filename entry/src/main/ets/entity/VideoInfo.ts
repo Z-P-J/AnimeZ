@@ -5,6 +5,10 @@
 export default interface VideoInfo {
 
     /**
+     * 数据源key
+     */
+    sourceKey: string
+    /**
      * 视频标题
      */
     title?: string;

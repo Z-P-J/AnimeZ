@@ -110,6 +110,19 @@ export default abstract class AbsTable<T> implements ITable {
     return this.deleteAll(predicates)
   }
 
+  async deleteItems(...items: T[]): Promise<number[]> {
+    if (!items) {
+      return []
+    }
+    const results: number[] = []
+    for (const item of items) {
+      let predicates = this.getPredicates()
+        .equalTo(this.getColumnId(), this.getEntityId(item))
+      results.push(await this.deleteAll(predicates))
+    }
+    return results
+  }
+
   /**
    * 删除数据
    * @param item

@@ -13,6 +13,7 @@ interface SourceInfo {
   source: { new(): DataSource }
 }
 
+// TODO 通过注解配置key和title
 const ALL_SOURCES: SourceInfo[] = [
   { key: 'key_yinghuavideo', title: '樱花动漫', source: YingHuaDataSource },
   { key: 'key_bimi_acg', title: 'Bimi动漫（已废弃）', source: BimiAcgDataSource }
@@ -32,6 +33,17 @@ export default class DataSourceManager {
     })
   }
 
+  static getSourceTitle(key: string): string {
+    let targetSource = ALL_SOURCES.find((source) => {
+      return source.key == key
+    })
+    if (targetSource) {
+      return targetSource.title
+    } else {
+      return null;
+    }
+  }
+
   /**
    * 获取当前视频数据源
    */
@@ -45,6 +57,10 @@ export default class DataSourceManager {
    */
   static setCurrentSource(key: string) {
     DataStore.set(KEY_CURRENT_SOURCE, key)
+  }
+
+  static getCurrentSourceKey(): string {
+    return DataStore.get(KEY_CURRENT_SOURCE, ALL_SOURCES[0].key)
   }
 
   /**

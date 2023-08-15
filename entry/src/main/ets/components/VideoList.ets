@@ -75,6 +75,7 @@ export struct VideoList {
         url: 'pages/VideoDetailPage',
         params: {
           url: item.url,
+          sourceKey: item.sourceKey,
           title: item.title,
           cover: item.imgUrl
         }

@@ -1,3 +1,4 @@
+import { HISTORY_CHANGED_EVENT } from '../utils/EventBus';
 import { getTheme, setTheme } from '../utils/Themes';
 import { SettingGroup, SettingsContainer } from './Settings';
 import { VideoHistoryTable } from '../db/impl/VideoHistoryDao';
@@ -12,49 +13,14 @@ import promptAction from '@ohos.promptAction';
  * 我的页面
  */
 @Component
-export struct MyPage {
+export struct MyPageTabContent {
   @StorageLink('theme') theme: number = 0
-  @State items: VideoHistoryInfo[] = [
-    {
-      link: 'link',
-      title: 'title',
-      currentTime: 10000,
-      totalTime: 200000,
-      coverUrl: '',
-      episodeListIndex: 0,
-      episodeIndex: 0,
-      episodeName: '第一集',
-      videoUrl: '',
-      videoProgress: 0
-    },
-    {
-      link: 'link',
-      title: 'title',
-      currentTime: 10000,
-      totalTime: 200000,
-      coverUrl: '',
-      episodeListIndex: 0,
-      episodeIndex: 0,
-      episodeName: '第一集',
-      videoUrl: '',
-      videoProgress: 0
-    },
-    {
-      link: 'link',
-      title: 'title',
-      currentTime: 10000,
-      totalTime: 200000,
-      coverUrl: '',
-      episodeListIndex: 0,
-      episodeIndex: 0,
-      episodeName: '第一集',
-      videoUrl: '',
-      videoProgress: 0
-    }
-  ]
+  @Watch('onShowChanged') @Link onShow: boolean
+  @State items: VideoHistoryInfo[] = []
   //  @State yOffset: number = 0
   //  @State bgScale: number = 1
   @State bgHeight: number = 0
+  private historyChanged: boolean = false
   private readonly scroller = new Scroller()
   private settings: SettingGroup[] = [
     {
@@ -80,8 +46,32 @@ export struct MyPage {
   ]
 
   aboutToAppear() {
+    this.loadHistoryList()
+    HISTORY_CHANGED_EVENT.on(() => {
+      if (this.onShow) {
+        this.loadHistoryList()
+      } else {
+        // 标记历史记录已改变
+        this.historyChanged = true
+      }
+    })
+  }
+
+  aboutToDisappear() {
+    HISTORY_CHANGED_EVENT.off()
+  }
+
+  private onShowChanged() {
+    if (this.onShow && this.historyChanged) {
+      // 历史记录改变，重新加载
+      this.loadHistoryList()
+    }
+  }
+
+  private loadHistoryList() {
+    this.historyChanged = false
     SQLite.with(VideoHistoryTable)
-      .queryAllByAsc()
+      .queryAllByAccessTimeDesc()
       .then((items) => {
         this.items = items
       })
@@ -311,7 +301,7 @@ export struct MyPage {
         .width('100%')
         .layoutWeight(1)
         .objectFit(ImageFit.Cover)
-        .shadow({ radius: 12, color: getTheme(this.theme).isDarkTheme ? '#333333' : '#aaaaaa', offsetX: 6, offsetY: 6 })
+        .shadow({ radius: 12, color: getTheme(this.theme).isDarkTheme ? '#000000' : '#aaaaaa', offsetX: 6, offsetY: 6 })
 
       Text(item.title)
         .alignSelf(ItemAlign.Start)
@@ -329,6 +319,7 @@ export struct MyPage {
     .onClick(() => {
       router.pushUrl({ url: 'pages/VideoDetailPage', params: {
         url: item.link,
+        sourceKey: item.sourceKey,
         title: item.title,
         cover: item.coverUrl
       } })

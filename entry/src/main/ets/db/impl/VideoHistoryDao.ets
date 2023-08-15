@@ -17,13 +17,13 @@ export class VideoHistoryTable extends AbsTable<VideoHistoryInfo> {
 
   getTableColumns(): string[] {
     return ['link', 'title', 'totalTime', 'currentTime', 'coverUrl', 'episodeListIndex',
-      'episodeIndex', 'episodeName', 'videoUrl', 'videoProgress', 'accessTime']
+      'episodeIndex', 'episodeName', 'videoUrl', 'videoProgress', 'sourceKey', 'accessTime']
   }
 
   getCreateTableSql(): string {
     return "CREATE TABLE IF NOT EXISTS video_history(link TEXT, title TEXT, totalTime INTEGER, currentTime INTEGER, " +
     "coverUrl TEXT, episodeListIndex INTEGER, episodeIndex INTEGER, episodeName TEXT, videoUrl TEXT, " +
-    "videoProgress INTEGER, accessTime INTEGER, PRIMARY KEY(link))"
+    "videoProgress INTEGER, sourceKey TEXT, accessTime INTEGER, PRIMARY KEY(link))"
   }
 
   bindToValuesBucket(bucket: ValuesBucket, item: VideoHistoryInfo) {
@@ -54,12 +54,17 @@ export class VideoHistoryTable extends AbsTable<VideoHistoryInfo> {
     info['episodeName'] = cursor.getString(cursor.getColumnIndex('episodeName'))
     info['videoUrl'] = cursor.getString(cursor.getColumnIndex('videoUrl'))
     info['videoProgress'] = cursor.getLong(cursor.getColumnIndex('videoProgress'))
+    info['sourceKey'] = cursor.getString(cursor.getColumnIndex('sourceKey'))
     info['accessTime'] = cursor.getLong(cursor.getColumnIndex('accessTime'))
     return info
   }
 
   async queryAllByAsc(): Promise<VideoHistoryInfo[]> {
     return this.queryAll(this.getPredicates().orderByAsc(this.getColumnId()))
+  }
+
+  async queryAllByAccessTimeDesc(): Promise<VideoHistoryInfo[]> {
+    return this.queryAll(this.getPredicates().orderByDesc('accessTime'))
   }
 
   async queryByLink(link: string): Promise<VideoHistoryInfo> {

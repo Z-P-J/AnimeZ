@@ -19,6 +19,7 @@ export enum VideoFit {
   Fit_1_1,
 }
 
+// TODO 优化监听回调，改为on('xxxx', (x) => void)
 export interface PlayerListener {
 
   //    onStatusChanged(status: number): void;

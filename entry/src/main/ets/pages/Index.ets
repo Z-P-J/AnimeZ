@@ -1,7 +1,7 @@
 import { getCurrentTheme, getTheme } from '../utils/Themes';
 import TransitionHelper from '../utils/TransitionHelper';
-import { MyPage } from '../components/MyPage';
-import { Homepage } from '../components/Homepage';
+import { MyPageTabContent } from '../components/MyPage';
+import { HomepageTabContent } from '../components/Homepage';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
 
 @Entry
@@ -9,6 +9,7 @@ import ImmersionBarSpace from '../components/ImmersionBarSpace';
 struct Index {
   @StorageLink('theme') theme: number = 0
   @State currentIndex: number = 0
+  @State onShow: boolean = false
   private controller: TabsController = new TabsController()
 
   aboutToAppear() {
@@ -18,6 +19,11 @@ struct Index {
 
   onPageShow() {
     getTheme(this.theme).initBar()
+    this.onShow = true
+  }
+
+  onPageHide() {
+    this.onShow = false
   }
 
   pageTransition() {
@@ -38,12 +44,12 @@ struct Index {
     Column() {
       Tabs({ barPosition: BarPosition.End, controller: this.controller }) {
         TabContent() {
-          Homepage()
+          HomepageTabContent()
         }
         .tabBar(this.TabBarBuilder(0, '首页', $r('app.media.ic_homepage'), $r('app.media.ic_homepage_selected')))
 
         TabContent() {
-          MyPage()
+          MyPageTabContent({onShow: $onShow})
         }
         .tabBar(this.TabBarBuilder(1, '我的', $r('app.media.ic_me'), $r('app.media.ic_me_selected')))
       }
@@ -53,7 +59,7 @@ struct Index {
       .barWidth('100%')
       .barHeight(48)
       .backgroundColor(getTheme(this.theme).background_color_accent)
-//      .animationDuration(420)
+      //      .animationDuration(420)
       .onChange((index: number) => {
         this.currentIndex = index
       })

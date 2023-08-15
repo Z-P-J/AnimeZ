@@ -1,6 +1,5 @@
 import EpisodeInfo from '../entity/EpisodeInfo';
-import { OnSelectChangeObserver } from '../utils/SelectionManager';
-import { SelectionManager } from '../utils/SelectionManager';
+import { OnSelectChangeObserver, SelectionManager } from '../utils/SelectionManager';
 import { TaskStatus, TaskStatusObserver } from '../download/core/Task';
 import TaskObserver from '../download/core/TaskObserver';
 import M3U8Downloader, { M3U8DownloadTask } from '../player/m3u8/M3U8Downloader';
@@ -32,9 +31,35 @@ struct DownloadItem {
   @State progressScale: number = 0;
   @State selectionMode: boolean = false
   @State isSelected: boolean = false
+  @State selectionIconMargin: number = 0
+  @State selectionIconSize: number = 0
   private readonly selectionObserver: OnSelectChangeObserver<M3U8DownloadTask> = {
     onSelectionModeChange: (isSelectionMode: boolean) => {
-      this.selectionMode = isSelectionMode
+      if (isSelectionMode) {
+        this.selectionMode = true
+        animateTo({
+          duration: 360,
+          curve: Curve.ExtremeDeceleration,
+          iterations: 1,
+          playMode: PlayMode.Normal
+        }, () => {
+          this.selectionIconSize = 24
+          this.selectionIconMargin = 16
+        })
+      } else {
+        animateTo({
+          duration: 360,
+          curve: Curve.ExtremeDeceleration,
+          iterations: 1,
+          playMode: PlayMode.Normal,
+          onFinish: () => {
+            this.selectionMode = false
+          }
+        }, () => {
+          this.selectionIconSize = 0
+          this.selectionIconMargin = 0
+        })
+      }
     },
     onSelectChange: (item: M3U8DownloadTask, isSelected) => {
       if (this.task && this.task.getTaskId() == item.getTaskId()) {
@@ -130,13 +155,19 @@ struct DownloadItem {
           })
       }
       Row() {
-        if (this.selectionMode) {
-          Image(this.isSelected ? $r('app.media.ic_selection_selected') : $r('app.media.ic_selection_none'))
-            .width(24)
-            .height(24)
-            .margin({ left: 16 })
-            .fillColor(this.isSelected ? getTheme(this.theme).primary_color : getTheme(this.theme).color_text_minor)
-        }
+//        if (this.selectionMode) {
+//          Image(this.isSelected ? $r('app.media.ic_selection_selected') : $r('app.media.ic_selection_none'))
+//            .width(24)
+//            .height(24)
+//            .margin({ left: 16 })
+//            .fillColor(this.isSelected ? getTheme(this.theme).primary_color : getTheme(this.theme).color_text_minor)
+//        }
+        Image(this.isSelected ? $r('app.media.ic_selection_selected') : $r('app.media.ic_selection_none'))
+          .width(this.selectionIconSize)
+          .height(this.selectionIconSize)
+          .margin({ left: this.selectionIconMargin })
+          .visibility(this.selectionMode ? Visibility.Visible : Visibility.None)
+          .fillColor(this.isSelected ? getTheme(this.theme).primary_color : getTheme(this.theme).color_text_minor)
         Image(this.task.videoInfo.coverUrl)
           .alt($r('app.media.pic_load_failed'))
           .height('100%')

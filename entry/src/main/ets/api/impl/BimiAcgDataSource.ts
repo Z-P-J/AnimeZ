@@ -17,6 +17,10 @@ const BASE_URL = 'http://www.bimiacg4.net'
  * TODO 该源部分视频链接无法解析到，暂时废弃
  */
 export default class BimiAcgDataSource implements DataSource {
+    getKey(): string {
+        return 'key_bimi_acg'
+    }
+
     async search(keyword: string, page: number): Promise<VideoInfo[]> {
         let url = "http://www.bimiacg4.net/vod/search/wd/" + encodeURIComponent(keyword) + "/page/" + page
 
@@ -71,6 +75,7 @@ export default class BimiAcgDataSource implements DataSource {
             let img = CssSelector.findFirst(el, 'img')
             let a = CssSelector.findFirst(el, "div.info > a")
             videoList.push({
+                sourceKey: this.getKey(),
                 url: "http://www.bimiacg4.net" + CssSelector.getAttributeValue(a, 'href'),
                 imgUrl: CssSelector.getAttributeValue(img, 'src'),
                 title: CssSelector.textContent(a),
@@ -97,6 +102,7 @@ export default class BimiAcgDataSource implements DataSource {
         Logger.e(this, 'getVideoDetailInfo 5 test=' + test)
 
         let info: VideoDetailInfo = {
+            sourceKey: this.getKey(),
             title: CssSelector.selectTextContent(doc, "div.txt_intro_con > div > h1"),
             url: url,
             desc: CssSelector.selectTextContent(doc, "li.li_intro"),
@@ -149,6 +155,7 @@ export default class BimiAcgDataSource implements DataSource {
             let elInfo = CssSelector.findFirst(el, "div.info")
             let a = CssSelector.findFirst(elInfo, "a")
             videoList.push({
+                sourceKey: this.getKey(),
                 url: "http://www.bimiacg4.net" + CssSelector.getAttributeValue(a, 'href'),
                 imgUrl: CssSelector.getAttributeValue(img, 'src'),
                 title: CssSelector.textContent(a),

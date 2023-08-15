@@ -1,30 +1,9 @@
-
-
+/**
+ * 视频历史记录
+ * TODO 支持数据源key和数据源title
+ */
 export class VideoHistoryInfo {
 
-//    @PrimaryKey
-//    private String key
-//    @Column(defaultValue = "0")
-//    private int episodeListIndex
-//    @Column
-//    private int position
-//    @Column
-//    private String url
-//    @Column
-//    private String title
-//    @Column
-//    private String episode
-//    @Column
-//    private long lastTime
-//    @Column
-//    private String coverUrl
-//
-//    @Column
-//    private long videoProgress
-
-//    @Id()
-//    @Unique()
-//    @Columns({columnName: 'link', types: ColumnType.str })
     link: string
 
 //    @Columns({columnName: 'title', types: ColumnType.str })
@@ -53,9 +32,11 @@ export class VideoHistoryInfo {
 //    @Columns({columnName: 'videoProgress', types: ColumnType.num })
     videoProgress: number
 
+    sourceKey: string
+
     accessTime?: number
 
-    static createByLink(link) {
+    static createByLink(sourceKey, link): VideoHistoryInfo {
         return {
             link: link,
             title: '',
@@ -67,6 +48,7 @@ export class VideoHistoryInfo {
             episodeName: '',
             videoUrl: '',
             videoProgress: 0,
+            sourceKey: sourceKey,
             accessTime: 0
         }
     }

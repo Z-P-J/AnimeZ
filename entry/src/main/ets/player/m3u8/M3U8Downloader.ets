@@ -16,6 +16,7 @@ class M3U8DownloadTaskBuilder extends DownloadTaskBuilder<M3U8DownloadTask> {
 
   pageLink: string
   coverUrl: string
+  sourceKey: string
 
   setPageLink(pageLink: string) {
     this.pageLink = pageLink
@@ -24,6 +25,11 @@ class M3U8DownloadTaskBuilder extends DownloadTaskBuilder<M3U8DownloadTask> {
 
   setCoverUrl(coverUrl: string) {
     this.coverUrl = coverUrl
+    return this;
+  }
+
+  setSourceKey(sourceKey: string) {
+    this.sourceKey = sourceKey
     return this;
   }
 
@@ -50,6 +56,7 @@ export default class M3U8Downloader extends Downloader<M3U8DownloadTask> {
     let downloadTask = super.buildTask(builder)
     downloadTask.videoInfo.pageLink = builder.pageLink
     downloadTask.videoInfo.coverUrl = builder.coverUrl
+    downloadTask.videoInfo.sourceKey = builder.sourceKey
     return downloadTask
   }
 }
@@ -136,9 +143,9 @@ export class M3U8DownloadTask extends GroupDownloadTask {
     let result = await this.saveVideoInfo()
     Logger.e(this, 'initTask saveVideoInfo result=' + result)
 
-    // TODO 创建任务时设置数据源
     // 解析真实的m3u8链接
-    this.taskInfo.url = await DataSourceManager.getCurrentSource().parseVideoUrl(this.taskInfo.originalUrl)
+    this.taskInfo.url = await DataSourceManager.getSource(this.videoInfo.sourceKey)
+      .parseVideoUrl(this.taskInfo.originalUrl)
     Logger.e(this, 'initTask url=' + this.taskInfo.url)
     if (this.taskInfo.url) {
       // 初始化m3u8信息
