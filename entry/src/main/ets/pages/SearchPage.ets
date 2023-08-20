@@ -99,7 +99,7 @@ struct SearchPage {
         .onClick(() => {
           router.back()
         })
-      TextInput({ placeholder: '输入关键字...' })
+      TextInput({ placeholder: '输入关键字...', text: this.keyword })
         .placeholderFont({ size: 14, weight: 300 })
         .placeholderColor('#817977')
         .fontColor(getTheme(this.theme).color_text_major)

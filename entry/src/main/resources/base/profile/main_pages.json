@@ -3,7 +3,6 @@
     "pages/Index",
     "pages/VideoDetailPage",
     "pages/TestPage",
-    "pages/Page2",
     "pages/SearchPage",
     "pages/SettingsPage",
     "pages/AboutMePage",
@@ -11,7 +10,6 @@
     "pages/VideoHistoryPage",
     "pages/VideoCollectionPage",
     "pages/DownloadManagerPage",
-    "pages/TestDetail",
     "pages/LocalVideoPlayerPage",
     "pages/WebPage"
   ]

@@ -67,6 +67,8 @@ struct AppInfoPage {
             .height(64)
             .width(64)
             .margin({top: 56})
+            .borderRadius(16)
+            .shadow({ radius: 12, color: getTheme(this.theme).isDarkTheme ? '#333333' : '#aaaaaa', offsetX: 6, offsetY: 6 })
           Text($r('app.string.EntryAbility_label'))
             .fontSize(18)
             .fontColor(getTheme(this.theme).color_text_major)
