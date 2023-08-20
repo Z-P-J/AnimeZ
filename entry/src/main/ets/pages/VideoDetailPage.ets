@@ -1,7 +1,11 @@
+import mediaquery from '@ohos.mediaquery';
+import { MultiVideoPlayer } from '../player/MultiVideoPlayer';
+import IPlayerManager, { PlayerListener, PlayerStatus, VideoFit } from '../player/IPlayerManager';
+import media from '@ohos.multimedia.media';
+import { AVideoPlayer } from '../player/AVideoPlayer';
 import { HISTORY_CHANGED_EVENT } from '../utils/EventBus';
-import { PlayerListener, PlayerStatus, VideoFit } from '../player/IPlayerManager';
 import DataSourceManager from '../api/DataSourceManager';
-import SystemPlayerManager from '../player/SystemPlayerManager';
+import PlayerManagerImpl from '../player/PlayerManagerImpl';
 import { SystemVideoPlayer } from '../player/SystemVideoPlayer';
 import { VideoCacheList } from '../components/VideoCacheList';
 import Settings from '../utils/Settings';
@@ -34,11 +38,12 @@ struct VideoDetailPage {
   @State episodeIndex: number = 0;
   @State state: number = ViewState.LOADING
   @State errorMessage: string = ''
-  private readonly playerManager: SystemPlayerManager = new SystemPlayerManager()
+  private readonly playerManager: IPlayerManager = new PlayerManagerImpl()
   private url: string
   private sourceKey: string
   private historyInfo: VideoHistoryInfo
   @State collectionInfo: VideoCollectionInfo = null
+  @State isFullScreen: boolean = false
 
   /**
    * 背景图是否加载完成
@@ -62,7 +67,9 @@ struct VideoDetailPage {
         }
       }
     },
-    onEpisodeChanged: (episode: EpisodeInfo) => {
+    onEpisodeChanged: (episodeList: EpisodeInfo[], episodeIndex: number) => {
+      this.episodeIndex = episodeIndex
+      this.playVideo(this.episodeListIndex, this.episodeIndex)
     },
     onVideoSpeedChanged: (videoSpeed: number) => {
     },
@@ -79,16 +86,30 @@ struct VideoDetailPage {
         this.historyInfo.currentTime = currentTime
         this.saveHistoryInfo()
       }
+    },
+    onBuffering: (type: media.BufferingInfoType, value: number) => {
+    }
+  }
+
+  private listener: mediaquery.MediaQueryListener = mediaquery.matchMediaSync('(orientation: portrait)')
+
+  /**
+   * 监听横竖屏切换
+   * @param mediaQueryResult
+   */
+  onPortrait(mediaQueryResult) {
+    if (mediaQueryResult.matches) {
+      this.isFullScreen = false
+    } else {
+      this.isFullScreen = true
     }
   }
 
   aboutToAppear() {
-    //    // TODO 测试
-    //    this.url = 'http://www.bimiacg4.net/bangumi/bi/8552/'
-    //    this.historyInfo = VideoHistoryInfo.createByLink(this.url)
-    //    this.getDetailInfo()
 
-    //    this.url = 'http://www.bimiacg4.net/bangumi/bi/8117/'
+    let portraitFunc = this.onPortrait.bind(this) // bind current js instance
+    this.listener.on('change', portraitFunc)
+
     this.url = router.getParams()['url']
     this.sourceKey = router.getParams()['sourceKey']
     Logger.e(this, 'aboutToAppear url=' + this.url + ' sourceKey=' + this.sourceKey + ' params=' + JSON.stringify(router.getParams()))
@@ -120,7 +141,10 @@ struct VideoDetailPage {
   }
 
   aboutToDisappear() {
+    this.listener.off('change')
     this.saveHistoryInfo()
+    HISTORY_CHANGED_EVENT.emit()
+    this.playerManager.removeListener(this.playerListener)
     this.playerManager.destroy()
   }
 
@@ -194,7 +218,7 @@ struct VideoDetailPage {
 
   @Builder Content() {
     Column() {
-      SystemVideoPlayer({ playerManager: this.playerManager, immersionStatusBar: true })
+      MultiVideoPlayer({ playerManager: this.playerManager, immersionStatusBar: true })
 
       if (this.videoDetailInfo) {
         Stack() {
@@ -319,7 +343,7 @@ struct VideoDetailPage {
       .layoutWeight(1)
       .height('100%')
     }
-//    .backgroundColor('#80ffffff')
+    //    .backgroundColor('#80ffffff')
     .backgroundColor(getTheme(this.theme).background_color)
     .width('100%')
     .height('100%')
@@ -575,14 +599,6 @@ struct VideoDetailPage {
           ForEach(episodeList.episodes, (item: EpisodeInfo, episodeIndex: number) => {
             Text(item.title)
               .textAlign(TextAlign.Center)
-//              .backgroundColor(
-//                  (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
-//                  ? '#bb3366ff' : '#aaf5f5f5'
-//              )
-//              .fontColor(
-//                  (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
-//                  ? Color.White : $r('app.color.color_text_major')
-//              )
               .backgroundColor(
                   (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex)
                   ? '#bb3366ff' : getTheme(this.theme).background_color_accent
@@ -600,9 +616,13 @@ struct VideoDetailPage {
               )
               .borderColor(getTheme(this.theme).background_color_accent)
               .margin({ bottom: 8, right: '2%' })
-              .width('18%')
+              // 解决横竖屏切换导致文字显示错位问题
+              .width(this.isFullScreen ? '17%' : '18%')
               .maxLines(1)
               .onClick(() => {
+                if (this.episodeListIndex == episodeListIndex && this.episodeIndex == episodeIndex) {
+                  return
+                }
                 this.historyInfo.videoProgress = 0
                 this.historyInfo.currentTime = 0
                 this.historyInfo.totalTime = 0
@@ -610,9 +630,11 @@ struct VideoDetailPage {
               })
           })
         }
+        .width('100%')
         .margin({ top: 8 })
         .padding({ left: 16, right: 16 })
       }
+      .width('100%')
       .alignItems(HorizontalAlign.Start)
     })
   }
@@ -735,11 +757,12 @@ struct VideoDetailPage {
       })
   }
 
-  private playVideo(episodeListIndex, episodeIndex) {
+  private playVideo(episodeListIndex: number, episodeIndex: number) {
     Logger.e(this, 'playVideo episodeListIndex=' + episodeListIndex + " episodeIndex=" + episodeIndex)
     this.episodeListIndex = episodeListIndex
     this.episodeIndex = episodeIndex
-    let episode = this.videoDetailInfo.episodes[this.episodeListIndex].episodes[this.episodeIndex];
+    const episodeList = this.videoDetailInfo.episodes[this.episodeListIndex]
+    let episode = episodeList.episodes[this.episodeIndex];
     Logger.e(this, 'playVideo episode=' + JSON.stringify(episode))
     this.historyInfo.episodeListIndex = episodeListIndex
     this.historyInfo.episodeIndex = episodeIndex
@@ -747,13 +770,15 @@ struct VideoDetailPage {
     this.historyInfo.videoUrl = episode.videoUrl
     Logger.e(this, 'playVideo historyInfo=' + JSON.stringify(this.historyInfo))
     if (episode.videoUrl) {
-      this.play(episode)
+      this.saveHistoryInfo()
+      this.playerManager.playEpisodeList(episodeList.episodes, this.episodeIndex)
     } else {
       DataSourceManager.getSource(this.videoDetailInfo.sourceKey).parseVideoUrl(episode.link)
         .then((url) => {
           episode.videoUrl = url
           this.historyInfo.videoUrl = episode.videoUrl
-          this.play(episode)
+          this.saveHistoryInfo()
+          this.playerManager.playEpisodeList(episodeList.episodes, this.episodeIndex)
         })
         .catch((e) => {
           this.playerManager.setStatus(PlayerStatus.ERROR)
@@ -762,21 +787,11 @@ struct VideoDetailPage {
     }
   }
 
-  private play(episode: EpisodeInfo) {
-    Logger.e(this, 'play episode=' + JSON.stringify(episode))
-    this.saveHistoryInfo()
-    this.playerManager.setEpisode(episode)
-    this.playerManager.start()
-  }
-
   private saveHistoryInfo() {
     if (this.historyInfo) {
       this.historyInfo.accessTime = new Date().getTime()
       SQLite.with(VideoHistoryTable)
         .save(this.historyInfo)
-        .then(() => {
-          HISTORY_CHANGED_EVENT.emit()
-        })
         .catch((e) => {
           Logger.e(this, 'saveHistoryInfo error=' + JSON.stringify(e))
         })

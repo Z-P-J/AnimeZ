@@ -51,6 +51,17 @@ struct SettingsPage {
     {
       title: '播放',
       settings: [
+        { title: '默认播放器', info: 'AVPlayer',
+          preference: {
+            key: Settings.KEY_DEFAULT_PLAYER,
+            type: 'radio',
+            defaultValue: 0,
+            values: ['AVPlayer', 'VideoPlayer', 'IjkPlayer'],
+            onValueChange: (key, value) => {
+
+            }
+          }
+        },
         {
           title: '自动播放下一集',
           info: '视频结束后自动播放下一集',

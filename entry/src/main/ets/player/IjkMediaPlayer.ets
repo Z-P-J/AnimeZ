@@ -30,7 +30,7 @@ import window from '@ohos.window';
 /**
  * 将@ohos/ijkplayer中IjkMediaPlayer源码copy过来并去除原始代码中的单例
  */
-export class IjkMediaPlayer implements IPlayer {
+export class IjkMediaPlayer {
 
   public static OPT_CATEGORY_FORMAT: string = "1";
   public static OPT_CATEGORY_CODEC: string = "2";

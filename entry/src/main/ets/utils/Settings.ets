@@ -9,6 +9,7 @@ export default class Settings {
   static KEY_AUTO_PLAY_ON_NO_WIFI = 'key_auto_play_on_no_wifi'
   static KEY_AUTO_RESUME_DOWNLOAD_ON_WIFI = 'key_auto_resume_download_on_wifi'
   static KEY_MAX_DOWNLOADING_COUNT = 'key_max_downloading_count'
+  static KEY_DEFAULT_PLAYER = 'key_default_player'
 
   /**
    * 自动播放下一集，默认开启
@@ -36,5 +37,9 @@ export default class Settings {
    */
   static getMaxDownloadingCount(): number {
     return DataStore.getInt(this.KEY_MAX_DOWNLOADING_COUNT, 3)
+  }
+
+  static getDefaultPlayerType(): number {
+    return DataStore.getInt(this.KEY_DEFAULT_PLAYER, 0)
   }
 }

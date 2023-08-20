@@ -1,13 +1,16 @@
+import media from '@ohos.multimedia.media';
+import IPlayer from './IPlayer';
 import EpisodeInfo from '../entity/EpisodeInfo';
 
 export enum PlayerStatus {
-  INIT = 0,
-  BUFFERING = 1,
-  PLAY = 2,
-  PAUSE = 3,
-  STOP = 4,
-  ERROR = 5,
-  DONE = 6
+  IDLE = 0,
+  INITIALIZED = 1,
+  PREPARED = 2,
+  PLAY = 4,
+  PAUSE = 5,
+  STOP = 6,
+  ERROR = 7,
+  DONE = 8
 }
 
 export enum VideoFit {
@@ -22,11 +25,11 @@ export enum VideoFit {
 // TODO 优化监听回调，改为on('xxxx', (x) => void)
 export interface PlayerListener {
 
-  //    onStatusChanged(status: number): void;
-
   onStatusChanged(status: number)
 
-  onEpisodeChanged(episode: EpisodeInfo)
+//  onEpisodeChanged(episode: EpisodeInfo)
+
+  onEpisodeChanged(episodeList: EpisodeInfo[], episodeIndex: number)
 
   onVideoSpeedChanged(videoSpeed: PlaybackSpeed)
 
@@ -38,29 +41,37 @@ export interface PlayerListener {
 
   onProgressChange(totalTime: number, currentTime: number)
 
+  onBuffering(type: media.BufferingInfoType, value: number)
+
 }
 
 export default interface IPlayerManager {
 
-  init(context: object)
+  init(player: IPlayer)
 
-  setEpisode(episode: EpisodeInfo);
+//  setEpisode(episode: EpisodeInfo);
 
-  getEpisode(): EpisodeInfo;
+//  playEpisode(episode: EpisodeInfo): Promise<void>
 
-  getEpisodeList(): EpisodeInfo[];
+//  getEpisode(): EpisodeInfo;
 
-  setPlayerUrl(url: string);
+//  getEpisodeList(): EpisodeInfo[];
 
-  start();
+  playEpisodeList(episodeList: EpisodeInfo[], episodeIndex?: number): Promise<void>;
 
-  pause();
+//  playEpisodeAt(episodeIndex: number): Promise<void>
 
-  stop();
+//  setPlayerUrl(url: string);
 
-  seekTo(value: number);
+  start(): Promise<void>;
 
-  setSpeed(speed: PlaybackSpeed);
+  pause(): Promise<void>;
+
+  stop(): Promise<void>;
+
+  seekTo(value: number): Promise<void>;
+
+  setSpeed(speed: PlaybackSpeed): Promise<void>;
 
   getSpeed(): PlaybackSpeed;
 
@@ -89,5 +100,17 @@ export default interface IPlayerManager {
   enterFullScreen();
 
   exitFullScreen();
+
+  onVideoSizeChanged(width: number, height: number)
+
+  notifyDuration(duration: number);
+
+  notifyCurrentTime(currentTime: number);
+
+  notifyDuration(duration: number);
+
+  notifyTime(duration: number, currentTime: number);
+
+  notifyBuffering(type: media.BufferingInfoType, value: number)
 
 }

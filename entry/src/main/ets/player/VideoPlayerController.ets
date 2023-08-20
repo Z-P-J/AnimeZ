@@ -1,5 +1,5 @@
-import { PlayerStatus } from './IPlayerManager';
-import IPlayerManager, { VideoFit, PlayerListener } from './IPlayerManager';
+import media from '@ohos.multimedia.media';
+import IPlayerManager, { PlayerListener, PlayerStatus, VideoFit } from './IPlayerManager';
 import EpisodeInfo from '../entity/EpisodeInfo';
 import VideoTimeUtils from './VideoTimeUtils';
 import Logger from '../utils/Logger';
@@ -36,15 +36,14 @@ enum PanelType {
 
 /**
  * 播放器控制界面
- * TODO 重构
  */
 @Component
-export struct SystemPlayerController {
+export struct VideoPlayerController {
   @State currentTime: string = "00:00";
   @State totalTime: string = "00:00";
   @State progress: number = 0;
   @State slideEnable: boolean = true;
-  @State playerStatus: number = PlayerStatus.PLAY;
+  @State playerStatus: number = PlayerStatus.IDLE;
   @State showController: boolean = true;
   @State title: string = ''
   @State isFullScreen: boolean = false
@@ -54,15 +53,22 @@ export struct SystemPlayerController {
   @State currentSpeed: string = '1.00'
   @State isLocked: boolean = false
   @State videoFit: number = VideoFit.Contain
+  @State isLoading: boolean = false
+  @State bufferingPercent: number = 0
+  @State episodeList: EpisodeInfo[] = []
+  @State episodeIndex: number = 0
   private playerManager: IPlayerManager = null;
   private showControllerTimer: number = -1;
   private readonly playerListener: PlayerListener = {
     onStatusChanged: (status: number) => {
       this.playerStatus = status
+      this.initLoading()
       Logger.e(this, 'PlayerController status=' + status + " playerStatus=" + this.playerStatus)
     },
-    onEpisodeChanged: (episode: EpisodeInfo) => {
-      this.title = episode.desc
+    onEpisodeChanged: (episodeList: EpisodeInfo[], episodeIndex: number) => {
+      this.episodeList = episodeList
+      this.episodeIndex = episodeIndex
+      this.title = episodeList[episodeIndex].desc
     },
     onVideoSpeedChanged: (videoSpeed: number) => {
 
@@ -78,13 +84,34 @@ export struct SystemPlayerController {
     },
     onProgressChange: (totalTime: number, currentTime: number) => {
       this.setProgress(totalTime, currentTime)
+    },
+    onBuffering: (type: media.BufferingInfoType, value: number) => {
+      if (this.playerStatus != PlayerStatus.PLAY) {
+        this.initLoading()
+        return
+      }
+      if (type == media.BufferingInfoType.BUFFERING_PERCENT) {
+        if (value == 100) {
+          this.isLoading = false
+        } else {
+          this.isLoading = true
+        }
+        this.bufferingPercent = value
+      } else if (type == media.BufferingInfoType.BUFFERING_START) {
+        this.isLoading = true
+      } else if (type == media.BufferingInfoType.BUFFERING_END) {
+        this.isLoading = false
+      }
+      Logger.e(this, 'onBuffering isLoading=' + this.isLoading)
     }
   }
 
   aboutToAppear() {
-    this.playerStatus = PlayerStatus.INIT
+    this.playerStatus = PlayerStatus.IDLE
+    this.isLoading = true;
     if (this.playerManager) {
       this.playerStatus = this.playerManager.getStatus()
+      this.initLoading()
       this.playerManager.addListener(this.playerListener)
     } else {
       throw new Error('You must set playerManager firstly!')
@@ -92,7 +119,6 @@ export struct SystemPlayerController {
   }
 
   aboutToDisappear() {
-    //    this.playerManager.destroy()
     this.playerManager.removeListener(this.playerListener)
     if (this.showControllerTimer >= 0) {
       clearTimeout(this.showControllerTimer)
@@ -102,8 +128,17 @@ export struct SystemPlayerController {
 
   build() {
     Stack({ alignContent: Alignment.Center }) {
-
-      this.Loading()
+      if (this.isLoading) {
+        Stack({ alignContent: Alignment.Center }) {
+          LoadingProgress()
+            .width(48)
+            .height(48)
+            .color(Color.White)
+        }
+        .backgroundColor('#80000000')
+        .borderRadius(16)
+        .padding({ left: 32, right: 32, top: 16, bottom: 16 })
+      }
 
       Column() {
         Image($r('app.media.ic_refresh'))
@@ -150,24 +185,6 @@ export struct SystemPlayerController {
     .onClick(() => {
       this.showController = !this.showController;
     })
-  }
-
-  @Builder Loading() {
-    Stack({ alignContent: Alignment.Center }) {
-      LoadingProgress().width(48).height(48).color(Color.White)
-        .visibility(
-            this.playerStatus === PlayerStatus.INIT || this.playerStatus === PlayerStatus.BUFFERING
-            ? Visibility.Visible : Visibility.None
-        )
-    }
-    .visibility(
-        this.playerStatus === PlayerStatus.INIT || this.playerStatus === PlayerStatus.BUFFERING
-        ? Visibility.Visible : Visibility.None
-    )
-    .backgroundColor('#80000000')
-    .borderRadius(16)
-    .width('100%')
-    .height('100%')
   }
 
   @Builder VideoController() {
@@ -251,14 +268,17 @@ export struct SystemPlayerController {
         }
 
         Row() {
-          Image((this.playerStatus == PlayerStatus.PLAY || this.playerStatus == PlayerStatus.BUFFERING) ? $r("app.media.ic_pause") : $r("app.media.ic_play"))
+          Image(
+              (this.playerStatus == PlayerStatus.PLAY)
+              ? $r("app.media.ic_pause") : $r("app.media.ic_play")
+          )
             .width(24)
             .height(24)
             .fillColor(Color.White)
             .margin({ left: this.isFullScreen ? 16 : 12 })
             .objectFit(ImageFit.Contain)
             .onClick(() => {
-              if (this.playerStatus == PlayerStatus.PLAY || this.playerStatus == PlayerStatus.BUFFERING) {
+              if (this.playerStatus == PlayerStatus.PLAY) {
                 this.playerManager.pause()
               } else {
                 this.playerManager.start()
@@ -389,11 +409,14 @@ export struct SystemPlayerController {
   @Builder ChangeSpeedPanel() {
     Scroll() {
       Column({ space: this.isFullScreen ? 16 : 8 }) {
-
+        Text('倍速')
+          .alignSelf(ItemAlign.Start)
+          .fontSize(this.isFullScreen ? 16 : 13)
+          .fontColor(Color.White)
         ForEach(VIDEO_SPEED_LIST, (item: KeyValue) => {
           Text(`${item.name}X`)
             .padding(8)
-            .fontSize(this.isFullScreen ? 14 : 12)
+            .fontSize(this.isFullScreen ? 12 : 10)
             .fontColor(Color.White)
             .width('100%')
             .backgroundColor(this.currentSpeed == item.name ? $r('app.color.primary_color_accent') : Color.Transparent)
@@ -438,21 +461,30 @@ export struct SystemPlayerController {
         }
         .width('100%')
 
-        //  TODO
-        if (this.playerManager.getEpisode()) {
-          Text(this.playerManager.getEpisode().title)
-            .padding(8)
-            .fontSize(this.isFullScreen ? 14 : 12)
-            .fontColor(Color.White)
-            .width('100%')
-            .backgroundColor($r('app.color.primary_color_accent'))
-            .borderRadius(6)
-            .borderColor(Color.White)
-            .borderWidth(0)
-            .onClick(() => {
-              // TODO
-            })
+        Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.Start, wrap: FlexWrap.Wrap }) {
+          ForEach(this.episodeList, (episode: EpisodeInfo, index: number) => {
+            Text(episode.title)
+              .padding(8)
+              .fontSize(this.isFullScreen ? 14 : 12)
+              .fontColor(Color.White)
+              .maxLines(1)
+              .constraintSize({
+                minWidth: '50%'
+              })
+              .backgroundColor(this.episodeIndex == index ? $r('app.color.primary_color_accent') : Color.Transparent)
+              .borderRadius(6)
+              .borderColor(Color.White)
+              .borderWidth(0)
+              .onClick(() => {
+                if (this.episodeIndex == index) {
+                  return
+                }
+                this.playerManager.playEpisodeList(this.episodeList, index)
+                this.hideRightPanel()
+              })
+          })
         }
+        .width('100%')
       }
       .padding(this.isFullScreen ? 16 : 8)
       .width('100%')
@@ -471,31 +503,32 @@ export struct SystemPlayerController {
     Scroll() {
       Column({ space: this.isFullScreen ? 16 : 8 }) {
 
-        Text('播放器')
-          .alignSelf(ItemAlign.Start)
-          .fontSize(this.isFullScreen ? 16 : 13)
-          .fontColor(Color.White)
-
-        Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.SpaceAround, wrap: FlexWrap.Wrap }) {
-          ForEach(['系统内置', 'IjkPlayer'], (item, i) => {
-            Text(item)
-              .textAlign(TextAlign.Center)
-              .fontColor(Color.White)
-              .fontSize(this.isFullScreen ? 14 : 11)
-              .padding(6)
-              .backgroundColor(i == 0 ? $r('app.color.primary_color_accent') : Color.Transparent)
-              .borderRadius(4)
-              .margin({ bottom: 8 })
-              .constraintSize({
-                minWidth: '40%'
-              })
-              .maxLines(1)
-              .onClick(() => {
-                promptAction.showToast({ message: 'TODO 播放器' })
-              })
-          })
-        }
-        .width('100%')
+        // TODO 切换播放器
+//        Text('播放器')
+//          .alignSelf(ItemAlign.Start)
+//          .fontSize(this.isFullScreen ? 16 : 13)
+//          .fontColor(Color.White)
+//
+//        Flex({ alignItems: ItemAlign.Start, justifyContent: FlexAlign.SpaceAround, wrap: FlexWrap.Wrap }) {
+//          ForEach(['系统内置', 'IjkPlayer'], (item, i) => {
+//            Text(item)
+//              .textAlign(TextAlign.Center)
+//              .fontColor(Color.White)
+//              .fontSize(this.isFullScreen ? 14 : 11)
+//              .padding(6)
+//              .backgroundColor(i == 0 ? $r('app.color.primary_color_accent') : Color.Transparent)
+//              .borderRadius(4)
+//              .margin({ bottom: 8 })
+//              .constraintSize({
+//                minWidth: '40%'
+//              })
+//              .maxLines(1)
+//              .onClick(() => {
+//                promptAction.showToast({ message: 'TODO 播放器' })
+//              })
+//          })
+//        }
+//        .width('100%')
 
         Text('画面尺寸')
           .alignSelf(ItemAlign.Start)
@@ -594,5 +627,11 @@ export struct SystemPlayerController {
       position = duration;
     }
     this.currentTime = VideoTimeUtils.stringForTime(position);
+  }
+
+  private initLoading() {
+    this.isLoading = this.playerStatus == PlayerStatus.IDLE
+    || this.playerStatus == PlayerStatus.INITIALIZED
+    || this.playerStatus == PlayerStatus.PREPARED
   }
 }
