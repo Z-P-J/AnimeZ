@@ -68,6 +68,9 @@ struct VideoDetailPage {
       }
     },
     onEpisodeChanged: (episodeList: EpisodeInfo[], episodeIndex: number) => {
+      if (this.episodeIndex == episodeIndex) {
+        return
+      }
       this.episodeIndex = episodeIndex
       this.playVideo(this.episodeListIndex, this.episodeIndex)
     },
