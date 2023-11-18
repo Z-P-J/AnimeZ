@@ -4,7 +4,7 @@ import promptAction from '@ohos.promptAction'
 import { SettingGroup, SettingsContainer } from '../components/Settings'
 import TitleBar from '../components/TitleBar'
 import ImmersionBarSpace from '../components/ImmersionBarSpace'
-import TransitionHelper from '../utils/TransitionHelper'
+import { OPTIONS_TRANSITION_POP, OPTIONS_TRANSITION_PUSH } from '../utils/TransitionHelper';
 
 @Entry
 @Component
@@ -15,7 +15,7 @@ struct AppInfoPage {
   private settings: SettingGroup[] = [
     {
       settings: [
-        { title: '应用版本', info: '1.0.0', icon: $r('app.media.ic_version') },
+        { title: '应用版本', info: '1.0.1', icon: $r('app.media.ic_version') },
         { title: '应用开发者', info: 'Z-P-J', icon: $r('app.media.ic_author'),
           onClick: () => {
             router.pushUrl({url: 'pages/AboutMePage'})
@@ -45,15 +45,10 @@ struct AppInfoPage {
   }
 
   pageTransition() {
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Right)
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Left)
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_POP).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_POP).slide(SlideEffect.Right)
   }
 
   build() {

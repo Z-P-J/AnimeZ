@@ -70,7 +70,7 @@ export class M3U8DownloadTask extends GroupDownloadTask {
 
   constructor(manager: TaskManager, taskInfo: DownloadTaskInfo) {
     super(manager, new M3U8SegmentTaskManager(), taskInfo)
-    this.taskDir = this.getDownloadDir() + CryptoJS.MD5(taskInfo.originalUrl) + '/'
+    this.taskDir = this.getDownloadDir() + CryptoJS.MD5(taskInfo.originalUrl).toString() + '/'
   }
 
   doDelete() {

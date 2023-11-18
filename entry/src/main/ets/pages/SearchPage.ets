@@ -1,6 +1,5 @@
 import DataSourceManager from '../api/DataSourceManager';
 import { getTheme } from '../utils/Themes';
-import TransitionHelper from '../utils/TransitionHelper';
 import Logger from '../utils/Logger';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
 import { SearchHistoryTable } from '../db/impl/SearchHistoryDao';
@@ -13,6 +12,7 @@ import { VideoList } from '../components/VideoList';
 import VideoInfo from '../entity/VideoInfo';
 import StateView from '../components/StateView';
 import promptAction from '@ohos.promptAction';
+import { OPTIONS_TRANSITION_POP, OPTIONS_TRANSITION_PUSH } from '../utils/TransitionHelper';
 
 @Entry
 @Component
@@ -42,17 +42,10 @@ struct SearchPage {
   }
 
   pageTransition() {
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Right)
-
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_POP).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_POP).slide(SlideEffect.Right)
   }
 
   build() {

@@ -1,9 +1,9 @@
 import { getTheme } from '../utils/Themes';
 import Logger from '../utils/Logger';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
-import TransitionHelper from '../utils/TransitionHelper';
 import router from '@ohos.router';
-import Webview from '@ohos.web.webview'
+import Webview from '@ohos.web.webview';
+import { OPTIONS_TRANSITION_POP, OPTIONS_TRANSITION_PUSH } from '../utils/TransitionHelper';
 
 const USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; HarmonyOS; OCE-AN10; HMSCore 6.8.0.332) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.88 HuaweiBrowser/13.0.0.303 Mobile Safari/537.36'
 
@@ -44,15 +44,10 @@ struct WebPage {
   }
 
   pageTransition() {
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Right)
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Left)
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_POP).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_POP).slide(SlideEffect.Right)
   }
 
   build() {

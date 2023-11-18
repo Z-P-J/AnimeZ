@@ -1,8 +1,8 @@
 import { getCurrentTheme, getTheme } from '../utils/Themes';
-import TransitionHelper from '../utils/TransitionHelper';
 import { MyPageTabContent } from '../components/MyPage';
 import { HomepageTabContent } from '../components/Homepage';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
+import { OPTIONS_TRANSITION_POP, OPTIONS_TRANSITION_PUSH } from '../utils/TransitionHelper';
 
 @Entry
 @Component
@@ -27,17 +27,10 @@ struct Index {
   }
 
   pageTransition() {
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Right)
-
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_POP).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_POP).slide(SlideEffect.Right)
   }
 
   build() {

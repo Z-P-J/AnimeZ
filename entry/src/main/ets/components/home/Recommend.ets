@@ -6,7 +6,7 @@ import Logger from '../../utils/Logger';
 import VideoInfo from '../../entity/VideoInfo';
 import StateView, { ViewState } from '../StateView';
 import { VideoList } from '../VideoList';
-import emitter from '@ohos.events.emitter';
+import router from '@ohos.router';
 
 /**
  * 首页推荐
@@ -114,6 +114,17 @@ export struct Recommend {
     //    .width('80%')
     //    .translate({x: '-50%'})
     .padding(16)
+    .onClick(() => {
+      router.pushUrl({
+        url: 'pages/VideoDetailPage',
+        params: {
+          url: item.url,
+          sourceKey: item.sourceKey,
+          title: item.title,
+          cover: item.imgUrl
+        }
+      })
+    })
   }
 
   @Builder Category(category: DramaList) {

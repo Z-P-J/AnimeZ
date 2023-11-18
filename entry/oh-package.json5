@@ -1,0 +1,14 @@
+{
+  "license": "ISC",
+  "devDependencies": {},
+  "name": "entry",
+  "description": "example description",
+  "repository": {},
+  "version": "1.0.1",
+  "dependencies": {
+    "reflect-metadata": "^0.1.13",
+    "@ohos/fileio-extra": "^2.0.1",
+    "@ohos/crypto-js": "^2.0.3-rc.0",
+    "@ohos/ijkplayer": "^2.0.2-rc.0"
+  }
+}

@@ -8,9 +8,9 @@ import { TaskManagerObserver } from '../download/core/TaskManager';
 import Logger from '../utils/Logger';
 import { ZDownloader } from '../download/ZDownloader';
 import { getTheme } from '../utils/Themes';
-import TransitionHelper from '../utils/TransitionHelper';
 import StateView, { ViewState } from '../components/StateView';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
+import { OPTIONS_TRANSITION_POP, OPTIONS_TRANSITION_PUSH } from '../utils/TransitionHelper';
 
 const DOWNLOADER: M3U8Downloader = ZDownloader.get(M3U8Downloader)
 
@@ -444,17 +444,10 @@ struct DownloadManagerPage {
   }
 
   pageTransition() {
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Right)
-
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_POP).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_POP).slide(SlideEffect.Right)
   }
 
   build() {

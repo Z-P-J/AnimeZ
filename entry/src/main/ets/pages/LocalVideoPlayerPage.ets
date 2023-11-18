@@ -1,6 +1,4 @@
 import IPlayerManager, { VideoFit } from '../player/IPlayerManager';
-import fs from '@ohos.file.fs';
-import { AVideoPlayer } from '../player/AVideoPlayer';
 import PlayerManagerImpl from '../player/PlayerManagerImpl';
 import EpisodeInfo from '../entity/EpisodeInfo';
 import { getTheme } from '../utils/Themes';

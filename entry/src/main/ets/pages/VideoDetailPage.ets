@@ -2,11 +2,9 @@ import mediaquery from '@ohos.mediaquery';
 import { MultiVideoPlayer } from '../player/MultiVideoPlayer';
 import IPlayerManager, { PlayerListener, PlayerStatus, VideoFit } from '../player/IPlayerManager';
 import media from '@ohos.multimedia.media';
-import { AVideoPlayer } from '../player/AVideoPlayer';
 import { HISTORY_CHANGED_EVENT } from '../utils/EventBus';
 import DataSourceManager from '../api/DataSourceManager';
 import PlayerManagerImpl from '../player/PlayerManagerImpl';
-import { SystemVideoPlayer } from '../player/SystemVideoPlayer';
 import { VideoCacheList } from '../components/VideoCacheList';
 import Settings from '../utils/Settings';
 import CustomPanel, { PanelController } from '../components/CustomPanel';
@@ -18,7 +16,6 @@ import SystemBarUtils from '../utils/SystemBarUtils';
 import { VideoHistoryTable } from '../db/impl/VideoHistoryDao';
 import SQLite from '../db/SQLite';
 import StateView, { ViewState } from '../components/StateView';
-import TransitionHelper from '../utils/TransitionHelper';
 import ImmersionBarSpace from '../components/ImmersionBarSpace';
 import { VideoHistoryInfo } from '../entity/VideoHistoryInfo';
 import { VideoList } from '../components/VideoList';
@@ -27,7 +24,7 @@ import EpisodeList from '../entity/EpisodeList';
 import VideoDetailInfo from '../entity/VideoDetailInfo';
 import Logger from '../utils/Logger';
 import router from '@ohos.router';
-import promptAction from '@ohos.promptAction';
+import { OPTIONS_TRANSITION_POP, OPTIONS_TRANSITION_PUSH } from '../utils/TransitionHelper';
 
 @Entry
 @Component
@@ -183,17 +180,10 @@ struct VideoDetailPage {
   }
 
   pageTransition() {
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Right)
-
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_POP).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_POP).slide(SlideEffect.Right)
   }
 
   build() {

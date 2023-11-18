@@ -2,16 +2,13 @@ import { SOURCE_CHANGED_EVENT } from '../utils/EventBus';
 import { getTheme, KEY_THEME_ID, setTheme } from '../utils/Themes';
 import DataSourceManager from '../api/DataSourceManager';
 import Settings from '../utils/Settings';
-import { RadioDialog } from '../components/dialog/RadioDialog';
-import DataStore from '../utils/DataStore';
 import { SliderDialog } from '../components/dialog/SliderDialog';
-//import { CustomBatteryDialog } from '../components/dialog/CustomBatteryDialog';
 import TitleBar from '../components/TitleBar'
 import { SettingGroup, SettingsList } from '../components/Settings'
 import ImmersionBarSpace from '../components/ImmersionBarSpace'
 import router from '@ohos.router'
 import promptAction from '@ohos.promptAction'
-import TransitionHelper from '../utils/TransitionHelper'
+import { OPTIONS_TRANSITION_POP, OPTIONS_TRANSITION_PUSH } from '../utils/TransitionHelper';
 
 @Entry
 @Component
@@ -124,7 +121,7 @@ struct SettingsPage {
       settings: [
         {
           title: '检查更新',
-          info: '1.0.0',
+          info: '1.0.1',
           //          icon: $r('app.media.ic_upgrade'),
           iconBlendColor: Color.Black,
           onClick: () => {
@@ -156,17 +153,10 @@ struct SettingsPage {
   }
 
   pageTransition() {
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Right)
-
-    PageTransitionEnter(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_PUSH)
-      .slide(SlideEffect.Left)
-
-    PageTransitionExit(TransitionHelper.OPTIONS_TRANSITION_POP)
-      .slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Right)
+    PageTransitionEnter(OPTIONS_TRANSITION_POP).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_PUSH).slide(SlideEffect.Left)
+    PageTransitionExit(OPTIONS_TRANSITION_POP).slide(SlideEffect.Right)
   }
 
   build() {

@@ -8,7 +8,6 @@ const FORMAT: string = '%{public}s, %{public}s'
  * 日志工具类
  */
 export default class Logger {
-
     /**
      * debug
      */
@@ -45,10 +44,12 @@ export default class Logger {
      */
     static wrapArgs(tag: any, args: string[]): string[] {
         let name: string;
-        if (tag instanceof Object) {
+        if ((typeof tag) == 'string') {
+            name = tag
+        } else if ((typeof tag) == 'function') {
+            name = tag.name;
+        } else if ((typeof tag) == 'object') {
             name = tag.constructor.name;
-        } else if (tag instanceof Function) {
-            name = tag.toString();
         } else {
             name = (typeof tag) + '-' + tag;
         }
@@ -61,5 +62,4 @@ export default class Logger {
         }
         return args;
     }
-
 }

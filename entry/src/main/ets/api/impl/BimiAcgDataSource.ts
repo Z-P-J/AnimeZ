@@ -2,13 +2,13 @@ import { DramaList } from '../../entity/HomepageData';
 import HomepageData from '../../entity/HomepageData';
 import Logger from '../../utils/Logger';
 import EpisodeInfo from '../../entity/EpisodeInfo';
-import { CssSelector } from '../../utils/css/CssSelector';
 import VideoInfo from '../../entity/VideoInfo';
 import EpisodeList from '../../entity/EpisodeList';
 import VideoDetailInfo from '../../entity/VideoDetailInfo';
 import HttpUtils from '../../utils/HttpUtils';
 import DataSource from '../DataSource';
-import { Element, Document } from "domhandler"
+import { AnyNode } from '../../thirdpart/htmlsoup/parse';
+import { select, selectAttributeValue, selectFirst, selectTextContent, selectInnerHtml } from '../../thirdpart/htmlsoup';
 
 const PREFIX_DATA = "var player_aaaa="
 const BASE_URL = 'http://www.bimiacg4.net'
@@ -25,7 +25,7 @@ export default class BimiAcgDataSource implements DataSource {
         let url = "http://www.bimiacg4.net/vod/search/wd/" + encodeURIComponent(keyword) + "/page/" + page
 
         let doc = await HttpUtils.getHtml(url)
-        let drama = CssSelector.findFirst(doc, 'ul.drama-module')
+        let drama = selectFirst(doc, 'ul.drama-module')
         return this.parseVideoList(drama)
     }
 
@@ -35,17 +35,17 @@ export default class BimiAcgDataSource implements DataSource {
 
         let bannerList = null
         let categoryList: DramaList[] = []
-        let categorys = CssSelector.find(doc, 'body > section > div.area-drama')
+        let categorys = select(doc, 'body > section > div.area-drama')
         for (let drama of categorys) {
-            let header = CssSelector.findFirst(drama, "div.area-header")
+            let header = selectFirst(drama, "div.area-header")
 
             if (bannerList == null) {
-                bannerList = await this.parseVideoList(CssSelector.findFirst(drama, 'ul.drama-module'))
+                bannerList = await this.parseVideoList(selectFirst(drama, 'ul.drama-module'))
             } else {
                 categoryList.push({
-                    title: CssSelector.selectTextContent(header, "h2.title > b"),
-                    moreUrl: BASE_URL + CssSelector.selectAttributeValue(header, 'a', 'href'),
-                    videoList: await this.parseVideoList(CssSelector.findFirst(drama, 'ul.drama-module'))
+                    title: selectTextContent(header, "h2.title > b"),
+                    moreUrl: BASE_URL + selectAttributeValue(header, 'a', 'href'),
+                    videoList: await this.parseVideoList(selectFirst(drama, 'ul.drama-module'))
                 })
             }
         }
@@ -58,28 +58,28 @@ export default class BimiAcgDataSource implements DataSource {
     async getVideoList(page: number): Promise<VideoInfo[]> {
         let url = "http://www.bimiacg4.net/type/riman-" + page
         let doc = await HttpUtils.getHtml(url)
-        let drama = CssSelector.findFirst(doc, 'ul.drama-module')
+        let drama = selectFirst(doc, 'ul.drama-module')
         return this.parseVideoList(drama)
     }
 
     private async parseVideoList(drama): Promise<VideoInfo[]> {
-        //        let drama = CssSelector.findFirst(doc, 'ul.drama-module')
+        //        let drama = selectFirst(doc, 'ul.drama-module')
         Logger.e(this, 'parseHtml drama=' + drama)
-        let elements = CssSelector.find(drama, 'li')
+        let elements = select(drama, 'li')
         Logger.e(this, 'parseHtml elements=' + elements)
         let videoList: VideoInfo[] = []
 
         // TODO 代码优化
         elements.forEach((el) => {
             Logger.e(this, "parseHtml el=" + el)
-            let img = CssSelector.findFirst(el, 'img')
-            let a = CssSelector.findFirst(el, "div.info > a")
+            let img = selectFirst(el, 'img')
+            let a = selectFirst(el, "div.info > a")
             videoList.push({
                 sourceKey: this.getKey(),
-                url: "http://www.bimiacg4.net" + CssSelector.getAttributeValue(a, 'href'),
-                imgUrl: CssSelector.getAttributeValue(img, 'src'),
-                title: CssSelector.textContent(a),
-                episode: CssSelector.selectTextContent(el, "div.info > p > span.fl")
+                url: "http://www.bimiacg4.net" + a.attr('href'),
+                imgUrl: img.attr('src'),
+                title: a.textContent,
+                episode: selectTextContent(el, "div.info > p > span.fl")
             })
         })
         return videoList
@@ -89,50 +89,49 @@ export default class BimiAcgDataSource implements DataSource {
         let doc = await HttpUtils.getHtml(url);
 
         Logger.e(this, 'getVideoDetailInfo 1')
-        let category = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(3) > a")
+        let category = selectFirst(doc, "div.txt_intro_con > ul > li:nth-child(3) > a")
         Logger.e(this, 'getVideoDetailInfo 2 category=' + category)
 
-        let test = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(4)")
+        let test = selectFirst(doc, "div.txt_intro_con > ul > li:nth-child(4)")
         Logger.e(this, 'getVideoDetailInfo 3 test=' + test)
 
-        test = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(5)")
+        test = selectFirst(doc, "div.txt_intro_con > ul > li:nth-child(5)")
         Logger.e(this, 'getVideoDetailInfo 4 test=' + test)
 
-        test = CssSelector.findFirst(doc, "div.txt_intro_con > ul > li:nth-child(2)")
+        test = selectFirst(doc, "div.txt_intro_con > ul > li:nth-child(2)")
         Logger.e(this, 'getVideoDetailInfo 5 test=' + test)
 
         let info: VideoDetailInfo = {
             sourceKey: this.getKey(),
-            title: CssSelector.selectTextContent(doc, "div.txt_intro_con > div > h1"),
+            title: selectTextContent(doc, "div.txt_intro_con > div > h1"),
             url: url,
-            desc: CssSelector.selectTextContent(doc, "li.li_intro"),
-            coverUrl: CssSelector.selectAttributeValue(doc, "div.poster_placeholder > div > img", 'src'),
-            category: category == null ? null : CssSelector.textContent(category),
-            director: CssSelector.selectTextContent(doc, "div.txt_intro_con > ul > li:nth-child(4)"),
-            updateTime: CssSelector.selectTextContent(doc, "div.txt_intro_con > ul > li:nth-child(5)"),
-            protagonist: CssSelector.selectTextContent(doc, "div.txt_intro_con > ul > li:nth-child(2)"),
+            desc: selectTextContent(doc, "li.li_intro"),
+            coverUrl: selectAttributeValue(doc, "div.poster_placeholder > div > img", 'src'),
+            category: category == null ? null : category.textContent,
+            director: selectTextContent(doc, "div.txt_intro_con > ul > li:nth-child(4)"),
+            updateTime: selectTextContent(doc, "div.txt_intro_con > ul > li:nth-child(5)"),
+            protagonist: selectTextContent(doc, "div.txt_intro_con > ul > li:nth-child(2)"),
             episodes: await this.getEpisodes(doc),
             recommends: await this.getRecommends(doc)
         }
         return info
     }
 
-    async getEpisodes(doc: Document): Promise<EpisodeList[]> {
-
-        let list: EpisodeList[] = []
-        let elements = CssSelector.find(doc, "ul.player_list")
-        let title = CssSelector.textContent(CssSelector.findFirst(doc, "div.txt_intro_con > div > h1"))
+    async getEpisodes(doc: AnyNode): Promise<EpisodeList[]> {
+        const list: EpisodeList[] = []
+        const elements = select(doc, "ul.player_list")
+        const title = selectTextContent(doc, "div.txt_intro_con > div > h1")
         elements.forEach((el, i) => {
             let episodeList: EpisodeList = {
                 title: "路线" + i,
                 episodes: []
             }
 
-            CssSelector.find(el, 'a').forEach((a) => {
+            select(el, 'a').forEach((a) => {
                 let info: EpisodeInfo = {
-                    link: "http://www.bimiacg4.net" + CssSelector.getAttributeValue(a, 'href'),
-                    title: CssSelector.textContent(a),
-                    desc: title + ' ' + CssSelector.textContent(a)
+                    link: "http://www.bimiacg4.net" + a.attr('href'),
+                    title: a.textContent,
+                    desc: title + ' ' + a.textContent
                 }
                 Logger.e(this, 'getEpisodes info=' + JSON.stringify(info))
                 episodeList.episodes.push(info)
@@ -146,21 +145,21 @@ export default class BimiAcgDataSource implements DataSource {
         return list
     }
 
-    async getRecommends(doc: Document): Promise<VideoInfo[]> {
+    async getRecommends(doc: AnyNode): Promise<VideoInfo[]> {
         let videoList: VideoInfo[] = []
-        let drama = CssSelector.findFirst(doc, 'ul.drama-module')
-        let elements = CssSelector.find(drama, 'li')
+        let drama = selectFirst(doc, 'ul.drama-module')
+        let elements = select(drama, 'li')
         elements.forEach((el) => {
-            let img = CssSelector.findFirst(el, 'img')
-            let elInfo = CssSelector.findFirst(el, "div.info")
-            let a = CssSelector.findFirst(elInfo, "a")
+            let img = selectFirst(el, 'img')
+            let elInfo = selectFirst(el, "div.info")
+            let a = selectFirst(elInfo, "a")
             videoList.push({
                 sourceKey: this.getKey(),
-                url: "http://www.bimiacg4.net" + CssSelector.getAttributeValue(a, 'href'),
-                imgUrl: CssSelector.getAttributeValue(img, 'src'),
-                title: CssSelector.textContent(a),
-                episode: CssSelector.selectTextContent(elInfo, "span.fl"),
-                updateTime: CssSelector.selectTextContent(elInfo, 'em.fr')
+                url: "http://www.bimiacg4.net" + a.attr('href'),
+                imgUrl: img.attr('src'),
+                title: a.textContent,
+                episode: selectTextContent(elInfo, "span.fl"),
+                updateTime: selectTextContent(elInfo, 'em.fr')
             })
         })
         return videoList
@@ -169,11 +168,11 @@ export default class BimiAcgDataSource implements DataSource {
     async parseVideoUrl(link: string): Promise<string> {
         Logger.e(this, 'parseVideoUrl link=' + link)
         let doc = await HttpUtils.getHtml(link)
-        let video = CssSelector.findFirst(doc, 'div#video')
-        let scripts = CssSelector.find(video, 'script')
+        let video = selectFirst(doc, 'div#video')
+        let scripts = select(video, 'script')
 
         for (let script of scripts) {
-            let text = CssSelector.textContent(script)
+            let text = script.textContent
             Logger.e(this, 'script text=' + text)
             if (text.startsWith(PREFIX_DATA)) {
                 text = text.substring(PREFIX_DATA.length)
@@ -188,7 +187,7 @@ export default class BimiAcgDataSource implements DataSource {
                         referer: 'http://www.bimiacg4.net/'
                     })
 
-                    let html = CssSelector.getInnerHTML(doc)
+                    let html = selectInnerHtml(doc)
                     let start = 0
                     let end = html.indexOf('\n', start)
                     while (end >= 0) {
@@ -211,7 +210,7 @@ export default class BimiAcgDataSource implements DataSource {
                     Logger.e(this, 'parseVideoUrl url=' + url)
 
                     doc = await HttpUtils.getHtml(url)
-                    let src = CssSelector.selectAttributeValue(doc, 'source', 'src')
+                    let src = selectAttributeValue(doc, 'source', 'src')
                     Logger.e(this, 'parseVideoUrl src=' + src)
 
                     if (src.startsWith('./')) {

@@ -2,7 +2,6 @@
   "src": [
     "pages/Index",
     "pages/VideoDetailPage",
-    "pages/TestPage",
     "pages/SearchPage",
     "pages/SettingsPage",
     "pages/AboutMePage",

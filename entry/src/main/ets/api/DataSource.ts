@@ -1,8 +1,6 @@
 import HomepageData from '../entity/HomepageData';
-import EpisodeList from '../entity/EpisodeList'
-import VideoInfo from '../entity/VideoInfo'
-import VideoDetailInfo from '../entity/VideoDetailInfo'
-import { Document } from "domhandler"
+import VideoInfo from '../entity/VideoInfo';
+import VideoDetailInfo from '../entity/VideoDetailInfo';
 
 /**
  * 数据源
